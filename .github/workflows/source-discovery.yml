@@ -1,0 +1,43 @@
+name: Source discovery
+
+# Resolves real dataset identifiers, row counts and field lists from the open-data
+# portals, and prints them to the job log.
+#
+# This exists because the development sandbox's network egress allowlist rejects
+# every municipal and StatCan host, so discovery cannot be done where the code is
+# written. A runner can reach them. The output is read from the log and then
+# transcribed by hand into config/sources.yml and docs/sources/*.md -- nothing is
+# auto-committed, because a value only becomes fact once a person has looked at
+# the response it came from.
+
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "scripts/discover_sources.py"
+      - ".github/workflows/source-discovery.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: Discover dataset identifiers and fields
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - run: uv sync --extra dev
+
+      # Never fail the build on discovery. A portal being down or reorganised is
+      # information to read, not a broken repository. verify-sources.yml is the
+      # workflow that is allowed to go red over source health.
+      - name: Discover
+        continue-on-error: true
+        run: uv run python scripts/discover_sources.py
