@@ -26,8 +26,9 @@ licences named; StatCan product IDs catalogue-copied; CMHC NOT ADOPTED
 - (i) CLEARED — PR #43 merged (`efabb92`); cold clone drill re-run on `main`: PASS.
 - (ii) CLEARED — milestones #1–#6, 19 labels synced from `.github/labels.yml`,
   10 topics, branch protection on `main` (PR + 1 review + conversation
-  resolution + strict status checks on the 6 `pr.yml`/`web.yml` contexts;
-  `verify-sources.yml` deliberately excluded — schedule-only, would deadlock PRs).
+  resolution + strict status checks on the 5 `pr.yml` contexts, which run on
+  every PR; `verify-sources.yml` excluded — schedule-only, would deadlock PRs;
+  `web.yml` excluded until `web/` exists — path-filtered, would stall docs-only PRs).
 - (iii) Phase 2 entry conditions (carried, not blocking): 5 ADRs before gold SQL;
   Toronto 32-column field capture before silver SQL; PII-drop + key-stability
   tests with first ingestion code. `data-quality-auditor` veto applies throughout.
