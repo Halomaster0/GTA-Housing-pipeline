@@ -2,6 +2,14 @@
 
 **Status: DRAFT — submitted for `director-data-engineering` review. Not yet approved. No SQL may be written against this design until it is.**
 **Date: 2026-09-10**
+
+> **Update 2026-09-10 — reviewed.** Sources verified live
+> (`docs/sources/evidence/2026-09-10-local-verification.md`); assumptions
+> A1/A5/A6/A8/A14/A16–A19/A25 confirmed or answered (see review).
+> **Director verdict: CONDITIONAL PASS** —
+> `docs/reviews/director-data-engineering-schema-design.md`. Phase 2 SQL
+> unblocked subject to its three conditions. The "UNVERIFIED" framing below
+> describes the draft state, preserved as history.
 **Designed against: UNVERIFIED sources.** Every one of the four municipal source families (Toronto CKAN, Mississauga ArcGIS, Brampton ArcGIS, Peel ArcGIS) plus StatCan and CMHC is recorded as `UNVERIFIED-BLOCKED` in `docs/sources/README.md` as of this date — the sandbox's network egress policy rejected every canonical host before any application response was returned (see `docs/sources/evidence/2026-09-10-verification.md`). Nothing in this document should be read as a claim about what any source actually contains. It is a hypothesis for `director-data-engineering` to review, and a target for `source-scout`/`ingestion-engineer` to confirm or falsify on the next network-enabled run.
 
 This is the Phase 1 "draft the star schema on paper, before writing SQL" deliverable (`docs/build-plan.md` §6 Phase 1, Gate 1 criterion: "schema design reviewed by Director + ADR for any contested modelling decision"). It produces no `models/silver/*.sql` or `models/gold/*.sql` — those are Phase 2, gated on this document's approval per the `transform-engineer` role card's own process step 1.
