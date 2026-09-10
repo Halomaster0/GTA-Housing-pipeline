@@ -107,65 +107,106 @@ def discover_toronto(client: httpx.Client) -> None:
 
 
 def discover_arcgis(client: httpx.Client) -> None:
-    rule("ARCGIS HUB — municipal layer discovery")
-    queries = [
-        ("mississauga", "Mississauga building permit"),
-        ("mississauga", "Mississauga development application"),
-        ("brampton", "Brampton building permit"),
-        ("brampton", "Brampton development application"),
-        ("peel", "Peel Region planning"),
+    """Enumerate each municipality's ArcGIS service directory directly.
+
+    Hub free-text search is useless here: querying "Mississauga building permit"
+    returned datasets from Faribault County, Nashville and Atlanta, because the
+    q parameter ranks across the whole hub rather than scoping to a place. The
+    org ids below were the one useful thing that search did surface, so we go
+    straight to each org's REST service directory instead, which is exhaustive
+    and unambiguous.
+    """
+    rule("ARCGIS — municipal service directories")
+    orgs = [
+        ("Mississauga", "https://services6.arcgis.com/hM5ymMLbxIyWTjn2"),
+        ("Brampton", "https://services3.arcgis.com/rl7ACuZkiFsmDA2g"),
+        ("Brampton (alt org)", "https://services6.arcgis.com/ONZht79c8QWuX759"),
     ]
-    printed_shape = False
-    for _tag, q in queries:
-        p(f"\n-- hub datasets q={q!r}")
-        data = get(client, HUB_DATASETS, {"q": q, "page[size]": 8})
+    keywords = (
+        "permit",
+        "development",
+        "application",
+        "zoning",
+        "planning",
+        "parcel",
+        "ward",
+        "boundary",
+    )
+
+    for name, base in orgs:
+        p(f"\n-- {name}: {base}/arcgis/rest/services")
+        data = get(client, f"{base}/arcgis/rest/services", {"f": "json"})
         if not data:
             continue
-        items = data.get("data", [])
-        meta_total = data.get("meta", {}).get("stats", {}).get("totalCount")
-        p(f"   returned {len(items)} items (hub-wide meta total={meta_total})")
-        if items and not printed_shape:
-            p(f"   ATTRIBUTE KEYS: {sorted(items[0].get('attributes', {}).keys())}")
-            printed_shape = True
-        for it in items:
+        services = data.get("services", [])
+        p(f"   {len(services)} services published")
+        hits = [
+            svc for svc in services if any(k in str(svc.get("name", "")).lower() for k in keywords)
+        ]
+        p(f"   {len(hits)} match permit/development/zoning keywords:")
+        for svc in hits:
+            svc_name = svc.get("name")
+            svc_type = svc.get("type")
+            p(f"   - {svc_name} ({svc_type})")
+            layers_url = f"{base}/arcgis/rest/services/{str(svc_name).split('/')[-1]}/{svc_type}"
+            meta = get(client, layers_url, {"f": "json"})
+            if not meta:
+                continue
+            for layer in meta.get("layers", [])[:6]:
+                lid, lname = layer.get("id"), layer.get("name")
+                cnt = get(
+                    client,
+                    f"{layers_url}/{lid}/query",
+                    {"where": "1=1", "returnCountOnly": "true", "f": "json"},
+                )
+                total = cnt.get("count") if cnt else "?"
+                p(f"       layer {lid}: {lname!r}  ROWS={total}")
+                info = get(client, f"{layers_url}/{lid}", {"f": "json"})
+                if info:
+                    flds = [(f.get("name"), f.get("type")) for f in info.get("fields", [])]
+                    p(f"         FIELDS ({len(flds)}): {flds}")
+
+    # Peel's org id was never surfaced. Ask the hub for its datasets by org name.
+    p("\n-- Peel: hub datasets filtered by orgName")
+    data = get(
+        client,
+        HUB_DATASETS,
+        {"filter[orgName]": "Regional Municipality of Peel", "page[size]": 40},
+    )
+    if data:
+        for it in data.get("data", []):
             a = it.get("attributes", {})
             p(
-                f"   - {a.get('name')!r} org={a.get('orgName')!r} type={a.get('type')!r} "
-                f"records={a.get('recordCount')} url={a.get('url')!r}"
+                f"   - {a.get('name')!r} type={a.get('type')!r} records={a.get('recordCount')} url={a.get('url')!r}"
             )
 
 
 def discover_statcan(client: httpx.Client) -> None:
+    """List StatCan cubes over GET and filter locally.
+
+    Every POST to getCubeMetadata from a GitHub runner was answered with a
+    connection reset or a read timeout, while the GET liveness endpoint returned
+    200 in the same run. Rather than fight that, pull the full cube list over GET
+    and filter it here. This also removes the need to recall a product id: the
+    ids come from the response.
+    """
     rule("STATISTICS CANADA WDS")
-    # Confirm product IDs by asking the API, never from memory.
-    for pid in ("34100066", "34100143", "98100001"):
-        p(f"\n-- getCubeMetadata productId={pid}")
-        try:
-            r = client.post(
-                "https://www150.statcan.gc.ca/t1/wds/rest/getCubeMetadata",
-                json=[{"productId": int(pid)}],
+    p("\n-- getAllCubesListLite (GET)")
+    data = get(client, "https://www150.statcan.gc.ca/t1/wds/rest/getAllCubesListLite")
+    if not data:
+        p("   no cube list returned; StatCan discovery unresolved")
+        return
+    cubes = data if isinstance(data, list) else data.get("object", [])
+    p(f"   {len(cubes)} cubes listed")
+    terms = ("building permit", "housing start", "dwelling", "occupanc")
+    for cube in cubes:
+        title = str(cube.get("cubeTitleEn", ""))
+        if any(t in title.lower() for t in terms):
+            p(
+                f"   - productId={cube.get('productId')} {title!r} "
+                f"start={cube.get('cubeStartDate')} end={cube.get('cubeEndDate')} "
+                f"archived={cube.get('archived')}"
             )
-        except httpx.HTTPError as exc:
-            p(f"   TRANSPORT ERROR: {exc}")
-            continue
-        p(f"   HTTP {r.status_code}")
-        if r.status_code != 200:
-            continue
-        try:
-            payload = r.json()
-        except ValueError:
-            p(f"   NON-JSON: {r.text[:200]!r}")
-            continue
-        for entry in payload if isinstance(payload, list) else [payload]:
-            if entry.get("status") != "SUCCESS":
-                p(f"   status={entry.get('status')} object={str(entry.get('object'))[:200]}")
-                continue
-            obj = entry.get("object", {})
-            p(f"   cubeTitleEn={obj.get('cubeTitleEn')!r}")
-            p(f"   start={obj.get('cubeStartDate')} end={obj.get('cubeEndDate')}")
-            p(f"   archived={obj.get('archiveStatusEn')!r}")
-            dims = [d.get("dimensionNameEn") for d in obj.get("dimension", [])]
-            p(f"   dimensions: {dims}")
 
 
 def main() -> int:
