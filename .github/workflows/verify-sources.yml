@@ -4,6 +4,15 @@ on:
   workflow_dispatch: {}
   schedule:
     - cron: "0 8 * * 1" # Monday 08:00 UTC, after the weekly pipeline run
+  # Re-verify whenever the source registry or the checker itself changes. This
+  # is also the only way to get a real answer during development: the build
+  # environment's egress allowlist blocks every municipal and StatCan host, so
+  # a GitHub runner is the first place the checks can actually reach them.
+  push:
+    paths:
+      - "config/sources.yml"
+      - "scripts/verify_sources.py"
+      - ".github/workflows/verify-sources.yml"
 
 permissions:
   contents: read
@@ -47,8 +56,11 @@ jobs:
         continue-on-error: true
         run: uv run python scripts/verify_sources.py 2>&1 | tee verify_output.txt
 
-      - name: Open an issue on failure
-        if: steps.check.outputs.exists == 'true' && steps.verify.outcome == 'failure'
+      # Only the scheduled run files an issue. A push or manual dispatch means a
+      # human is already watching the output, and an auto-filed issue per run
+      # would be noise on a public repository.
+      - name: Open an issue on failure (scheduled runs only)
+        if: steps.check.outputs.exists == 'true' && steps.verify.outcome == 'failure' && github.event_name == 'schedule'
         uses: actions/github-script@v9
         with:
           script: |
