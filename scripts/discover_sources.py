@@ -177,7 +177,8 @@ def discover_arcgis(client: httpx.Client) -> None:
         for it in data.get("data", []):
             a = it.get("attributes", {})
             p(
-                f"   - {a.get('name')!r} type={a.get('type')!r} records={a.get('recordCount')} url={a.get('url')!r}"
+                f"   - {a.get('name')!r} type={a.get('type')!r} "
+                f"records={a.get('recordCount')} url={a.get('url')!r}"
             )
 
 
