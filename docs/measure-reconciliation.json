@@ -1,12 +1,205 @@
 {
   "meta": {
-    "generated_at_utc": "2026-09-10T21:11:09.064521+00:00",
-    "git_sha": "3dc10fe",
+    "generated_at_utc": "2026-09-10T21:49:25.088882+00:00",
+    "git_sha": "18d4cb1",
     "source": "gold warehouse via scripts/reconcile_measures.py"
   },
   "fact_totals": {
     "fct_permits": 827919,
     "fct_applications": 21658
+  },
+  "bronze": {
+    "ingest_date": "2026-09-10",
+    "sources": [
+      {
+        "source": "brampton-building-permits",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 222276,
+        "rows_reported": 222276,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "brampton-consent-sever",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 1031,
+        "rows_reported": 1031,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "brampton-draft-plan-condo",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 182,
+        "rows_reported": 182,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "brampton-minor-variance",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 6989,
+        "rows_reported": 6989,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "brampton-opa-zba-subdivision",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 1451,
+        "rows_reported": 1451,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "brampton-pre-consultation",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 2100,
+        "rows_reported": 2100,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "mississauga-building-permits",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 34615,
+        "rows_reported": 34615,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "mississauga-rezoning-applications",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 290,
+        "rows_reported": 290,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "mississauga-site-plan-applications",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 1138,
+        "rows_reported": 1138,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "mississauga-wards",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 11,
+        "rows_reported": 11,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "peel-building-permits",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 684,
+        "rows_reported": 684,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "peel-census2021-ct",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 282,
+        "rows_reported": 282,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "peel-municipal-boundary",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 3,
+        "rows_reported": 3,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "peel-wards-current",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 27,
+        "rows_reported": 27,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "peel-wards-prior",
+        "family": "arcgis",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 26,
+        "rows_reported": 26,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "statcan-building-permits-34100292",
+        "family": "statcan-meta",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 1,
+        "rows_reported": null,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "toronto-building-permits-active",
+        "family": "ckan",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 206259,
+        "rows_reported": 206259,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "toronto-building-permits-cleared",
+        "family": "ckan",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 435942,
+        "rows_reported": 435942,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "toronto-development-applications",
+        "family": "ckan",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 26613,
+        "rows_reported": 26613,
+        "count_match": true,
+        "status": "ok"
+      },
+      {
+        "source": "toronto-wards",
+        "family": "ckan",
+        "ingest_date": "2026-09-10",
+        "rows_landed": 25,
+        "rows_reported": 25,
+        "count_match": true,
+        "status": "ok"
+      }
+    ]
+  },
+  "integrity": {
+    "orphan_permit_fks": 0,
+    "orphan_application_fks": 0,
+    "permits_null_geography": 793305,
+    "applications_null_geography": 55,
+    "permits_unknown_use": 0,
+    "applications_unknown_use": 20500
   },
   "permits_by_municipality": {
     "BRAM": 221319,
