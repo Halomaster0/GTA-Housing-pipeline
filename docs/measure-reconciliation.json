@@ -1,0 +1,433 @@
+{
+  "meta": {
+    "generated_at_utc": "2026-09-10T21:11:09.064521+00:00",
+    "git_sha": "3dc10fe",
+    "source": "gold warehouse via scripts/reconcile_measures.py"
+  },
+  "fact_totals": {
+    "fct_permits": 827919,
+    "fct_applications": 21658
+  },
+  "permits_by_municipality": {
+    "BRAM": 221319,
+    "MISS": 34614,
+    "TOR": 571986
+  },
+  "permits_issued_by_municipality_year": [
+    {
+      "municipality": "BRAM",
+      "year": 2010,
+      "permits_issued": 5683
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2011,
+      "permits_issued": 5734
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2012,
+      "permits_issued": 7793
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2013,
+      "permits_issued": 5161
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2014,
+      "permits_issued": 6759
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2015,
+      "permits_issued": 7827
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2016,
+      "permits_issued": 7066
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2017,
+      "permits_issued": 5837
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2018,
+      "permits_issued": 6203
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2019,
+      "permits_issued": 10042
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2020,
+      "permits_issued": 10737
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2021,
+      "permits_issued": 16126
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2022,
+      "permits_issued": 15628
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2023,
+      "permits_issued": 12373
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2024,
+      "permits_issued": 10041
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2025,
+      "permits_issued": 12076
+    },
+    {
+      "municipality": "BRAM",
+      "year": 2026,
+      "permits_issued": 5850
+    },
+    {
+      "municipality": "MISS",
+      "year": 2018,
+      "permits_issued": 3761
+    },
+    {
+      "municipality": "MISS",
+      "year": 2019,
+      "permits_issued": 3955
+    },
+    {
+      "municipality": "MISS",
+      "year": 2020,
+      "permits_issued": 3518
+    },
+    {
+      "municipality": "MISS",
+      "year": 2021,
+      "permits_issued": 3900
+    },
+    {
+      "municipality": "MISS",
+      "year": 2022,
+      "permits_issued": 4176
+    },
+    {
+      "municipality": "MISS",
+      "year": 2023,
+      "permits_issued": 4333
+    },
+    {
+      "municipality": "MISS",
+      "year": 2024,
+      "permits_issued": 4409
+    },
+    {
+      "municipality": "MISS",
+      "year": 2025,
+      "permits_issued": 4223
+    },
+    {
+      "municipality": "MISS",
+      "year": 2026,
+      "permits_issued": 2339
+    },
+    {
+      "municipality": "TOR",
+      "year": 2010,
+      "permits_issued": 9764
+    },
+    {
+      "municipality": "TOR",
+      "year": 2011,
+      "permits_issued": 9587
+    },
+    {
+      "municipality": "TOR",
+      "year": 2012,
+      "permits_issued": 10471
+    },
+    {
+      "municipality": "TOR",
+      "year": 2013,
+      "permits_issued": 12968
+    },
+    {
+      "municipality": "TOR",
+      "year": 2014,
+      "permits_issued": 14201
+    },
+    {
+      "municipality": "TOR",
+      "year": 2015,
+      "permits_issued": 18597
+    },
+    {
+      "municipality": "TOR",
+      "year": 2016,
+      "permits_issued": 32095
+    },
+    {
+      "municipality": "TOR",
+      "year": 2017,
+      "permits_issued": 45690
+    },
+    {
+      "municipality": "TOR",
+      "year": 2018,
+      "permits_issued": 43117
+    },
+    {
+      "municipality": "TOR",
+      "year": 2019,
+      "permits_issued": 40540
+    },
+    {
+      "municipality": "TOR",
+      "year": 2020,
+      "permits_issued": 32537
+    },
+    {
+      "municipality": "TOR",
+      "year": 2021,
+      "permits_issued": 35010
+    },
+    {
+      "municipality": "TOR",
+      "year": 2022,
+      "permits_issued": 34445
+    },
+    {
+      "municipality": "TOR",
+      "year": 2023,
+      "permits_issued": 32545
+    },
+    {
+      "municipality": "TOR",
+      "year": 2024,
+      "permits_issued": 32627
+    },
+    {
+      "municipality": "TOR",
+      "year": 2025,
+      "permits_issued": 34085
+    },
+    {
+      "municipality": "TOR",
+      "year": 2026,
+      "permits_issued": 23760
+    }
+  ],
+  "net_units_by_municipality": {
+    "BRAM": {
+      "net_units": 78957,
+      "permit_rows": 221319,
+      "null_unit_rows": 132933
+    },
+    "MISS": {
+      "net_units": 30968,
+      "permit_rows": 34614,
+      "null_unit_rows": 28003
+    },
+    "TOR": {
+      "net_units": 259840,
+      "permit_rows": 571986,
+      "null_unit_rows": 371394
+    }
+  },
+  "unit_basis": "unknown (ADR-0003 \u2014 cross-municipality unit sums are NOT comparable)",
+  "applications_by_municipality_status": [
+    {
+      "municipality": "BRAM",
+      "status": "APPROVED",
+      "applications": 5704
+    },
+    {
+      "municipality": "BRAM",
+      "status": "CLOSED",
+      "applications": 4874
+    },
+    {
+      "municipality": "BRAM",
+      "status": "UNDER_REVIEW",
+      "applications": 584
+    },
+    {
+      "municipality": "BRAM",
+      "status": "REFUSED",
+      "applications": 333
+    },
+    {
+      "municipality": "BRAM",
+      "status": "SUBMITTED",
+      "applications": 106
+    },
+    {
+      "municipality": "BRAM",
+      "status": "APPEALED",
+      "applications": 29
+    },
+    {
+      "municipality": "MISS",
+      "status": "APPROVED",
+      "applications": 1172
+    },
+    {
+      "municipality": "MISS",
+      "status": "UNDER_REVIEW",
+      "applications": 255
+    },
+    {
+      "municipality": "TOR",
+      "status": "CLOSED",
+      "applications": 6090
+    },
+    {
+      "municipality": "TOR",
+      "status": "UNDER_REVIEW",
+      "applications": 1339
+    },
+    {
+      "municipality": "TOR",
+      "status": "APPROVED",
+      "applications": 803
+    },
+    {
+      "municipality": "TOR",
+      "status": "APPEALED",
+      "applications": 319
+    },
+    {
+      "municipality": "TOR",
+      "status": "SUBMITTED",
+      "applications": 36
+    },
+    {
+      "municipality": "TOR",
+      "status": "REFUSED",
+      "applications": 14
+    }
+  ],
+  "permits_by_municipality_status": [
+    {
+      "municipality": "BRAM",
+      "status": "CLOSED",
+      "permits": 192009
+    },
+    {
+      "municipality": "BRAM",
+      "status": "ISSUED",
+      "permits": 14654
+    },
+    {
+      "municipality": "BRAM",
+      "status": "CANCELLED",
+      "permits": 10013
+    },
+    {
+      "municipality": "BRAM",
+      "status": "UNDER_REVIEW",
+      "permits": 3038
+    },
+    {
+      "municipality": "BRAM",
+      "status": "APPLIED",
+      "permits": 1605
+    },
+    {
+      "municipality": "MISS",
+      "status": "CLOSED",
+      "permits": 28326
+    },
+    {
+      "municipality": "MISS",
+      "status": "ISSUED",
+      "permits": 6278
+    },
+    {
+      "municipality": "MISS",
+      "status": "CANCELLED",
+      "permits": 10
+    },
+    {
+      "municipality": "TOR",
+      "status": "CLOSED",
+      "permits": 346694
+    },
+    {
+      "municipality": "TOR",
+      "status": "ISSUED",
+      "permits": 168352
+    },
+    {
+      "municipality": "TOR",
+      "status": "CANCELLED",
+      "permits": 48867
+    },
+    {
+      "municipality": "TOR",
+      "status": "UNDER_REVIEW",
+      "permits": 7850
+    },
+    {
+      "municipality": "TOR",
+      "status": "APPLIED",
+      "permits": 223
+    }
+  ],
+  "permit_applied_to_issued_median_days": {
+    "BRAM": {
+      "permits_with_both_dates": 150680,
+      "median_days": 44.0
+    },
+    "MISS": {
+      "permits_with_both_dates": 34581,
+      "median_days": 34.0
+    },
+    "TOR": {
+      "permits_with_both_dates": 460121,
+      "median_days": 28.0
+    }
+  },
+  "application_submitted_to_decision_median_days": {
+    "MISS": {
+      "applications_with_both_dates": 1163,
+      "median_days": 385.0
+    }
+  },
+  "construction_value_cad_by_municipality": {
+    "BRAM": {
+      "total_cad": null,
+      "permit_rows": 221319,
+      "null_value_rows": 221319
+    },
+    "MISS": {
+      "total_cad": 18269933097.0,
+      "permit_rows": 34614,
+      "null_value_rows": 1
+    },
+    "TOR": {
+      "total_cad": 100991303902.29,
+      "permit_rows": 571986,
+      "null_value_rows": 373693
+    }
+  },
+  "pending_measures": {
+    "units_per_capita": "DEFINED, UNCOMPUTABLE \u2014 dim_municipality.population_latest is NULL everywhere; needs StatCan census profiles (blocked on series-pull HTTP 406, Gate 2 item iii). Owner: data-quality-auditor.",
+    "application_to_permit_days": "DEFINED, UNCOMPUTABLE \u2014 no permit\u2194application key exists (ADR-0006, related_application_number NULL everywhere). Owner: transform-engineer (needs a proven key first).",
+    "statcan_control_totals": "DEFINED, UNCOMPUTABLE \u2014 StatCan series unpulled (HTTP 406). No per-capita or control-total measure publishes until reconciliation exists. Owner: ingestion-engineer.",
+    "brampton_construction_value": "DEFINED, EMPTY \u2014 Brampton feed carries no value field (all 221,319 rows NULL). Page shows Mississauga + Toronto only, labelled. Owner: none (source limitation)."
+  }
+}

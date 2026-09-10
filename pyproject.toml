@@ -87,6 +87,11 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Repo root on sys.path so `import src...` / `import tests...` works under any
+# runner. `python -m pytest` puts cwd on sys.path implicitly, but `uv run
+# pytest` (as CI uses) does not — without this, collection fails with
+# ModuleNotFoundError. See PR #46 CI red (2026-09-10).
+pythonpath = ["."]
 markers = [
     "unit: fast, no external I/O",
     "data: data-quality tests run against built layers or fixtures",

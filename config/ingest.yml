@@ -1,0 +1,171 @@
+# Ingest pull specs — drives `python -m src.ingest`.
+#
+# One entry per landed feed. `id` must match `config/sources.yml` exactly
+# (enforced by tests/unit/test_ingest_spec.py). CMHC is absent on purpose:
+# NOT ADOPTED (see sources.yml). StatCan `catalogued` products get metadata
+# pulls only until a series pull succeeds live (see evidence file §8/§10).
+#
+# key_policy: `unique` fails the run on duplicate business keys (the Gate 1
+# key-stability check); `observe` records distinct-vs-row counts without
+# failing. Toronto applications are `observe` by proof (ADR-0005: 100 rows /
+# 47 distinct APPLICATION# on 2026-09-10).
+
+defaults:
+  ingest_date: null # null = today (UTC); override with --ingest-date
+  ckan_page_size: 5000
+  arcgis_page_size: 2000
+
+sources:
+  # --- Toronto CKAN ---
+  - id: toronto-building-permits-active
+    family: ckan
+    resource_id: 6d0229af-bc54-46de-9c2b-26759b01dd05
+    business_key: [PERMIT_NUM, REVISION_NUM, PERMIT_TYPE, _id]
+    key_observe: [PERMIT_NUM, REVISION_NUM, PERMIT_TYPE]
+    key_policy: unique
+    facts_feed: true
+  - id: toronto-building-permits-cleared
+    family: ckan
+    resource_id: a96c0ba4-3026-402b-b09d-5b1268b8f810
+    business_key: [PERMIT_NUM, REVISION_NUM, PERMIT_TYPE, _id]
+    key_observe: [PERMIT_NUM, REVISION_NUM, PERMIT_TYPE]
+    key_policy: unique
+    facts_feed: true
+  - id: toronto-development-applications
+    family: ckan
+    resource_id: 8907d8ed-c515-4ce9-b674-9f8c6eefcf0d
+    business_key: [APPLICATION#]
+    key_policy: observe
+    facts_feed: true
+  - id: toronto-wards
+    family: ckan
+    resource_id: 7672dac5-b383-4d7c-90ec-291dc69d37bf
+    business_key: [AREA_ID]
+    key_policy: unique
+    facts_feed: false
+
+  # --- Mississauga ArcGIS ---
+  - id: mississauga-building-permits
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/hM5ymMLbxIyWTjn2/arcgis/rest/services/Issued_Building_Permits/FeatureServer/0"
+    business_key: [BP_NO, OBJECTID]
+    key_observe: [BP_NO]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: mississauga-site-plan-applications
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/hM5ymMLbxIyWTjn2/arcgis/rest/services/Site_Plan_Applications/FeatureServer/0"
+    business_key: [APP_FILE_NO, OBJECTID]
+    key_observe: [APP_FILE_NO]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: mississauga-rezoning-applications
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/hM5ymMLbxIyWTjn2/arcgis/rest/services/Rezoning_Applications/FeatureServer/0"
+    business_key: [APP_FILE_NO]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: mississauga-wards
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/hM5ymMLbxIyWTjn2/arcgis/rest/services/MississaugaWards/FeatureServer/0"
+    business_key: [OBJECTID]
+    key_policy: unique
+    facts_feed: false
+    geometry: true
+
+  # --- Brampton: production MapServer permits + planning FeatureServer ---
+  - id: brampton-building-permits
+    family: arcgis
+    layer_url: "https://maps1.brampton.ca/arcgis/rest/services/BuildingPermit/Building_Permits/MapServer/0"
+    business_key: [PERMITNUMBER, FOLDERRSN, OBJECTID]
+    key_observe: [PERMITNUMBER, FOLDERRSN]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: brampton-minor-variance
+    family: arcgis
+    layer_url: "https://services3.arcgis.com/rl7ACuZkiFsmDA2g/arcgis/rest/services/Planning_Land_Use_Development/FeatureServer/8"
+    business_key: [FILE_NUMBER, POLY_ID]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: brampton-opa-zba-subdivision
+    family: arcgis
+    layer_url: "https://services3.arcgis.com/rl7ACuZkiFsmDA2g/arcgis/rest/services/Planning_Land_Use_Development/FeatureServer/9"
+    business_key: [FILE_NUMBER, POLY_ID]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: brampton-pre-consultation
+    family: arcgis
+    layer_url: "https://services3.arcgis.com/rl7ACuZkiFsmDA2g/arcgis/rest/services/Planning_Land_Use_Development/FeatureServer/10"
+    business_key: [FILE_NUMBER, POLY_ID]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: brampton-consent-sever
+    family: arcgis
+    layer_url: "https://services3.arcgis.com/rl7ACuZkiFsmDA2g/arcgis/rest/services/Planning_Land_Use_Development/FeatureServer/5"
+    business_key: [FILE_NUMBER, POLY_ID]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+  - id: brampton-draft-plan-condo
+    family: arcgis
+    layer_url: "https://services3.arcgis.com/rl7ACuZkiFsmDA2g/arcgis/rest/services/Planning_Land_Use_Development/FeatureServer/7"
+    business_key: [FILE_NUMBER, POLY_ID]
+    key_policy: unique
+    facts_feed: true
+    geometry: false
+
+  # --- Peel Region: geography/demographics (NOT permit facts — ADR-0004) ---
+  - id: peel-building-permits
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/ONZht79c8QWuX759/arcgis/rest/services/Building_Permits/FeatureServer/0"
+    business_key: [Year, Quarter, Geography]
+    key_policy: unique
+    facts_feed: false # liveness/drift only — MUST NOT feed fct_permits
+    geometry: false
+  - id: peel-municipal-boundary
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/ONZht79c8QWuX759/arcgis/rest/services/Municipal_Boundary/FeatureServer/0"
+    business_key: [OBJECTID]
+    key_policy: unique
+    facts_feed: false
+    geometry: true
+  - id: peel-wards-current
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/ONZht79c8QWuX759/arcgis/rest/services/Wards_20222026/FeatureServer/0"
+    business_key: [OBJECTID]
+    key_policy: unique
+    facts_feed: false
+    geometry: true
+  - id: peel-wards-prior
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/ONZht79c8QWuX759/arcgis/rest/services/Ward_Boundary_2018_2022/FeatureServer/0"
+    business_key: [OBJECTID]
+    key_policy: unique
+    facts_feed: false
+    geometry: true
+  - id: peel-census2021-ct
+    family: arcgis
+    layer_url: "https://services6.arcgis.com/ONZht79c8QWuX759/arcgis/rest/services/Census_2021_-_Census_Tract_-_Population_and_Dwellings/FeatureServer/0"
+    business_key: [CTUID]
+    key_policy: unique
+    facts_feed: false
+    geometry: true
+
+  # --- Statistics Canada: metadata first, series when proven ---
+  - id: statcan-building-permits-34100292
+    family: statcan-meta
+    product_id: 34100292
+    business_key: []
+    key_policy: observe
+    facts_feed: false
+    # series: [] — getDataFromCubePidCoordAndLatestNPeriods returned HTTP 406
+    # from this environment on 2026-09-10 (evidence §10). Metadata lands now;
+    # the first successful series pull is owed before reconciliation depends
+    # on it. Do not add coordinates here until one succeeds live.
