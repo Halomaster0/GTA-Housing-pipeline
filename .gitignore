@@ -40,6 +40,7 @@ traces/*
 # Node / web (web/, Next.js on Vercel)
 node_modules/
 .next/
+web/out/
 .vercel/
 *.tsbuildinfo
 npm-debug.log*

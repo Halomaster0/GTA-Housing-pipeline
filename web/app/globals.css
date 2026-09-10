@@ -1,0 +1,454 @@
+/* Design tokens — docs/design-plan.md §§2–3. Names follow the plan vocabulary.
+ * Light values are the default; Blueprint reversal via prefers-color-scheme.
+ * No animations anywhere on the site (plan §6: the plotter line arrives with
+ * /ask Phase 4). prefers-reduced-motion therefore holds trivially. */
+
+:root {
+  --surface: #f6f5f0; /* Paper */
+  --ink: #1c1e1b; /* Ink */
+  --ink-secondary: #52564e;
+  --link: #1f4e79; /* Survey Blue */
+  --red: #a93226; /* Register Red */
+  --green: #3f6b4a; /* Parcel Green */
+  --gold-text: #8a5a17; /* Permit Gold, text */
+  --gold-fill: #9c6b1e; /* Permit Gold Fill, graphics */
+  --rule: #8b8779; /* Ink at reduced strength */
+  --font-condensed: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #10233a; /* Blueprint */
+    --ink: #edeae0; /* Linework */
+    --ink-secondary: #b7c4ce;
+    --link: #8fc1e8; /* Ice Blue */
+    --red: #e2685a; /* Register Red Dark — 4.81:1, no headroom: caption/body-ui sizes only */
+    --green: #8fcb98; /* Parcel Green Dark */
+    --gold-text: #e7be63; /* Permit Gold Dark */
+    --gold-fill: #e7be63;
+    --rule: #54728f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-condensed);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  letter-spacing: 0.005em;
+}
+
+/* Skip link — visually hidden until focused (plan §7). */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--ink);
+  color: var(--surface);
+  padding: 0.5rem 1rem;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-header .container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--ink);
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.site-nav a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+a {
+  color: var(--link);
+}
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 3rem;
+  padding: 1.5rem 0 2.5rem;
+  font-size: 0.8125rem;
+}
+
+.site-footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 600;
+  margin-top: 2.5rem;
+}
+
+h3 {
+  font-size: 1.125rem;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+/* Landing split: claim left, evidence right. */
+.split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 900px) {
+  .split {
+    grid-template-columns: 7fr 5fr;
+  }
+}
+
+.panel {
+  border: 1px solid var(--rule);
+  padding: 1.25rem 1.5rem;
+  border-radius: 2px;
+}
+
+/* Metric tile (plan §5): mono numeral, caption label, never a zero for missing. */
+.metric {
+  margin: 1rem 0;
+}
+
+.metric .value {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+.metric .label {
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+}
+
+.metric .value.gold {
+  color: var(--gold-text);
+}
+
+/* Status indicator (plan §5): dot + word on two lines, never colour alone. */
+.status {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 0.75rem 0;
+}
+
+.status .dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  margin-top: 0.3rem;
+  flex: none;
+}
+
+.status .dot.live {
+  background: var(--green);
+}
+
+.status .dot.stale {
+  background: var(--gold-fill);
+}
+
+.status .dot.down {
+  background: var(--red);
+}
+
+.status .dot.unknown {
+  background: transparent;
+  border: 1px solid var(--ink-secondary);
+}
+
+.status .word {
+  font-weight: 600;
+}
+
+.status .sub {
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+}
+
+/* Data table (plan §5): caption names the table + row count; numerics mono right. */
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.table-scroll:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+table.data {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9375rem;
+}
+
+table.data caption {
+  text-align: left;
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+  padding: 0.75rem 1rem 0.25rem;
+}
+
+table.data th,
+table.data td {
+  text-align: left;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+table.data th {
+  font-weight: 600;
+}
+
+table.data td.num,
+table.data th.num {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Empty state (plan §5): thin dashed rule + one sentence from the fixed vocabulary. */
+.empty {
+  border-top: 1px dashed var(--rule);
+  padding: 1rem 0 2rem;
+  max-width: 60ch;
+}
+
+.empty p {
+  margin: 0.5rem 0 0;
+}
+
+/* Code block (plan §5): recessed surface, weight (not colour) keywords, never truncated. */
+pre.code {
+  background: color-mix(in srgb, var(--ink) 6%, var(--surface));
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 1rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+/* Chart/map frame (plan §5): bordered, provenance caption beneath. */
+.figure-frame {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+}
+
+.figure-frame figcaption {
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+  margin-top: 0.75rem;
+}
+
+/* The map: fills owned by page CSS so both schemes stay in-token (ADR-0009). */
+.gta-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.gta-map .map-shape {
+  stroke: var(--rule);
+  stroke-width: 2;
+}
+
+.gta-map .map-tor {
+  fill: var(--gold-fill);
+  fill-opacity: 1;
+}
+
+.gta-map .map-bram {
+  fill: var(--gold-fill);
+  fill-opacity: 0.55;
+}
+
+.gta-map .map-miss {
+  fill: var(--gold-fill);
+  fill-opacity: 0.32;
+}
+
+.gta-map .map-cale {
+  fill: none;
+  stroke-dasharray: 8 5;
+}
+
+.gta-map text {
+  font-family: var(--font-condensed);
+  fill: var(--ink);
+}
+
+.gta-map .map-label {
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.gta-map .map-count {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  fill: var(--ink-secondary);
+}
+
+/* Long-form prose (architecture, methodology): serif, measured line length. */
+.prose {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  max-width: 45rem;
+}
+
+.prose a {
+  color: var(--link);
+}
+
+/* Pipeline diagram: real DOM boxes, vertical on narrow screens. */
+.pipeline-diagram {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 45rem;
+}
+
+.pipeline-diagram li {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
+}
+
+.pipeline-diagram li + li {
+  margin-top: 0.5rem;
+}
+
+.pipeline-diagram .stage {
+  font-weight: 600;
+}
+
+.pipeline-diagram .detail {
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+}
+
+@media (min-width: 900px) {
+  .pipeline-diagram {
+    flex-direction: row;
+    align-items: stretch;
+    max-width: none;
+  }
+
+  .pipeline-diagram li {
+    flex: 1;
+  }
+
+  .pipeline-diagram li + li {
+    margin-top: 0;
+    margin-left: 0.5rem;
+  }
+}
+
+.button {
+  display: inline-block;
+  border: 1px solid var(--link);
+  color: var(--link);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
+  margin-right: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.button.primary {
+  background: var(--link);
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .button.primary {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--surface);
+  }
+
+  .button {
+    color: var(--link);
+    border-color: var(--link);
+  }
+}

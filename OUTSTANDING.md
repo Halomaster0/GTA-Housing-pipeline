@@ -6,10 +6,14 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
 
 ## 1. Needs you (human steps — no agent can do these)
 
-- [ ] Open the PR for `claude/phase-2-pipeline-gate-2` (branch pushed):
-  https://github.com/Halomaster0/GTA-Housing-pipeline/pull/new/claude/phase-2-pipeline-gate-2
-- [ ] Get 1 review, merge (branch protection requires it), then verify on
-  `main` (`verify_sources` + pytest) — the cold-clone-style check.
+- [x] PR #46 opened, reviewed, merged (`18d4cb1`); all 4 merged branches
+  deleted local + remote.
+- [ ] PR for `claude/web-scaffold-static-export` (`3ee5d73`): open at
+  https://github.com/Halomaster0/GTA-Housing-pipeline/pull/new/claude/web-scaffold-static-export
+  → review → merge. `web.yml` CI fires on `web/**` for the first time.
+- [ ] Deploy preview of `web/out/` (any static host; URL at Gate 4b, no
+  subdomain) + human Lighthouse pass (≥ 95) + ninety-second test.
+- [ ] Verify on `main` (`verify_sources` + pytest) — the cold-clone-style check.
 - [ ] Auditor sign-offs: Gate 2 pack (`docs/gates/gate-2.md`) + measure pack
   (`docs/measure-reconciliation.json`). Only the CEO can override a veto.
 - [ ] Accept (or reject) Gate 2 CONDITIONAL PASS → full PASS.
@@ -44,8 +48,11 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
   later date to demonstrate real diffs.
 - [ ] Phase 4 AI layer: golden question set (~60, written BEFORE tuning),
   planner/executor/critic graph, retrieval paths, eval harness + report.
-- [ ] Phase 5 web app: `/`, `/ask`, `/dashboard`, `/evals`, `/architecture`
-  + the ninety-second test + Lighthouse a11y ≥ 95.
+- [ ] Phase 5 web app: scaffold DONE uncommitted (`web/`, 6 routes, map,
+  a11y script — HANDOVER-5). Still owed: commit → PR (`web.yml` CI) →
+  merge → deploy preview (static host, URL at Gate 4b, no subdomain) →
+  human Lighthouse pass (≥ 95) + ninety-second test. `/ask`, `/dashboard`,
+  `/evals` stay empty states until §2 backends land.
 - [ ] Recruiter-lens passes at Gates 3, 4, 5 (adversarial reviews, blunt by design).
 - [ ] `docs/build-plan.md` removal before live deployment (Gate 5 criterion —
   `release-manager` verifies, `oss-maintainer` owns).
@@ -56,7 +63,7 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
 |---|---|---|
 | 0 Charter | PASS | — |
 | 1 Foundations | PASS | — |
-| 2 Pipeline | CONDITIONAL PASS | Auditor sign-off + PR merge (§1) |
+| 2 Pipeline | CONDITIONAL PASS | Auditor sign-off (§1; PR merged) |
 | 3 Serving & BI | Not opened | Fabric trial (§2) + dashboard build |
 | 4 AI query layer | Not opened | API key (§2) + full layer build (§3) |
 | 5 Launch | Not opened | Web app, build-plan removal, all reviews |

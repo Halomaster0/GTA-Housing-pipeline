@@ -18,6 +18,7 @@ Exit non-zero on any warehouse error. No network, no cost.
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import subprocess
 import sys
@@ -27,6 +28,35 @@ from pathlib import Path
 import duckdb
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def bronze_status() -> dict:
+    """Per-source landed state from bronze manifests (for the landing status table).
+
+    Read from local manifests, not the warehouse: the manifest is the record
+    of what the source gave us (reported vs landed), the warehouse is what we
+    built from it. No src import — this script runs under any interpreter.
+    """
+    sources = []
+    pattern = str(REPO_ROOT / "data" / "bronze" / "*" / "ingest_date=*" / "manifest.json")
+    for path in sorted(glob.glob(pattern)):
+        try:
+            manifest = json.loads(Path(path).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        sources.append(
+            {
+                "source": manifest.get("source"),
+                "family": manifest.get("family"),
+                "ingest_date": manifest.get("ingest_date"),
+                "rows_landed": manifest.get("row_count"),
+                "rows_reported": manifest.get("reported_total"),
+                "count_match": manifest.get("count_match"),
+                "status": manifest.get("status"),
+            }
+        )
+    dates = sorted({s["ingest_date"] for s in sources if s["ingest_date"]})
+    return {"ingest_date": dates[-1] if dates else None, "sources": sources}
 
 
 def parse_args() -> argparse.Namespace:
@@ -76,6 +106,40 @@ def build_report(con: duckdb.DuckDBPyConnection) -> dict:
         "fact_totals": {
             "fct_permits": scalar(con, "SELECT COUNT(*) FROM gold.fct_permits"),
             "fct_applications": scalar(con, "SELECT COUNT(*) FROM gold.fct_applications"),
+        },
+        "bronze": bronze_status(),
+        "integrity": {
+            "orphan_permit_fks": scalar(
+                con,
+                "SELECT COUNT(*) FROM gold.fct_permits f "
+                "LEFT JOIN gold.dim_municipality m USING (municipality_sk) "
+                "WHERE m.municipality_sk IS NULL",
+            ),
+            "orphan_application_fks": scalar(
+                con,
+                "SELECT COUNT(*) FROM gold.fct_applications f "
+                "LEFT JOIN gold.dim_municipality m USING (municipality_sk) "
+                "WHERE m.municipality_sk IS NULL",
+            ),
+            "permits_null_geography": scalar(
+                con, "SELECT COUNT(*) FROM gold.fct_permits WHERE geography_sk IS NULL"
+            ),
+            "applications_null_geography": scalar(
+                con,
+                "SELECT COUNT(*) FROM gold.fct_applications WHERE geography_sk IS NULL",
+            ),
+            "permits_unknown_use": scalar(
+                con,
+                "SELECT COUNT(*) FROM gold.fct_permits f "
+                "JOIN gold.dim_use_type u ON f.use_type_sk = u.use_type_sk "
+                "WHERE u.use_type_code = 'UNKNOWN'",
+            ),
+            "applications_unknown_use": scalar(
+                con,
+                "SELECT COUNT(*) FROM gold.fct_applications f "
+                "JOIN gold.dim_use_type u ON f.use_type_sk = u.use_type_sk "
+                "WHERE u.use_type_code = 'UNKNOWN'",
+            ),
         },
         "permits_by_municipality": {
             r[0]: r[1]

@@ -33,6 +33,8 @@ def test_required_sections_present() -> None:
     for section in (
         "meta",
         "fact_totals",
+        "bronze",
+        "integrity",
         "permits_by_municipality",
         "permits_issued_by_municipality_year",
         "net_units_by_municipality",
@@ -44,6 +46,24 @@ def test_required_sections_present() -> None:
         "pending_measures",
     ):
         assert section in report, f"reconciliation missing section: {section}"
+
+
+def test_bronze_section_sane() -> None:
+    bronze = load_report()["bronze"]
+    assert bronze["ingest_date"], "bronze section must name its ingest date"
+    assert len(bronze["sources"]) == 20, "20 feeds landed (Gate 2 bronze)"
+    for source in bronze["sources"]:
+        assert source["status"] == "ok", f"feed not ok: {source['source']}"
+        if source["rows_reported"] is not None:
+            assert source["rows_landed"] == source["rows_reported"], (
+                f"landed != reported for {source['source']}"
+            )
+
+
+def test_integrity_zero_orphans() -> None:
+    integrity = load_report()["integrity"]
+    assert integrity["orphan_permit_fks"] == 0
+    assert integrity["orphan_application_fks"] == 0
 
 
 def test_fact_totals_sane() -> None:
