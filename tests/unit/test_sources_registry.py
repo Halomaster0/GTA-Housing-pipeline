@@ -42,9 +42,8 @@ def test_no_unjustified_dev_uat_layers() -> None:
             notes = entry.get("notes", "") or ""
             if not any(suffix in notes for suffix in FORBIDDEN_SUFFIXES):
                 offenders.append(entry["id"])
-    assert not offenders, (
-        "registered _DEV/_UAT layers without written justification: "
-        + ", ".join(offenders)
+    assert not offenders, "registered _DEV/_UAT layers without written justification: " + ", ".join(
+        offenders
     )
 
 
