@@ -6,7 +6,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup verify-sources ingest transform pipeline test eval report all lint format typecheck clean
+.PHONY: help setup verify-sources ingest transform pipeline export-gold reconcile test eval report all lint format typecheck clean
 
 help: ## Show this list of targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -28,6 +28,12 @@ transform: ## Build bronze -> silver -> gold in DuckDB
 	uv run python -m src.transform --all --report
 
 pipeline: ingest transform ## Run the full extract-and-land + build (Gate 2 entry point)
+
+export-gold: ## Dump gold tables to data/gold-parquet (Fabric publish-path input, ADR-0008)
+	uv run python scripts/export_gold_parquet.py
+
+reconcile: ## Re-run the measure library, rewrite docs/measure-reconciliation.json
+	uv run python scripts/reconcile_measures.py
 
 test: ## Run the pytest suite (unit + data tests)
 	@uv run pytest; status=$$?; \
