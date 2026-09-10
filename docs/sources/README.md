@@ -43,7 +43,23 @@ The index below still reflects the sandbox run and is superseded by the evidence
 above wherever the two disagree. It will be rewritten once discovery resolves the
 remaining municipalities.
 
-## Index
+## Index — verified live 2026-09-10
+
+`scripts/verify_sources.py` against `config/sources.yml`: **25/25 pass, exit 0**
+(run live 2026-09-10; output in `docs/sources/verification-latest.json` after
+re-running). Full transcript:
+[`evidence/2026-09-10-local-verification.md`](evidence/2026-09-10-local-verification.md).
+
+| Source | Status | Licence | Row count (2026-09-10) | Star-schema role |
+|---|---|---|---|---|
+| [Toronto — CKAN](toronto-ckan.md) | VERIFIED-LIVE | Open Government Licence - Toronto | Active permits 206,259 · Cleared 435,942 · Applications 26,613 · Wards 25 | `fct_permits` + `fct_applications` + ward vintages |
+| [Mississauga — ArcGIS](mississauga-arcgis.md) | VERIFIED-LIVE | City of Mississauga Terms of Use | Permits 34,615 · Site plan 1,138 · Rezoning 290 · Wards 11 | `fct_permits` + `fct_applications` + wards |
+| [Brampton — ArcGIS](brampton-arcgis.md) | VERIFIED-LIVE | CC BY | Permits **222,263 (production MapServer; _DEV frozen 2018, rejected)** · planning layers 6,989 / 2,100 / 1,451 / 1,031 / 182 | `fct_permits` + `fct_applications` |
+| [Peel Region — ArcGIS](peel-arcgis.md) | VERIFIED-LIVE | Peel Open Data Licence v1.0 | Boundary 3 · Wards 27 current / 26 prior · CT census 282 · `Building_Permits` 684 (liveness only, NOT a feed) | `dim_municipality` seed + `dim_geography` + denominators |
+| [Statistics Canada — Census + WDS](statcan.md) | VERIFIED-LIVE (catalogue: catalogued) | Statistics Canada Open Licence | 8,270 cubes; 34100292 / 34100143 / 34100148 / 98100002 / 98100014 / 98100041 | reconciliation + per-capita denominators |
+| [CMHC — Housing Starts (optional)](cmhc.md) | NOT ADOPTED (data via StatCan 34100143/34100148) | — | — | none |
+
+## Index history (superseded)
 
 | Source | Status | Licence | Row count (2026-09-10) | Verified on | Star-schema fields confirmed missing |
 |---|---|---|---|---|---|

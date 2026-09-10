@@ -1,4 +1,26 @@
-# Source: City of Brampton — ArcGIS Open Data (Geohub)
+# Source: City of Brampton — ArcGIS Open Data (Geohub + production MapServer)
+
+**Status: VERIFIED-LIVE (2026-09-10), `_DEV` question RESOLVED.**
+Live confirmation: `docs/sources/evidence/2026-09-10-local-verification.md` §2;
+registry: `config/sources.yml` (`brampton-*`).
+
+**Decision: ingest production `maps1.brampton.ca/.../Building_Permits/MapServer/0`
+(222,263 rows, current — `INDATE` 2026-09-10). NEVER `Building_Permits_DEV`
+(141,886 rows, frozen at `ISSUEDATE` 2018-10-17).** The AGOL `Building Permits`
+item (owner `BramptonMaps`, licence CC BY) points at production; nothing
+authoritative points at `_DEV`. Guard test: `tests/unit/test_sources_registry.py`.
+
+| Layer | Rows (2026-09-10) |
+|---|---|
+| Production permits `MapServer/0` (fields incl. `PERMITNUMBER`, `DWELLINGS`, `ISSUEDATE` nullable) | 222,263 |
+| Minor Variance (`Planning_Land_Use_Development/8`) | 6,989 |
+| OPA/ZBA/Subdivision (`.../9`) | 1,451 |
+| Pre-Consultation (`.../10`) | 2,100 |
+| Consent to Sever (`.../5`) | 1,031 |
+| Draft Plan of Condo (`.../7`) | 182 |
+
+Licence: **CC BY** (AGOL items, owner `BramptonMaps`, City of Brampton).
+Outstanding: `DWELLINGS` net-vs-gross semantics (A12, Phase 2).
 
 **Status: UNVERIFIED-BLOCKED.** Raw evidence: `docs/sources/evidence/2026-09-10-verification.md` §3.
 

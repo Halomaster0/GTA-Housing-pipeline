@@ -1,5 +1,18 @@
 # Source: Statistics Canada — Census Profile + Web Data Service (WDS)
 
+**Status: VERIFIED-LIVE (2026-09-10) for WDS liveness + catalogue; per-product
+metadata still `catalogued`.** Live confirmation:
+`docs/sources/evidence/2026-09-10-local-verification.md` §5; registry:
+`config/sources.yml` (`statcan-*`).
+
+`getAllCubesListLite`: **8,270 cubes**. Catalogue-copied active product IDs:
+**34100292** (building permits, successor to inactive 34100066/34100285),
+**34100143** + **34100148** (CMHC starts — hence CMHC stays NOT ADOPTED),
+**98100002** (population by CSD), **98100014** (population by CT),
+**98100041** (dwelling structure). Licence: **Statistics Canada Open Licence**
+(fetched live). Outstanding: per-product `getCubeMetadata` before ingesting any
+series.
+
 **Status: UNVERIFIED-BLOCKED.** Raw evidence: `docs/sources/evidence/2026-09-10-verification.md` §5.
 
 | Field | Content |

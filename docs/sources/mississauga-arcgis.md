@@ -1,5 +1,21 @@
 # Source: City of Mississauga — ArcGIS Open Data
 
+**Status: VERIFIED-LIVE (2026-09-10).** Org `services6.arcgis.com/hM5ymMLbxIyWTjn2`
+confirmed; the portal-hostname question below is settled (`data.mississauga.ca`
+is live). Live confirmation: `docs/sources/evidence/2026-09-10-local-verification.md`
+§3; registry: `config/sources.yml` (`mississauga-*`).
+
+| Layer | Rows (2026-09-10) |
+|---|---|
+| `Issued_Building_Permits/0` (primary permits feed) | 34,615 |
+| `Site_Plan_Applications/0` | 1,138 |
+| `Rezoning_Applications/0` | 290 |
+| `MississaugaWards/0` | 11 |
+
+Licence: **City of Mississauga Terms of Use** (open licence — use, modify,
+distribute, any lawful purpose). Rejected near-duplicates (recorded, not
+registered): parcel layers ×3, zoning layers ×3, Growth_Management subsets.
+
 **Status: UNVERIFIED-BLOCKED.** Raw evidence: `docs/sources/evidence/2026-09-10-verification.md` §2.
 
 | Field | Content |

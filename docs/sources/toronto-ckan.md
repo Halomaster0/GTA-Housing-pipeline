@@ -1,5 +1,21 @@
 # Source: City of Toronto — CKAN Open Data
 
+**Status: VERIFIED-LIVE (2026-09-10).** Supersedes the UNVERIFIED-BLOCKED note
+below, which describes the sandbox session only. Live confirmation:
+`docs/sources/evidence/2026-09-10-local-verification.md` §1; registry:
+`config/sources.yml` (`toronto-*`).
+
+| Dataset | Rows (2026-09-10) | Licence |
+|---|---|---|
+| Building Permits — Active (`6d0229af-…`) | 206,259 | Open Government Licence - Toronto |
+| Building Permits — Cleared since 2017 (`a96c0ba4-…`) | 435,942 | Open Government Licence - Toronto |
+| Development Applications (`8907d8ed-…`) | 26,613 | Open Government Licence - Toronto |
+| City Wards (`7672dac5-…`) | 25 | Open Government Licence - Toronto |
+
+Licence note: the CKAN API returns `License not specified`; every dataset page
+on `open.toronto.ca` names `Open Government Licence - Toronto`. The portal page
+governs. Outstanding: active-vs-cleared overlap semantics (Phase 2 conformance).
+
 **Status: UNVERIFIED-BLOCKED.** Every field below marked UNVERIFIED reflects a live call that
 was attempted and failed at the network layer this session — not a dataset that was checked and
 found missing. Raw evidence: `docs/sources/evidence/2026-09-10-verification.md` §1.

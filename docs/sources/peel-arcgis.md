@@ -1,5 +1,25 @@
 # Source: Region of Peel — ArcGIS Open Data
 
+**Status: VERIFIED-LIVE (2026-09-10).** Org `services6.arcgis.com/ONZht79c8QWuX759`
+confirmed (it is Peel, not Brampton — the Hub mislabel is corrected).
+Live confirmation: `docs/sources/evidence/2026-09-10-local-verification.md` §4;
+registry: `config/sources.yml` (`peel-*`).
+
+| Layer | Rows (2026-09-10) | Role |
+|---|---|---|
+| `Municipal_Boundary/0` (`MunicipalBoundary_Peel`: Mississauga, Brampton, Caledon) | 3 | `dim_municipality` seed |
+| `Wards_20222026/0` | 27 | `dim_geography` current vintage |
+| `Ward_Boundary_2018_2022/0` (26 then vs 27 now — redistricting is real) | 26 | `dim_geography` prior vintage |
+| `Census_2021_-_Census_Tract_-_Population_and_Dwellings/0` (282 tracts, `Pop16/Pop21`) | 282 | tract grain + per-capita denominator |
+| `Building_Permits/0` | 684 | liveness/drift ONLY — not a permit feed |
+
+Service-name correction: the boundary service is `Municipal_Boundary`
+(layer 0 named `MunicipalBoundary_Peel`); `MunicipalBoundary_Peel/FeatureServer`
+returns `Token Required`. Licence: **Open Data Licence for The Regional
+Municipality of Peel, Version 1.0**. PII: prior-ward layer carries councillor
+contact columns — dropped at bronze→silver. Caledon has no permit feed:
+scope decision owed in Phase 2.
+
 **Status: UNVERIFIED-BLOCKED.** Raw evidence: `docs/sources/evidence/2026-09-10-verification.md` §4.
 
 | Field | Content |
