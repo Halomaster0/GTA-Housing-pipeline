@@ -7,7 +7,12 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
 ## 1. Needs you (human steps — no agent can do these)
 
 - [x] PR #46 opened, reviewed, merged (`18d4cb1`); all 4 merged branches
-  deleted local + remote — `main` is the only branch and is current.
+  deleted local + remote.
+- [ ] PR for `claude/web-scaffold-static-export` (`3ee5d73`): open at
+  https://github.com/Halomaster0/GTA-Housing-pipeline/pull/new/claude/web-scaffold-static-export
+  → review → merge. `web.yml` CI fires on `web/**` for the first time.
+- [ ] Deploy preview of `web/out/` (any static host; URL at Gate 4b, no
+  subdomain) + human Lighthouse pass (≥ 95) + ninety-second test.
 - [ ] Verify on `main` (`verify_sources` + pytest) — the cold-clone-style check.
 - [ ] Auditor sign-offs: Gate 2 pack (`docs/gates/gate-2.md`) + measure pack
   (`docs/measure-reconciliation.json`). Only the CEO can override a veto.
