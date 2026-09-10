@@ -1,0 +1,20 @@
+name: Question
+description: Ask something about the project — design decisions, how to run it, whether something is intended.
+title: "[question]: "
+labels:
+  - question
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: Free-form. What do you want to know?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context (optional)
+      description: Anything that helps answer it — what you've already read, what you tried, links to relevant files.
+    validations:
+      required: false

@@ -1,0 +1,84 @@
+# Label set for GTA Housing Pipeline.
+#
+# This file is data, not automation — nothing in this repo applies it
+# automatically yet. Apply it with a labelling CLI, e.g.:
+#   gh label create --file .github/labels.yml   (not a real gh syntax — use
+#   a tool such as https://github.com/Financial-Times/github-label-sync or a
+#   short script that reads this file and calls the GitHub API/`gh label create`
+#   per entry)
+#
+# name        — exact label text
+# color       — 6-digit hex, no leading '#'
+# description — shown in the GitHub UI label picker
+
+- name: good first issue
+  color: 7057ff
+  description: Scoped for a first contribution; doesn't require full build-plan context.
+
+- name: help wanted
+  color: 008672
+  description: Extra attention or hands welcome.
+
+- name: bug
+  color: d73a4a
+  description: Something doesn't work as intended.
+
+- name: documentation
+  color: 0075ca
+  description: README, architecture doc, ADRs, or other docs.
+
+- name: data-source
+  color: fbca04
+  description: An upstream municipal or government data source is dead, changed, or ambiguous.
+
+- name: security
+  color: b60205
+  description: Secrets, SQL execution safety, prompt-injection surface, or licence compliance.
+
+- name: cost
+  color: e99695
+  description: LLM spend, cloud resource cost, or budget tracking.
+
+- name: adr
+  color: 5319e7
+  description: Tracks or discusses an architecture decision record in docs/decisions/.
+
+- name: gate
+  color: 1d76db
+  description: Tied to a phase-gate criterion in docs/gates/.
+
+- name: pipeline
+  color: 0e8a16
+  description: Ingestion, bronze/silver/gold transforms, or the warehouse model.
+
+- name: ai-layer
+  color: c5def5
+  description: Retrieval, planner/executor/critic, or the evaluation harness.
+
+- name: bi
+  color: bfd4f2
+  description: Power BI semantic model, report pages, or the data dictionary.
+
+- name: web
+  color: bfdadc
+  description: The public Next.js app or the FastAPI service behind it.
+
+- name: phase-1
+  color: c2e0c6
+  description: Phase 1 — Foundations & source truth.
+
+- name: phase-2
+  color: c2e0c6
+  description: Phase 2 — Pipeline.
+
+- name: phase-3
+  color: c2e0c6
+  description: Phase 3 — Serving & BI.
+
+- name: phase-4
+  color: c2e0c6
+  description: Phase 4 — AI query layer (and 4b — public web app).
+
+- name: phase-5
+  color: c2e0c6
+  description: Phase 5 — Publication.

@@ -1,0 +1,59 @@
+name: Bug report
+description: Something in the pipeline, API, web app, or docs doesn't work as it should.
+title: "[bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. The more precisely this is filled out, the faster it can be reproduced and fixed.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: A clear, specific description of the bug. What did you see?
+      placeholder: When I ran X, Y happened instead of Z.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro command
+      description: The exact command(s) that trigger this. Paste the literal command, not a paraphrase.
+      render: shell
+      placeholder: |
+        make verify-sources
+        python -m src.ingest --source toronto_ckan
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output or error message
+      description: Paste the actual output. Truncate if long, but keep the error itself.
+      render: shell
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, and how you set up the project (e.g. `make setup`, manual venv).
+      placeholder: "macOS 14, Python 3.11.6, make setup"
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else that might be relevant — recent changes, whether it's reproducible every time, etc.
+    validations:
+      required: false

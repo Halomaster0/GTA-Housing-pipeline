@@ -1,0 +1,62 @@
+name: Data source issue
+description: A municipal or government data source is dead, changed shape, or is misbehaving.
+title: "[data-source]: "
+labels:
+  - data-source
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for problems with an upstream data source itself — a portal that's down, an API that changed its response shape, a licence that changed, or a field that disappeared. Not for bugs in this project's own code (use the Bug report template for that).
+  - type: input
+    id: source
+    attributes:
+      label: Which source
+      description: The source family and, if applicable, the specific dataset.
+      placeholder: "Toronto CKAN — Building Permits dataset"
+    validations:
+      required: true
+  - type: input
+    id: canonical-url
+    attributes:
+      label: Canonical URL
+      description: The portal page or API endpoint you checked directly — not a search result or an aggregator listing.
+      placeholder: "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/..."
+    validations:
+      required: true
+  - type: textarea
+    id: failing-call
+    attributes:
+      label: Exact failing HTTP call
+      description: The literal request that fails — curl, httpx, or the raw URL and method.
+      render: shell
+      placeholder: |
+        curl -sS "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/package_show?id=building-permits"
+    validations:
+      required: true
+  - type: textarea
+    id: response
+    attributes:
+      label: Response received
+      description: Paste the actual response — status code, body, error message.
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: verify-sources-reproduces
+    attributes:
+      label: Does `make verify-sources` reproduce this?
+      description: Run it locally before filing, if you can.
+      options:
+        - "Yes — verify-sources fails on this source"
+        - "No — verify-sources passes, but I still see a problem"
+        - "Didn't run it / couldn't run it"
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: When did this start? Is there a known replacement dataset or a migration notice from the publisher?
+    validations:
+      required: false
