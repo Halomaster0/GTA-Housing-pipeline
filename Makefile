@@ -6,7 +6,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup verify-sources ingest transform test eval report all lint format typecheck clean
+.PHONY: help setup verify-sources ingest transform pipeline test eval report all lint format typecheck clean
 
 help: ## Show this list of targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -22,10 +22,12 @@ verify-sources: ## Re-check every data source is live (scripts/verify_sources.py
 	uv run python scripts/verify_sources.py
 
 ingest: ## Run the extract-and-land pipeline into the bronze layer
-	@echo "ingest: not implemented -- ingestion lands in Phase 2 (see docs/build-plan.md §6)"
+	uv run python -m src.ingest --all
 
 transform: ## Build bronze -> silver -> gold in DuckDB
-	@echo "transform: not implemented -- bronze/silver/gold modelling lands in Phase 2 (see docs/build-plan.md §6)"
+	uv run python -m src.transform --all --report
+
+pipeline: ingest transform ## Run the full extract-and-land + build (Gate 2 entry point)
 
 test: ## Run the pytest suite (unit + data tests)
 	@uv run pytest; status=$$?; \
@@ -38,8 +40,8 @@ test: ## Run the pytest suite (unit + data tests)
 eval: ## Run the golden-question evaluation harness and print a scorecard
 	@echo "eval: not implemented -- the eval harness lands in Phase 4 (see docs/build-plan.md §6)"
 
-report: ## Regenerate docs/data-quality-report.md and docs/eval-report.md from committed run output
-	@echo "report: not implemented -- data-quality-report.md lands in Phase 2, eval-report.md lands in Phase 4 (see docs/build-plan.md §6)"
+report: ## Regenerate docs/data-quality-report.md from the warehouse (eval-report.md lands in Phase 4)
+	uv run python -m src.transform --report
 
 all: setup lint typecheck test ## Run setup, lint, typecheck, and test in sequence
 
