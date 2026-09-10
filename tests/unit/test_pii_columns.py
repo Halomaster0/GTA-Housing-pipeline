@@ -10,7 +10,11 @@ being edited out of the registry.
 
 from __future__ import annotations
 
+import pytest
+
 from src.ingest.pii import PII_DROP, PII_REVIEW, columns_for, drop_columns
+
+pytestmark = pytest.mark.unit
 
 
 def test_toronto_contacts_are_drops() -> None:

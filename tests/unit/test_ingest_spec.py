@@ -11,10 +11,13 @@
 
 from __future__ import annotations
 
+import pytest
 import yaml
 
 from src.ingest.base import REPO_ROOT
 from src.ingest.spec import load_specs
+
+pytestmark = pytest.mark.unit
 
 
 def test_every_landed_feed_has_a_spec() -> None:

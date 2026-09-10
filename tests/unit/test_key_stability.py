@@ -12,6 +12,8 @@ import pytest
 from src.ingest.base import IngestError
 from src.ingest.keys import check_keys
 
+pytestmark = pytest.mark.unit
+
 
 def test_unique_passes_on_distinct_keys() -> None:
     records = [{"PERMIT_NUM": "A"}, {"PERMIT_NUM": "B"}]

@@ -15,6 +15,8 @@ import pytest
 from src.transform.runner import DEFAULT_WAREHOUSE
 from tests.data.invariants import assert_all_invariants
 
+pytestmark = pytest.mark.data
+
 
 def test_live_warehouse_invariants() -> None:
     warehouse = Path(DEFAULT_WAREHOUSE)

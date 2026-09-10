@@ -10,6 +10,10 @@ reaching a report page. Values themselves are verified by re-running
 import json
 from pathlib import Path
 
+import pytest
+
+pytestmark = pytest.mark.unit
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RECONCILIATION = REPO_ROOT / "docs" / "measure-reconciliation.json"
 

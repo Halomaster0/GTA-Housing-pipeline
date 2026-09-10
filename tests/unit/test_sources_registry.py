@@ -13,7 +13,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
+
+pytestmark = pytest.mark.unit
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CONFIG_PATH = REPO_ROOT / "config" / "sources.yml"

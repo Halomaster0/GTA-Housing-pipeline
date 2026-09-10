@@ -19,6 +19,8 @@ import pytest
 from src.transform.runner import build_all
 from tests.data.invariants import assert_all_invariants
 
+pytestmark = pytest.mark.data
+
 DATE = "2099-01-01"
 
 

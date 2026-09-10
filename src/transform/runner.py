@@ -53,13 +53,13 @@ def table_counts(con: duckdb.DuckDBPyConnection) -> dict[str, int]:
         "SELECT table_schema, table_name FROM information_schema.tables "
         "WHERE table_schema IN ('silver', 'gold') ORDER BY 1, 2"
     ).fetchall()
-    return {
-        f"{s}.{t}": con.execute(f'SELECT COUNT(*) FROM "{s}"."{t}"').fetchone()[0] for s, t in rows
-    }
+    return {f"{s}.{t}": int(scalar(con, f'SELECT COUNT(*) FROM "{s}"."{t}"')) for s, t in rows}
 
 
 def scalar(con: duckdb.DuckDBPyConnection, sql: str) -> Any:
-    return con.execute(sql).fetchone()[0]
+    row = con.execute(sql).fetchone()
+    assert row is not None, f"scalar query returned no rows: {sql}"
+    return row[0]
 
 
 def bronze_manifests(bronze_root: Path, ingest_date: str) -> list[dict[str, Any]]:

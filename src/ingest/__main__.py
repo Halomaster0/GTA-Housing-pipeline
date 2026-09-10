@@ -18,7 +18,7 @@ from typing import Any
 
 import httpx
 
-from src.ingest.arcgis_hub import pull_arcgis
+from src.ingest.arcgis_hub import ArcgisPull, pull_arcgis
 from src.ingest.base import (
     IngestError,
     Partition,
@@ -32,7 +32,7 @@ from src.ingest.drift import DriftDetected, check_drift
 from src.ingest.keys import check_keys
 from src.ingest.spec import SourceSpec, load_specs
 from src.ingest.statcan import pull_statcan_meta
-from src.ingest.toronto_ckan import pull_ckan
+from src.ingest.toronto_ckan import CkanPull, pull_ckan
 
 STATCAN_PRODUCTS = [34100292]
 
@@ -50,6 +50,7 @@ def _run_ckan_arcgis(client: httpx.Client, spec: SourceSpec, ingest_date: str) -
     part_index = 0
 
     params = spec.params
+    pull: CkanPull | ArcgisPull
     if spec.family == "ckan":
         pull = pull_ckan(
             client, spec.id, str(params["resource_id"]), int(params["ckan_page_size"]), ingest_date
