@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions and general questions
+    url: https://github.com/Halomaster0/GTA-Housing-pipeline/discussions
+    about: For open-ended discussion that isn't a specific bug, data-source problem, or question issue.
+  - name: Project plan and current status
+    url: https://github.com/Halomaster0/GTA-Housing-pipeline/blob/main/README.md
+    about: Read the README first — it states plainly what is and isn't built yet.

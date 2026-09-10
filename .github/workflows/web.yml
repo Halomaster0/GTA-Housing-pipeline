@@ -1,0 +1,66 @@
+name: Web
+
+on:
+  pull_request:
+    paths:
+      - "web/**"
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - "web/**"
+  # web/ is empty today (Phase 4b has not started), so path-filtered triggers
+  # above will not fire on this PR. workflow_dispatch lets the guard below be
+  # exercised and verified green before there is anything under web/ to filter on.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Lint, build, a11y check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check for a web app
+        id: check
+        run: |
+          if [ -f web/package.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::web/ has no package.json yet -- the Next.js app lands in Phase 4b (see docs/build-plan.md §6). Nothing to lint, build, or a11y-check."
+          fi
+
+      - uses: actions/setup-node@v7
+        if: steps.check.outputs.present == 'true'
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        if: steps.check.outputs.present == 'true'
+        working-directory: web
+        run: npm ci
+
+      # frontend-engineer (Phase 4b) is expected to provide `lint`, `build`, and
+      # `test:a11y` npm scripts in web/package.json -- this workflow assumes that
+      # contract rather than inventing its own tool choices for a directory that
+      # does not exist yet.
+      - name: Lint
+        if: steps.check.outputs.present == 'true'
+        working-directory: web
+        run: npm run lint
+
+      - name: Build
+        if: steps.check.outputs.present == 'true'
+        working-directory: web
+        run: npm run build
+
+      - name: Accessibility check
+        if: steps.check.outputs.present == 'true'
+        working-directory: web
+        run: npm run test:a11y

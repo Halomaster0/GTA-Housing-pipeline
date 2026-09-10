@@ -1,0 +1,125 @@
+name: PR
+
+# `push` targets non-main branches (this project's working branches are created
+# per session, e.g. claude/*) rather than one hardcoded feature-branch name, so
+# the workflow keeps working as branches come and go.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  UV_LOCKED: "1"
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - run: uv sync --extra dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+
+  typecheck:
+    name: Typecheck (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - run: uv sync --extra dev
+      # src/ has no .py files yet (Phase 1, day 1) and mypy errors on an empty
+      # target directory rather than passing trivially -- guard for that instead
+      # of faking a pass. Once real modules land this always runs mypy for real.
+      - name: Run mypy (or report nothing to check yet)
+        run: |
+          if find src -name '*.py' | grep -q .; then
+            uv run mypy src
+          else
+            echo "::notice::No Python files under src/ yet -- application code lands starting Phase 2 (see docs/build-plan.md §6). Nothing for mypy to check."
+          fi
+
+  unit-tests:
+    name: Unit tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - run: uv sync --extra dev
+      # pytest exits 5 for "no tests collected", which is the honest state of this
+      # repo on day 1 -- tests land with the code they cover, starting Phase 2.
+      # Any other nonzero exit (a real failure or collection error) still fails
+      # the build.
+      - name: Run pytest (tolerates zero collected tests)
+        run: |
+          set +e
+          uv run pytest -m unit
+          status=$?
+          set -e
+          if [ "$status" -eq 5 ]; then
+            echo "::notice::No unit tests collected yet -- tests land with their code starting Phase 2 (see docs/build-plan.md §6)."
+            exit 0
+          fi
+          exit "$status"
+
+  data-tests:
+    name: Data tests (fixtures)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - run: uv sync --extra dev
+      # Same "no tests collected yet" tolerance as unit-tests, scoped to the
+      # `data` marker. tests/data/ and fixtures/ are built by
+      # data-quality-auditor starting Phase 2.
+      - name: Run data tests against fixtures (tolerates zero collected tests)
+        run: |
+          set +e
+          uv run pytest -m data
+          status=$?
+          set -e
+          if [ "$status" -eq 5 ]; then
+            echo "::notice::No data tests collected yet -- tests/data and fixtures/ land in Phase 2 (see docs/build-plan.md §6)."
+            exit 0
+          fi
+          exit "$status"
+
+  eval-fast-subset:
+    name: Eval (fast subset)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # The golden question set and harness (evals/golden_questions.yaml,
+      # evals/harness.py) are eval-engineer's Phase 4 deliverable. Once
+      # evals/harness.py exists, replace this guard with the real fast-subset
+      # invocation (e.g. `uv run python -m evals.harness --subset fast`).
+      - name: Run eval fast subset (or report not built yet)
+        run: |
+          if [ -f evals/harness.py ]; then
+            echo "::error::evals/harness.py exists but pr.yml was not updated to run it -- fix this workflow."
+            exit 1
+          else
+            echo "::notice::No eval harness yet -- evals/harness.py and the golden question set land in Phase 4 (see docs/build-plan.md §6)."
+          fi

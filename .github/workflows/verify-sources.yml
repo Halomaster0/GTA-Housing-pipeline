@@ -1,0 +1,89 @@
+name: Verify sources
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 8 * * 1" # Monday 08:00 UTC, after the weekly pipeline run
+  # Re-verify whenever the source registry or the checker itself changes. This
+  # is also the only way to get a real answer during development: the build
+  # environment's egress allowlist blocks every municipal and StatCan host, so
+  # a GitHub runner is the first place the checks can actually reach them.
+  push:
+    paths:
+      - "config/sources.yml"
+      - "scripts/verify_sources.py"
+      - ".github/workflows/verify-sources.yml"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify-sources:
+    name: Check every data source is live
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # scripts/verify_sources.py is source-scout's Phase 1 deliverable
+      # (docs/build-plan.md §5.3), owned and committed by that agent, not this
+      # workflow. Until it lands there is nothing to run and nothing to open an
+      # issue about -- report that plainly and stop, rather than failing the job
+      # or filing a spurious "source is down" issue.
+      - name: Check verify_sources.py exists
+        id: check
+        run: |
+          if [ -f scripts/verify_sources.py ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::scripts/verify_sources.py does not exist yet -- it is source-scout's Phase 1 deliverable (see docs/build-plan.md §5.3). Nothing to check; no issue will be filed."
+          fi
+
+      - uses: astral-sh/setup-uv@v7
+        if: steps.check.outputs.exists == 'true'
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - run: uv sync --extra dev
+        if: steps.check.outputs.exists == 'true'
+
+      - name: Run verify_sources.py
+        id: verify
+        if: steps.check.outputs.exists == 'true'
+        continue-on-error: true
+        run: uv run python scripts/verify_sources.py 2>&1 | tee verify_output.txt
+
+      # Only the scheduled run files an issue. A push or manual dispatch means a
+      # human is already watching the output, and an auto-filed issue per run
+      # would be noise on a public repository.
+      - name: Open an issue on failure (scheduled runs only)
+        if: steps.check.outputs.exists == 'true' && steps.verify.outcome == 'failure' && github.event_name == 'schedule'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.existsSync('verify_output.txt')
+              ? fs.readFileSync('verify_output.txt', 'utf8').slice(-60000)
+              : '(no output captured)';
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `verify-sources failed: ${new Date().toISOString().slice(0, 10)}`,
+              body: [
+                'The weekly `verify-sources` workflow failed.',
+                '',
+                `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                '',
+                '```',
+                output,
+                '```',
+              ].join('\n'),
+              labels: ['data-source', 'bug'],
+            });
+
+      - name: Fail the job if verification failed
+        if: steps.check.outputs.exists == 'true' && steps.verify.outcome == 'failure'
+        run: exit 1

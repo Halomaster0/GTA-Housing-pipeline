@@ -1,0 +1,93 @@
+[project]
+name = "gta-housing-pipeline"
+version = "0.1.0"
+description = "GTA Housing & Development Intelligence Platform: ingestion, dimensional modelling, and an evaluated LLM query layer over Greater Toronto Area municipal open data."
+readme = "README.md"
+requires-python = "==3.11.*"
+license = "MIT"
+authors = [{ name = "Ishaaq Karim" }]
+
+# Runtime dependencies for the pipeline (src/ingest, src/transform, src/common).
+# Pinned to exact versions resolved against live PyPI on 2026-09-10 with `uv lock`
+# (see docs/decisions/0001-tooling-and-ci.md). Bump deliberately, re-resolve, re-commit
+# the lockfile -- never hand-edit a pin without re-running `uv lock`.
+dependencies = [
+    "httpx==0.28.1",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "duckdb==1.5.5",
+    "pyyaml==6.0.3",
+    "pyarrow==25.0.1",
+    "python-dotenv==1.2.3",
+    "structlog==26.1.0",
+]
+
+# Split into groups so CI installs only what a given job needs. `dev` is the only
+# group most CI jobs (lint/typecheck/unit) ever install; `ai` pulls in torch via
+# sentence-transformers and stays out of the default path entirely.
+[project.optional-dependencies]
+ai = [
+    "anthropic==1.4.0",
+    "lancedb==0.38.0",
+    "sentence-transformers==6.0.1",
+]
+api = [
+    "fastapi==0.141.1",
+    "uvicorn==0.52.4",
+    "slowapi==0.1.10",
+]
+dev = [
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.16.6",
+    "mypy==2.3.1",
+    "pre-commit==4.6.2",
+    "types-PyYAML==6.0.12.20260906",
+]
+
+# This repo is an application/pipeline, not a library published to PyPI -- there is
+# no `gta_housing_pipeline` importable package for a build backend to wheel up, and
+# `src/ingest`, `src/transform`, etc. are run in place (`python -m src.ingest ...`
+# from the repo root, or `uv run`). `package = false` tells uv to treat this
+# pyproject.toml as a dependency manifest only: no build backend, no attempt to
+# build/install the project itself into the venv.
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# E/W  pycodestyle
+# F    pyflakes
+# I    isort (import sorting -- replaces a separate isort tool)
+# UP   pyupgrade (modern syntax for the pinned Python version)
+# B    flake8-bugbear (common real bugs, not just style)
+# C4   flake8-comprehensions
+# SIM  flake8-simplify
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src"]
+strict = true
+# No source code exists yet (Phase 1, day 1), so there is no concrete list of
+# third-party imports lacking stubs to enumerate per-module. Ignoring missing
+# imports globally is the pragmatic default until real modules land; revisit with
+# per-module overrides once src/ingest and src/transform have actual imports
+# (see docs/decisions/0001-tooling-and-ci.md).
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "unit: fast, no external I/O",
+    "data: data-quality tests run against built layers or fixtures",
+]

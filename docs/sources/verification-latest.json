@@ -1,0 +1,280 @@
+{
+  "checked_at": "2026-09-10T15:58:16.365011+00:00",
+  "sources": [
+    {
+      "id": "toronto-building-permits-active",
+      "name": "Toronto \u2014 Building Permits, Active",
+      "municipality": "Toronto",
+      "http_status": 200,
+      "row_count": 206259,
+      "expected_min_rows": 165000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "toronto-building-permits-cleared",
+      "name": "Toronto \u2014 Building Permits, Cleared (since 2017)",
+      "municipality": "Toronto",
+      "http_status": 200,
+      "row_count": 435942,
+      "expected_min_rows": 348000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "toronto-development-applications",
+      "name": "Toronto \u2014 Development Applications",
+      "municipality": "Toronto",
+      "http_status": 200,
+      "row_count": 26613,
+      "expected_min_rows": 21000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "toronto-wards",
+      "name": "Toronto \u2014 City Wards (current 25-ward model)",
+      "municipality": "Toronto",
+      "http_status": 200,
+      "row_count": 25,
+      "expected_min_rows": 20,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "mississauga-building-permits",
+      "name": "Mississauga \u2014 Issued Building Permits",
+      "municipality": "Mississauga",
+      "http_status": 200,
+      "row_count": 34615,
+      "expected_min_rows": 27000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "mississauga-site-plan-applications",
+      "name": "Mississauga \u2014 Site Plan Applications",
+      "municipality": "Mississauga",
+      "http_status": 200,
+      "row_count": 1138,
+      "expected_min_rows": 900,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "mississauga-rezoning-applications",
+      "name": "Mississauga \u2014 Rezoning Applications",
+      "municipality": "Mississauga",
+      "http_status": 200,
+      "row_count": 290,
+      "expected_min_rows": 200,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "mississauga-wards",
+      "name": "Mississauga \u2014 Wards",
+      "municipality": "Mississauga",
+      "http_status": 200,
+      "row_count": 11,
+      "expected_min_rows": 8,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "brampton-building-permits",
+      "name": "Brampton \u2014 Building Permits (production MapServer)",
+      "municipality": "Brampton",
+      "http_status": 200,
+      "row_count": 222263,
+      "expected_min_rows": 177000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "brampton-minor-variance",
+      "name": "Brampton \u2014 Minor Variance Applications",
+      "municipality": "Brampton",
+      "http_status": 200,
+      "row_count": 6989,
+      "expected_min_rows": 5500,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "brampton-opa-zba-subdivision",
+      "name": "Brampton \u2014 OPA/ZBA/Subdivision Applications",
+      "municipality": "Brampton",
+      "http_status": 200,
+      "row_count": 1451,
+      "expected_min_rows": 1100,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "brampton-pre-consultation",
+      "name": "Brampton \u2014 Pre-Consultation Applications",
+      "municipality": "Brampton",
+      "http_status": 200,
+      "row_count": 2100,
+      "expected_min_rows": 1600,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "brampton-consent-sever",
+      "name": "Brampton \u2014 Consent to Sever Applications",
+      "municipality": "Brampton",
+      "http_status": 200,
+      "row_count": 1031,
+      "expected_min_rows": 800,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "brampton-draft-plan-condo",
+      "name": "Brampton \u2014 Draft Plan of Condominium Applications",
+      "municipality": "Brampton",
+      "http_status": 200,
+      "row_count": 182,
+      "expected_min_rows": 100,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "peel-building-permits",
+      "name": "Peel Region \u2014 Building Permits service (NOT a regional feed)",
+      "municipality": "Peel Region",
+      "http_status": 200,
+      "row_count": 684,
+      "expected_min_rows": 500,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live-not-a-feed"
+    },
+    {
+      "id": "peel-municipal-boundary",
+      "name": "Peel Region \u2014 Municipal Boundary (3 lower-tier municipalities)",
+      "municipality": "Peel Region",
+      "http_status": 200,
+      "row_count": 3,
+      "expected_min_rows": 3,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "peel-wards-current",
+      "name": "Peel Region \u2014 Wards 2022-2026 (current vintage)",
+      "municipality": "Peel Region",
+      "http_status": 200,
+      "row_count": 27,
+      "expected_min_rows": 20,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "peel-wards-prior",
+      "name": "Peel Region \u2014 Ward Boundary 2018-2022 (prior vintage)",
+      "municipality": "Peel Region",
+      "http_status": 200,
+      "row_count": 26,
+      "expected_min_rows": 20,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "peel-census2021-ct",
+      "name": "Peel Region \u2014 Census 2021 Census-Tract Population and Dwellings",
+      "municipality": "Peel Region",
+      "http_status": 200,
+      "row_count": 282,
+      "expected_min_rows": 200,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "statcan-wds-liveness",
+      "name": "Statistics Canada \u2014 Web Data Service liveness (full cube list)",
+      "municipality": "Region-wide (StatCan)",
+      "http_status": 200,
+      "row_count": 8270,
+      "expected_min_rows": 8000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "verified-live"
+    },
+    {
+      "id": "statcan-building-permits-34100292",
+      "name": "StatCan 34100292 \u2014 Building permits, by type of structure and type of work",
+      "municipality": "Region-wide (StatCan)",
+      "http_status": 200,
+      "row_count": 8270,
+      "expected_min_rows": 8000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "catalogued"
+    },
+    {
+      "id": "statcan-cmhc-starts-34100143",
+      "name": "StatCan 34100143 \u2014 CMHC housing starts, under construction and completions",
+      "municipality": "Region-wide (StatCan)",
+      "http_status": 200,
+      "row_count": 8270,
+      "expected_min_rows": 8000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "catalogued"
+    },
+    {
+      "id": "statcan-population-csd-98100002",
+      "name": "StatCan 98100002 \u2014 Population and dwelling counts, census subdivisions",
+      "municipality": "Region-wide (StatCan)",
+      "http_status": 200,
+      "row_count": 8270,
+      "expected_min_rows": 8000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "catalogued"
+    },
+    {
+      "id": "statcan-population-ct-98100014",
+      "name": "StatCan 98100014 \u2014 Population and dwelling counts, CMAs and census tracts",
+      "municipality": "Region-wide (StatCan)",
+      "http_status": 200,
+      "row_count": 8270,
+      "expected_min_rows": 8000,
+      "verdict": "OK",
+      "detail": "",
+      "registry_status": "catalogued"
+    },
+    {
+      "id": "cmhc-housing-starts",
+      "name": "CMHC \u2014 Housing Starts (optional)",
+      "municipality": "Region-wide (CMHC)",
+      "http_status": 200,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "REACHABLE_NO_COUNT_CHECK",
+      "detail": "no count_json_path configured; reachability-only check",
+      "registry_status": "not-adopted"
+    }
+  ]
+}

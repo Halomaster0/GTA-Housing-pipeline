@@ -1,0 +1,49 @@
+name: Pipeline
+
+# Weekly scheduled refresh + manual trigger. Cadence matches the weekly
+# verify-sources check (see docs/build-plan.md §8, post-launch notes).
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 7 * * 1" # Monday 07:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    name: Ingest -> Transform -> Data tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - run: uv sync --extra dev
+
+      # Replaced by `python -m src.ingest --all` (src/ingest/*, ingestion-engineer,
+      # Phase 2) once the connectors, checkpointing, and manifest.json land.
+      - name: Ingest
+        run: make ingest
+
+      # Replaced by the bronze -> silver -> gold DuckDB build (models/silver/*.sql,
+      # models/gold/*.sql, transform-engineer, Phase 2).
+      - name: Transform
+        run: make transform
+
+      # Replaced by `pytest -m data` against the freshly built gold layer
+      # (tests/data/*, data-quality-auditor, Phase 2) once there is a warehouse to
+      # test against.
+      - name: Data tests
+        run: |
+          set +e
+          uv run pytest -m data
+          status=$?
+          set -e
+          if [ "$status" -eq 5 ]; then
+            echo "::notice::No data tests collected yet -- tests/data lands in Phase 2 (see docs/build-plan.md §6)."
+            exit 0
+          fi
+          exit "$status"
