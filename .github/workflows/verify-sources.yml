@@ -40,7 +40,7 @@ jobs:
             echo "::notice::scripts/verify_sources.py does not exist yet -- it is source-scout's Phase 1 deliverable (see docs/build-plan.md §5.3). Nothing to check; no issue will be filed."
           fi
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v7
         if: steps.check.outputs.exists == 'true'
         with:
           python-version: "3.11"
