@@ -1,7 +1,7 @@
 {
   "meta": {
-    "generated_at_utc": "2026-09-10T20:09:15.556717+00:00",
-    "git_sha": "9287969",
+    "generated_at_utc": "2026-09-10T21:11:09.064521+00:00",
+    "git_sha": "3dc10fe",
     "source": "gold warehouse via scripts/reconcile_measures.py"
   },
   "fact_totals": {
