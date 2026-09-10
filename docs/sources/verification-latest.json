@@ -1,0 +1,115 @@
+{
+  "checked_at": "2026-09-10T06:21:17.159735+00:00",
+  "sources": [
+    {
+      "id": "toronto-building-permits",
+      "name": "Toronto \u2014 Building Permits (active + issued)",
+      "municipality": "Toronto",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "toronto-development-applications",
+      "name": "Toronto \u2014 Development Applications",
+      "municipality": "Toronto",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "toronto-wards",
+      "name": "Toronto \u2014 Ward Boundaries",
+      "municipality": "Toronto",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "mississauga-building-permits",
+      "name": "Mississauga \u2014 Building Permits",
+      "municipality": "Mississauga",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "mississauga-development-applications",
+      "name": "Mississauga \u2014 Development Applications",
+      "municipality": "Mississauga",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "brampton-building-permits",
+      "name": "Brampton \u2014 Building Permits",
+      "municipality": "Brampton",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "brampton-development-applications",
+      "name": "Brampton \u2014 Development Applications",
+      "municipality": "Brampton",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "peel-open-data-portal",
+      "name": "Peel Region \u2014 open data portal liveness",
+      "municipality": "Peel Region",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "statcan-wds-liveness",
+      "name": "Statistics Canada \u2014 Web Data Service liveness (full cube list)",
+      "municipality": "Region-wide (StatCan)",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "unverified-blocked"
+    },
+    {
+      "id": "cmhc-housing-starts",
+      "name": "CMHC \u2014 Housing Starts (optional)",
+      "municipality": "Region-wide (CMHC)",
+      "http_status": null,
+      "row_count": null,
+      "expected_min_rows": 0,
+      "verdict": "UNREACHABLE",
+      "detail": "transport error: 403 Forbidden",
+      "registry_status": "not-adopted"
+    }
+  ]
+}

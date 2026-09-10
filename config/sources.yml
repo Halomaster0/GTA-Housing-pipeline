@@ -1,0 +1,236 @@
+# Source registry — drives scripts/verify_sources.py.
+#
+# STATUS AS OF 2026-09-10: every host below was tried live (curl through the sandbox's agent
+# proxy, and independently via WebFetch) and every single one was rejected at the network layer
+# by this session's egress policy (connect_rejected / EGRESS_BLOCKED) before any application
+# response was received. A control test against unrelated hosts (google.com, example.com)
+# failed the same way, while github.com succeeded — confirming this is a blanket allowlist
+# policy for this sandbox, not a dead-source finding. Full transcript:
+# docs/sources/evidence/2026-09-10-verification.md
+#
+# Consequence for this file: NOTHING below has been confirmed live. `status` is
+# "unverified-blocked" for every entry. `expected_min_rows` is 0 with
+# `expected_min_rows_calibrated: false` because the task's own rule is that a threshold must be
+# "a conservative fraction of what you actually observed" — nothing was observed, so no real
+# threshold exists yet. A `verdict: UNREACHABLE` alone must fail the run regardless of the
+# threshold (see scripts/verify_sources.py) — do not raise expected_min_rows above 0 to "make CI
+# pass"; instead re-run this script from an environment with real internet access, confirm each
+# `check_url` / `count_json_path` against the live response, fill in `verified_on`, and only then
+# raise `expected_min_rows` to a real fraction of the observed count.
+#
+# `check_url` values marked "(discovery probe)" are best-effort, publicly documented API
+# endpoints for the source family, not a specific dataset resource. Per the CEO's hard rule,
+# no CKAN resource_id / ArcGIS layer id / StatCan product id is hardcoded here from memory —
+# those must come from a live package_show / layer `?f=json` / getCubeMetadata call. Until that
+# call has actually succeeded once, treat every `count_json_path` here as a best guess at the
+# API's documented response shape, to be confirmed (or corrected) on first live run.
+
+sources:
+  # ---------------------------------------------------------------------------------------
+  # 1. City of Toronto — CKAN
+  # ---------------------------------------------------------------------------------------
+  - id: toronto-building-permits
+    name: "Toronto — Building Permits (active + issued)"
+    municipality: Toronto
+    api_type: CKAN
+    check_url: "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/package_search?q=building%20permits&rows=1"
+    count_json_path: result.count
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED — prior general knowledge only: Toronto's open data catalogue publishes under the 'Open Government Licence – Toronto'. Not confirmed live this session."
+    licence_url: "https://open.toronto.ca/open-data-license/"
+    cadence: "UNVERIFIED — Toronto's building permits datasets are documented as refreshing frequently (daily/weekly per-dataset); exact cadence not confirmed live"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      Discovery probe only (package_search by keyword). The exact dataset slug(s) for
+      "active permits" vs "issued/cleared permits" and their datastore resource_id must be
+      read from a live package_show call before a real datastore_search row count can be
+      taken. Feeds fct_permits.
+
+  - id: toronto-development-applications
+    name: "Toronto — Development Applications"
+    municipality: Toronto
+    api_type: CKAN
+    check_url: "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/package_search?q=development%20application&rows=1"
+    count_json_path: result.count
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED — see toronto-building-permits entry"
+    licence_url: "https://open.toronto.ca/open-data-license/"
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      Discovery probe only. Feeds fct_applications.
+
+  - id: toronto-wards
+    name: "Toronto — Ward Boundaries"
+    municipality: Toronto
+    api_type: CKAN
+    check_url: "https://ckan0.cf.opendata.inter.prod-toronto.ca/api/3/action/package_search?q=ward%20boundaries&rows=1"
+    count_json_path: result.count
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED — see toronto-building-permits entry"
+    licence_url: "https://open.toronto.ca/open-data-license/"
+    cadence: "UNVERIFIED — ward boundaries change only on redistricting, effectively static between elections"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      Discovery probe only. Feeds dim_geography (Toronto ward level).
+
+  # ---------------------------------------------------------------------------------------
+  # 2. Mississauga — ArcGIS
+  # ---------------------------------------------------------------------------------------
+  - id: mississauga-building-permits
+    name: "Mississauga — Building Permits"
+    municipality: Mississauga
+    api_type: ArcGIS REST
+    check_url: "https://hub.arcgis.com/api/v3/datasets?q=mississauga%20building%20permits"
+    count_json_path: meta.stats.totalCount
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED — not confirmed live this session"
+    licence_url: null
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      check_url is the ArcGIS Hub discovery API, not a confirmed FeatureServer layer.
+      count_json_path (meta.stats.totalCount) is a best-effort guess at the Hub v3 API's
+      documented response shape and is UNCONFIRMED — verify_sources.py must log the raw
+      response body on the first real call so this path can be corrected if wrong. Once a
+      real layer URL is found, check_url should become
+      "{layer_url}/query?where=1%3D1&returnCountOnly=true&f=json" and count_json_path "count".
+      Feeds fct_permits.
+
+  - id: mississauga-development-applications
+    name: "Mississauga — Development Applications"
+    municipality: Mississauga
+    api_type: ArcGIS REST
+    check_url: "https://hub.arcgis.com/api/v3/datasets?q=mississauga%20development%20applications"
+    count_json_path: meta.stats.totalCount
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED"
+    licence_url: null
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      See mississauga-building-permits notes re: discovery-only check_url. Feeds
+      fct_applications.
+
+  # ---------------------------------------------------------------------------------------
+  # 3. Brampton — ArcGIS
+  # ---------------------------------------------------------------------------------------
+  - id: brampton-building-permits
+    name: "Brampton — Building Permits"
+    municipality: Brampton
+    api_type: ArcGIS REST
+    check_url: "https://hub.arcgis.com/api/v3/datasets?q=brampton%20building%20permits"
+    count_json_path: meta.stats.totalCount
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED"
+    licence_url: null
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      Discovery-only check_url, same caveats as mississauga-building-permits. Feeds
+      fct_permits. Build plan flags a known gap here even before verification: Brampton is
+      commonly reported to lack unit counts before a certain year — this must be re-checked
+      against the live schema once reachable, not assumed.
+
+  - id: brampton-development-applications
+    name: "Brampton — Development Applications"
+    municipality: Brampton
+    api_type: ArcGIS REST
+    check_url: "https://hub.arcgis.com/api/v3/datasets?q=brampton%20development%20applications"
+    count_json_path: meta.stats.totalCount
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED"
+    licence_url: null
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      Discovery-only check_url. Feeds fct_applications.
+
+  # ---------------------------------------------------------------------------------------
+  # 4. Peel Region — ArcGIS
+  # ---------------------------------------------------------------------------------------
+  - id: peel-open-data-portal
+    name: "Peel Region — open data portal liveness"
+    municipality: Peel Region
+    api_type: ArcGIS REST
+    check_url: "https://hub.arcgis.com/api/v3/datasets?q=peel%20region%20open%20data"
+    count_json_path: meta.stats.totalCount
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED"
+    licence_url: null
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      Peel is the upper-tier regional government; building permits are issued by the
+      lower-tier municipalities (Mississauga, Brampton, Caledon), not by the Region itself.
+      This entry is a placeholder for whatever Peel-level data actually supports the star
+      schema (candidates: regional municipal boundaries for dim_geography, or
+      regionally-tracked development applications) — which dataset that is could not be
+      confirmed this session because data.peelregion.ca and the Hub search API were both
+      unreachable. Caledon (the third Peel-region lower-tier municipality) is in-region but
+      out of the GTA core the build plan targets; not pursued separately here.
+
+  # ---------------------------------------------------------------------------------------
+  # 5. Statistics Canada
+  # ---------------------------------------------------------------------------------------
+  - id: statcan-wds-liveness
+    name: "Statistics Canada — Web Data Service liveness (full cube list)"
+    municipality: Region-wide (StatCan)
+    api_type: SDMX/REST (WDS, JSON)
+    check_url: "https://www150.statcan.gc.ca/t1/wds/rest/getAllCubesListLite"
+    count_json_path: "$__array_length__"
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED — prior general knowledge only: StatCan data is published under the 'Statistics Canada Open Licence'. Not confirmed live this session."
+    licence_url: "https://www.statcan.gc.ca/en/reference/licence"
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: unverified-blocked
+    notes: >
+      getAllCubesListLite (GET) lists every StatCan data table, so a successful call proves
+      WDS is reachable but is not itself the census/permits/starts data we need.
+      count_json_path "$__array_length__" is a verify_sources.py convention meaning "the
+      whole response body is a JSON array; count = its length" (see script). Real product
+      IDs for (a) 2021 Census Profile population by census subdivision/tract, and
+      (b) the building permits / housing starts & completions series, must be obtained via
+      a live getCubeMetadata (POST) call and recorded as their own registry entries — none
+      are guessed here per the CEO's rule against trusting remembered product IDs.
+
+  # ---------------------------------------------------------------------------------------
+  # 6. CMHC (optional per build plan — status reflects "not adopted, pending verification")
+  # ---------------------------------------------------------------------------------------
+  - id: cmhc-housing-starts
+    name: "CMHC — Housing Starts (optional)"
+    municipality: Region-wide (CMHC)
+    api_type: unknown — could not confirm whether a public REST/CSV API exists without registration
+    check_url: "https://www03.cmhc-schl.gc.ca/hmip-pimh/en"
+    count_json_path: null
+    expected_min_rows: 0
+    expected_min_rows_calibrated: false
+    licence: "UNVERIFIED"
+    licence_url: null
+    cadence: "UNVERIFIED"
+    verified_on: null
+    status: not-adopted
+    notes: >
+      Optional per build plan. Could not verify live whether the Housing Market Information
+      Portal exposes open, unauthenticated, machine-readable access, or requires interactive
+      web-UI table exports (which would make it a scrape, contradicting §1's "not a
+      scraper" non-goal). See docs/sources/cmhc.md for the recommendation to defer adoption
+      until this is confirmed from a network-enabled session.
