@@ -55,54 +55,91 @@ The CEO answered all four charter questions. `docs/charter.md` records them:
   who reviews `api-engineer`, Director definitions of done, the data-quality auditor's
   veto ordering, the conformance-ADR threshold, and chief-of-staff bootstrap).
 - **`docs/cost-log.md`** opened. Actual spend to date: **CAD $0.00**, measured, not assumed.
-- **GitHub issues**: six gate trackers created (#1-#6).
+- **GitHub issues**: 42 open — six gate trackers (#1-#6) and 36 work items (#7-#42)
+  mirroring the phase plan.
+- **`docs/schema-design.md`** — the star schema drafted on paper, with 25 falsifiable
+  assumptions and five conformance decisions classified as ADR-worthy.
+- **`scripts/discover_sources.py`** and `.github/workflows/source-discovery.yml` — source
+  reconnaissance that runs where the network actually reaches.
 
 ---
 
-## 3. The one significant finding
+## 3. Sources: blocked locally, resolved on a runner
 
-**The development sandbox cannot reach any data source.** Its network egress
-allowlist permits only developer tooling (GitHub, package registries, the Anthropic
-API) and rejects every municipal, ArcGIS and StatCan host. This was confirmed twice
-independently — once by `source-scout`, once directly — including a control test
-where unrelated hosts failed identically while github.com succeeded.
+**The development sandbox cannot reach any data source.** Its egress allowlist permits only
+developer tooling and rejects every municipal, ArcGIS and StatCan host. Confirmed twice
+independently, including a control test where unrelated hosts failed identically while
+github.com succeeded.
 
-`source-scout` handled this correctly: it recorded nothing as confirmed. No row
-count, no field list, no licence. Every entry in `config/sources.yml` is
-`unverified-blocked` with `expected_min_rows: 0` and `calibrated: false`.
+`source-scout` handled this correctly and recorded nothing as confirmed.
 
-**The workaround is in place and it works.** `verify-sources.yml` now also triggers
-on changes to the source registry, so verification runs on a GitHub runner, which has
-normal internet access. The first runner-side run returned **HTTP 200 from all ten
-hosts** — the sources are alive.
+**The workaround works and is now the standard path.** `verify-sources.yml` and
+`source-discovery.yml` run the checks on GitHub runners, which have normal internet access.
+Three discovery passes have run. All ten hosts answer HTTP 200 and **199 facts** are now
+confirmed from live responses. Full detail:
+`docs/sources/evidence/2026-09-10-runner-discovery.md`.
 
-**Do not trust the row counts from that first run.** They came from discovery probes
-whose count paths were guesses: Toronto reported 8 for wards when the city has 25,
-and the six-figure ArcGIS figures are hub-wide catalogue totals, not permit counts.
-`scripts/discover_sources.py` plus `.github/workflows/source-discovery.yml` were
-added to resolve the real dataset identifiers, row totals, field names and licence
-strings, printing raw response shapes to the job log for transcription by hand.
+### The feeds, with real row counts
+
+| Source | Layer | Rows |
+|---|---|---|
+| Toronto | `development-applications` | 26,613 |
+| Toronto | `city-wards` | 25 |
+| Mississauga | `Issued_Building_Permits/0` | 34,615 |
+| Mississauga | `Site_Plan_Applications/0` | 1,138 |
+| Mississauga | `Rezoning_Applications/0` | 290 |
+| Brampton | `Building_Permits_DEV/0` | 141,886 |
+| Brampton | `Planning_Land_Use_Development` "Minor Variance" | 6,989 |
+| Peel | `MunicipalBoundary_Peel/0` | 3 |
+| Peel | `Building_Permits/0` | 684 |
+| StatCan | active cubes listed | 8,270 |
+
+StatCan product ids confirmed active: **34100292** building permits, **34100143** and
+**34100148** CMHC housing starts, **98100002** dwelling counts by census subdivision,
+**98100014** by census tract.
+
+### Seven findings, worst first
+
+1. **Brampton publishes `_DEV` and `_UAT` copies of its layers publicly**, with row counts
+   differing by up to a factor of three (Minor Variance: 6,989 / 5,117 / 6,046). The only
+   Brampton permits service found is `Building_Permits_DEV`. Pointing ingestion at the wrong
+   copy yields plausible wrong numbers that nothing downstream would catch, because every
+   individual row is valid. **Resolve before ingesting any Brampton row.**
+2. **The Toronto applications licence is `License not specified`** — blocking, since that is
+   the primary `fct_applications` feed.
+3. **That dataset carries `CONTACT_NAME`, `CONTACT_PHONE`, `CONTACT_EMAIL`.** Dropped bronze
+   to silver, enforced by a data test rather than a convention.
+4. **It has no decision date and no unit count.** Status is a point-in-time snapshot, so
+   status history only exists if the daily refresh is snapshotted from now on. It cannot be
+   reconstructed later — every day of delay is a day of history lost.
+5. **Peel is not a permit source.** 684 rows is not a register for 1.5 million people. Peel
+   is geography and demographics. Consequently **Caledon has no discovered permit feed** and
+   must not be silently dropped from a "GTA" claim.
+6. **Ward vintages overlap**, confirming `dim_geography` must key on boundary version, not
+   ward number.
+7. **Mississauga publishes three parcel layers and three zoning layers** differing by small
+   but answer-changing amounts. Pick one each, record the rest as rejected.
+
+**CMHC is resolved.** StatCan republishes CMHC housing starts as 34100143 and 34100148 under
+a documented API, so CMHC stays NOT ADOPTED as a direct source and no scraping is needed.
 
 ---
 
 ## 4. What must happen next, in order
 
-1. **Read the source-discovery job log** and transcribe real dataset ids, row counts,
-   field lists and exact licence names into `config/sources.yml` and
-   `docs/sources/*.md`. Nothing becomes fact until a person has read the response it
-   came from.
-2. **Calibrate `expected_min_rows`** from observed counts and set `calibrated: true`.
-   Never raise a threshold to make CI pass.
-3. **Confirm every licence.** Not one is confirmed. An unconfirmed licence blocks
-   public portfolio use exactly like an ambiguous one.
-4. **Resolve the Peel question.** Peel is an upper-tier municipality and probably does
-   not issue building permits at all — Mississauga, Brampton and Caledon do. Confirm
-   before modelling Peel as a permit source.
-5. **`director-data-engineering` reviews `docs/schema-design.md`**; `director-product-frontend`
-   approves `docs/design-plan.md`. No SQL and no UI code before those approvals.
+1. **Resolve the Brampton `_DEV` question.** Find the production permits layer or establish
+   that `_DEV` is the public feed. Nothing Brampton gets ingested until this is settled.
+2. **Confirm every licence**, starting with Toronto applications. Nothing reaches a public
+   artifact before its licence is named.
+3. **Transcribe the 199 confirmed facts** into `config/sources.yml` — real ids, real
+   `check_url`s, real `count_json_path`s — and calibrate `expected_min_rows` from observed
+   counts, setting `calibrated: true`. Never raise a threshold to make CI pass.
+4. **Decide whether to start snapshotting Toronto applications daily now**, given finding 4.
+   This is the only item on the list that gets worse with delay.
+5. **`director-data-engineering` reviews `docs/schema-design.md`** and
+   **`director-product-frontend` approves `docs/design-plan.md`**. No SQL, no UI code before
+   those approvals.
 6. **Cold clone drill**, then `release-manager` writes `docs/gates/gate-1.md`.
-
----
 
 ## 5. Manual steps only the CEO can do
 
@@ -128,6 +165,11 @@ These are not automatable from this environment and are genuinely blocked on you
 3. **Whether the build plan should ever be scrubbed from git history**, not merely
    removed from the tree. It must be decided before Gate 5, because after that the
    history is public and rewriting it breaks every clone.
+4. **Caledon.** It is one of Peel's three municipalities and has no discovered permit feed.
+   Either it is documented as out of scope, or the gap is surfaced in the model. Both are
+   defensible; silently omitting it from a "GTA" claim is not.
+5. **Daily snapshots of Toronto applications.** Status history cannot be reconstructed
+   retroactively. Starting now costs almost nothing; starting at Phase 2 loses the interval.
 
 ---
 
