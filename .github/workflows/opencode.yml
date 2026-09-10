@@ -8,17 +8,37 @@ on:
 
 jobs:
   opencode:
+    # Write scopes are intentional: the agent is expected to push branches,
+    # open/update/merge PRs, and manage issues. Because ANY comment containing
+    # /oc would otherwise trigger this with write power, the trigger is
+    # restricted to trusted commenters below — do not remove that guard
+    # without replacing it (prompt injection in a stranger's comment could
+    # otherwise push code with these permissions).
     if: |
-      contains(github.event.comment.body, ' /oc') ||
-      startsWith(github.event.comment.body, '/oc') ||
-      contains(github.event.comment.body, ' /opencode') ||
-      startsWith(github.event.comment.body, '/opencode')
+      (contains(github.event.comment.body, ' /oc') ||
+       startsWith(github.event.comment.body, '/oc') ||
+       contains(github.event.comment.body, ' /opencode') ||
+       startsWith(github.event.comment.body, '/opencode')) &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
     runs-on: ubuntu-latest
     permissions:
+      actions: write
+      attestations: write
+      checks: write
+      contents: write
+      deployments: write
+      discussions: write
       id-token: write
-      contents: read
-      pull-requests: read
-      issues: read
+      issues: write
+      models: read
+      packages: write
+      pages: write
+      pull-requests: write
+      repository-projects: write
+      security-events: write
+      statuses: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
