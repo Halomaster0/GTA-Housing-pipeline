@@ -194,3 +194,107 @@ tract grain for `dim_geography`.
 - Mississauga's and Brampton's own permit and application layers, and their row counts.
 - Peel's `Building_Permits` layer list, row count and fields.
 - Every licence except the two Toronto datasets already recorded.
+
+---
+
+## Third discovery pass — the real permit and application feeds
+
+199 facts collected from live responses. The load-bearing ones:
+
+### City of Mississauga — `services6.arcgis.com/hM5ymMLbxIyWTjn2`
+
+| Layer | Rows | Role |
+|---|---|---|
+| `Issued_Building_Permits/0` "Building Permits" | **34,615** | primary `fct_permits` candidate |
+| `Growth_Management_–_Issued_Building_Permits/0` "IssuedBldgPerms" | **9,030** | a curated subset, not the same thing |
+| `Site_Plan_Applications/0` | **1,138** | `fct_applications` |
+| `Rezoning_Applications/0` | **290** | `fct_applications` |
+| `Growth_Management_–_Active_Development_Applications/0` | **214** | active only |
+| `OPA_and_Rezonings/0` | **48** | |
+| `MississaugaWards/0` | **11** | `dim_geography` |
+| `Parcel/0` | 166,923 | parcels — see the duplication warning below |
+
+### City of Brampton — `services3.arcgis.com/rl7ACuZkiFsmDA2g`
+
+| Layer | Rows | Role |
+|---|---|---|
+| `Building_Permits_DEV/0` "Building Permits" | **141,886** | see the `_DEV` warning below |
+| `Planning_Land_Use_Development/8` "Minor Variance" | **6,989** | `fct_applications` |
+| `Planning_Land_Use_Development/10` "Pre Consultation" | **2,100** | |
+| `Planning_Land_Use_Development/9` "OPA ZBA Subdivision" | **1,451** | |
+| `Planning_Land_Use_Development/5` "Consent to Sever" | **1,031** | |
+| `Planning_Land_Use_Development/7` "Draft Plan of Condo" | **182** | |
+| `Archived_Planning_Application_Layers/7` "Development Applications" | **0** | archived and empty |
+
+### Regional Municipality of Peel — `services6.arcgis.com/ONZht79c8QWuX759`
+
+| Layer | Rows | Role |
+|---|---|---|
+| `Building_Permits/0` | **684** | not a regional permit feed — see below |
+| `Wards_20222026/0` | **27** | current ward vintage |
+| `Ward_Boundary_2018_2022/0` | **26** | prior ward vintage |
+| `Census2016_Wards20182022_Dwellings/1` | **26** | dwelling counts by ward |
+| `MunicipalBoundary_Peel/0` | **3** | Mississauga, Brampton, Caledon |
+
+---
+
+## Findings four through seven
+
+### 4. Brampton publishes `_DEV` and `_UAT` copies of its layers publicly, with different row counts
+
+This is the most dangerous thing found so far, because it fails silently.
+
+| Layer | production | `_DEV` | `_UAT` |
+|---|---|---|---|
+| Minor Variance | 6,989 | 5,117 | 6,046 |
+| OPA ZBA Subdivision | 1,451 | 1,036 | 1,360 |
+| Pre Consultation | 2,100 | 681 | 1,770 |
+| Consent to Sever | 1,031 | 859 | 954 |
+
+Three publicly reachable copies of the same layer, none labelled as authoritative in the
+service name alone, differing by up to a factor of three. An ingestion job pointed at the
+wrong one returns plausible numbers that are wrong, and nothing in the pipeline would catch
+it, because every row is individually valid.
+
+**Worse: the only Brampton permits service the keyword sweep found is `Building_Permits_DEV`,
+at 141,886 rows.** Either the production permits layer is named something the sweep missed,
+or Brampton's public permits feed is genuinely the `_DEV` service. That must be resolved
+before a single Brampton row is ingested.
+
+**Rule, for `config/sources.yml` and for `ingestion-engineer`:** no layer whose name ends in
+`_DEV` or `_UAT` is registered as a source without a written justification in the registry
+entry. `data-quality-auditor` should add a test that fails if any registered `check_url`
+matches those suffixes without that justification.
+
+### 5. Peel's `Building_Permits` is not a regional permit feed
+
+684 rows for a region of roughly 1.5 million people is not a building permit register.
+Mississauga alone reports 34,615. Whatever this layer is — regional capital works, a
+sample, a niche permit class — it is not the aggregate feed the plan hoped for.
+
+This confirms the schema draft's caution and settles the open question: **Peel is a
+geography and demographics source, not a permit source.** `fct_permits` is fed by Toronto,
+Mississauga and Brampton. `dim_municipality` is seeded from `MunicipalBoundary_Peel`, and
+Peel's ward-level census dwelling counts feed per-capita measures.
+
+Note the consequence for scope: Caledon appears in Peel's municipal boundary layer but has
+no discovered permit feed. Either Caledon is documented as out of scope, or its absence is
+surfaced in the model, but it must not be silently dropped from a "GTA" claim.
+
+### 6. Ward boundary vintages are real and overlapping, exactly as the schema draft assumed
+
+Peel alone publishes `Ward_Boundary_2018_2022` at 26 rows, `Wards_20222026` at 27, and
+`Peel_Ward_Boundary` at 27. Toronto publishes 25-ward, 44-ward and 47-ward models in the
+same package.
+
+`dim_geography` at one row per ward-boundary *version*, with effective date ranges, is the
+correct call. A `dim_geography` keyed on ward number alone would silently corrupt every
+multi-year ward comparison in the project.
+
+### 7. Several sources publish overlapping near-duplicate layers
+
+Mississauga has three parcel layers (166,923 / 165,834 / 165,647) and three zoning layers
+(60,510 / 11,277 / 10,775). The differences are small enough to look like noise and large
+enough to change an answer. Each pair needs one chosen, documented, and the others recorded
+as rejected with the reason — otherwise the choice gets made accidentally by whoever writes
+the SQL.
