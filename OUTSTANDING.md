@@ -8,11 +8,17 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
 
 - [x] PR #46 opened, reviewed, merged (`18d4cb1`); all 4 merged branches
   deleted local + remote.
-- [ ] PR for `claude/web-scaffold-static-export` (`3ee5d73`): open at
-  https://github.com/Halomaster0/GTA-Housing-pipeline/pull/new/claude/web-scaffold-static-export
-  → review → merge. `web.yml` CI fires on `web/**` for the first time.
+- [x] PR #47 (`claude/web-scaffold-static-export`) reviewed + merged
+  (`1116b17`). `web.yml` CI ran green on the branch before merge (lint,
+  build, a11y) after one fix commit (generated `next-env.d.ts` excluded
+  from eslint).
 - [ ] Deploy preview of `web/out/` (any static host; URL at Gate 4b, no
   subdomain) + human Lighthouse pass (≥ 95) + ninety-second test.
+- [ ] PR for the ui-ux-pass branch (link in standup session-13 entry once
+  pushed) → review → merge.
+- [ ] Close the 19 done issues (HANDOVER-6 §4 list: #1, #7–#22, #25, #27)
+  with evidence comments. No auth for this exists in the agent environment
+  (HANDOVER-6 §5) — needs a human with write access.
 - [ ] Verify on `main` (`verify_sources` + pytest) — the cold-clone-style check.
 - [ ] Auditor sign-offs: Gate 2 pack (`docs/gates/gate-2.md`) + measure pack
   (`docs/measure-reconciliation.json`). Only the CEO can override a veto.

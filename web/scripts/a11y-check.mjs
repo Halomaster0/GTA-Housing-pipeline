@@ -46,6 +46,12 @@ for (const page of pages) {
   };
 
   check(/<html[^>]*\blang="en"/.test(html), "missing <html lang=\"en\">");
+  check(
+    /<meta[^>]*name="viewport"[^>]*content="width=device-width, initial-scale=1"/.test(
+      html,
+    ),
+    "missing responsive viewport meta",
+  );
   check(count(/<h1[\s>]/g, html) === 1, "must have exactly one <h1>");
   check(/<title>[^<]+<\/title>/.test(html), "missing non-empty <title>");
   check(
