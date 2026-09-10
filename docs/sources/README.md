@@ -14,6 +14,35 @@ is asserted as confirmed. Where prior general knowledge is mentioned for context
 commonly publishes under an Open Government Licence variant"), it is explicitly labelled
 unverified and excluded from the Gate 1 acceptance claim.
 
+## Update — 2026-09-10, runner-side discovery
+
+The block described above is a property of the development sandbox, not of the sources.
+Run from a GitHub Actions runner, **all ten registered hosts returned HTTP 200** and two
+Toronto datasets were fully resolved. Confirmed facts, field lists and three findings that
+change the design are in
+[`evidence/2026-09-10-runner-discovery.md`](evidence/2026-09-10-runner-discovery.md).
+
+Confirmed so far, from live responses:
+
+| Dataset | Rows | Resource id | Licence |
+|---|---|---|---|
+| Toronto `development-applications` | 26,613 | `8907d8ed-c515-4ce9-b674-9f8c6eefcf0d` | **`License not specified`** — blocking |
+| Toronto `city-wards` | 25 | `7672dac5-b383-4d7c-90ec-291dc69d37bf` | not returned by the API |
+
+Three findings, in order of how much they change the plan:
+
+1. **The Toronto applications licence is unspecified.** That blocks public use of the
+   primary `fct_applications` feed until a licence is named.
+2. **The dataset carries `CONTACT_NAME`, `CONTACT_PHONE` and `CONTACT_EMAIL`.** These are
+   dropped at bronze to silver and enforced by a data test, not a convention.
+3. **There is no decision date and no dwelling-unit count.** Application status is a
+   point-in-time snapshot, so status history can only be built by snapshotting the daily
+   refresh from now on. It cannot be reconstructed later.
+
+The index below still reflects the sandbox run and is superseded by the evidence file
+above wherever the two disagree. It will be rewritten once discovery resolves the
+remaining municipalities.
+
 ## Index
 
 | Source | Status | Licence | Row count (2026-09-10) | Verified on | Star-schema fields confirmed missing |
