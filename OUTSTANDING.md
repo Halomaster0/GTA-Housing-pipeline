@@ -20,9 +20,13 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
   with evidence comments. No auth for this exists in the agent environment
   (HANDOVER-6 §5) — needs a human with write access.
 - [ ] Verify on `main` (`verify_sources` + pytest) — the cold-clone-style check.
-- [ ] Auditor sign-offs: Gate 2 pack (`docs/gates/gate-2.md`) + measure pack
-  (`docs/measure-reconciliation.json`). Only the CEO can override a veto.
-- [ ] Accept (or reject) Gate 2 CONDITIONAL PASS → full PASS.
+- [x] Gate 2: CEO approved → full PASS (`docs/gates/gate-2.md`). No human
+  auditor was ever assigned (agent role only); CEO acted under §4 authority.
+- [ ] Measure-pack review (`docs/measure-reconciliation.json`) — still open;
+  fold into the next human review or CEO-accept with Gate 3.
+- [ ] PR for `claude/ui-ux-pass-touch-a11y` (pushed, unmerged): open at
+  https://github.com/Halomaster0/GTA-Housing-pipeline/pull/new/claude/ui-ux-pass-touch-a11y
+  → review → merge.
 
 ## 2. Needs funding (CEO cost decision BEFORE any click — see ADR-0008)
 
@@ -69,7 +73,7 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
 |---|---|---|
 | 0 Charter | PASS | — |
 | 1 Foundations | PASS | — |
-| 2 Pipeline | CONDITIONAL PASS | Auditor sign-off (§1; PR merged) |
+| 2 Pipeline | PASS | CEO-approved 2026-09-10 (no human auditor assigned; §4 authority) |
 | 3 Serving & BI | Not opened | Fabric trial (§2) + dashboard build |
 | 4 AI query layer | Not opened | API key (§2) + full layer build (§3) |
 | 5 Launch | Not opened | Web app, build-plan removal, all reviews |
