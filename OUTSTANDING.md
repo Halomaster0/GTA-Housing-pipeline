@@ -20,13 +20,13 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
   with evidence comments. No auth for this exists in the agent environment
   (HANDOVER-6 §5) — needs a human with write access.
 - [ ] Verify on `main` (`verify_sources` + pytest) — the cold-clone-style check.
-- [x] Gate 2: CEO approved → full PASS (`docs/gates/gate-2.md`). No human
-  auditor was ever assigned (agent role only); CEO acted under §4 authority.
+- [x] Gate 2: CEO approved → full PASS → merged to `main` (PR #48,
+  `1c89893`). Merged branch deleted; only `main` + the ui-ux-pass branch
+  remain. No human auditor was ever assigned (agent role only).
 - [ ] Measure-pack review (`docs/measure-reconciliation.json`) — still open;
   fold into the next human review or CEO-accept with Gate 3.
-- [ ] PR for `claude/ui-ux-pass-touch-a11y` (pushed, unmerged): open at
-  https://github.com/Halomaster0/GTA-Housing-pipeline/pull/new/claude/ui-ux-pass-touch-a11y
-  → review → merge.
+- [ ] PR #49 (`claude/ui-ux-pass-touch-a11y`: UI fixes + Gate 2 merge resolution)
+  → review → merge. Branch rebased onto Gate-2 `main` by merge commit.
 
 ## 2. Needs funding (CEO cost decision BEFORE any click — see ADR-0008)
 
