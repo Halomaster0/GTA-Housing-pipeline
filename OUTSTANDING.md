@@ -14,26 +14,24 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
   from eslint).
 - [ ] Deploy preview of `web/out/` (any static host; URL at Gate 4b, no
   subdomain) + human Lighthouse pass (≥ 95) + ninety-second test.
-- [ ] PR for the ui-ux-pass branch (link in standup session-13 entry once
-  pushed) → review → merge.
+- [x] PR #49 (`claude/ui-ux-pass-touch-a11y`) reviewed + merged (`fb02c8e`).
+  Merged branch deleted; only `main` remains.
 - [ ] Close the 19 done issues (HANDOVER-6 §4 list: #1, #7–#22, #25, #27)
   with evidence comments. No auth for this exists in the agent environment
   (HANDOVER-6 §5) — needs a human with write access.
 - [ ] Verify on `main` (`verify_sources` + pytest) — the cold-clone-style check.
 - [x] Gate 2: CEO approved → full PASS → merged to `main` (PR #48,
-  `1c89893`). Merged branch deleted; only `main` + the ui-ux-pass branch
-  remain. No human auditor was ever assigned (agent role only).
+  `1c89893`). No human auditor was ever assigned (agent role only).
 - [ ] Measure-pack review (`docs/measure-reconciliation.json`) — still open;
   fold into the next human review or CEO-accept with Gate 3.
-- [ ] PR #49 (`claude/ui-ux-pass-touch-a11y`: UI fixes + Gate 2 merge resolution)
-  → review → merge. Branch rebased onto Gate-2 `main` by merge commit.
 
 ## 2. Needs funding (CEO cost decision BEFORE any click — see ADR-0008)
 
-- [ ] **Fabric trial / capacity** — the one real paid gate. `fabric-architect`
-  is stopped at `docs/fabric-setup.md` §4 until the decision is logged in
-  `docs/cost-log.md`. Everything downstream (upload → model → report → URL)
-  is specified and waiting. Without it, Gate 3 stays a scoped partial.
+- [ ] **Fabric on school account** (replaces trial plan — logged, $0
+  personal). BEFORE creating anything, answer the 4-item capability
+  checklist (HANDOVER-7 §2: capacity, publish-to-web, workspace separation,
+  upload path). Then execute HANDOVER-7 §3. Gate 3 stays scoped-partial
+  until the dashboard URL exists.
 - [ ] **Anthropic API key + spend ceiling** (Phase 4) — the NL query layer
   (`/ask`) cannot run without it. Design guards already exist in the plan
   (rate limits, daily ceiling, cached fallbacks); the key + ceiling number
