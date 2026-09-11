@@ -99,22 +99,32 @@ body {
 
 .site-nav {
   display: flex;
-  gap: 1.25rem;
+  gap: 0.5rem 1.25rem;
   flex-wrap: wrap;
 }
 
+/* 44px minimum touch targets (ui-ux-pro-max Touch/High); the hit area grows,
+ * the visual size does not. Gaps already clear the 8px minimum. */
 .site-nav a {
   color: var(--ink);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
-.site-nav a[aria-current="page"] {
+.site-nav a:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
 
 a {
   color: var(--link);
+}
+
+a:hover {
+  text-decoration-thickness: from-font;
 }
 
 .site-footer {
@@ -425,7 +435,10 @@ pre.code {
 }
 
 .button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  touch-action: manipulation;
   border: 1px solid var(--link);
   color: var(--link);
   text-decoration: none;
@@ -433,6 +446,11 @@ pre.code {
   border-radius: 2px;
   margin-right: 0.75rem;
   margin-top: 0.5rem;
+}
+
+.button:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .button.primary {
