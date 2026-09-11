@@ -27,11 +27,12 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
 
 ## 2. Needs funding (CEO cost decision BEFORE any click — see ADR-0008)
 
-- [ ] **Fabric on school account** (replaces trial plan — logged, $0
-  personal). BEFORE creating anything, answer the 4-item capability
-  checklist (HANDOVER-7 §2: capacity, publish-to-web, workspace separation,
-  upload path). Then execute HANDOVER-7 §3. Gate 3 stays scoped-partial
-  until the dashboard URL exists.
+- [ ] **Power BI Pro workspace `gta-housing`** (school account, $0 personal,
+  logged; ADR-0010 — no lakehouse: tenant offers Pro/PPU only). Create it,
+  then: Desktop → import 7 parquet → model per `fabric-dax.md` → verify
+  values vs reconciliation JSON → 5 pages per `report-plan.md` → publish.
+  Publish-to-web still unconfirmed (tested at publish; screenshot fallback
+  ready). Gate 3 stays scoped-partial until the dashboard URL exists.
 - [ ] **Anthropic API key + spend ceiling** (Phase 4) — the NL query layer
   (`/ask`) cannot run without it. Design guards already exist in the plan
   (rate limits, daily ceiling, cached fallbacks); the key + ceiling number

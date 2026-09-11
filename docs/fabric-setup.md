@@ -1,11 +1,12 @@
 # Fabric setup — DRAFT, UNPROVISIONED (no trial, no spend)
 
-Status: this document is a build-ready spec, not a build log. Nothing below
-has been clicked, provisioned, or paid for (ADR-0008). When the CEO approves
-the Fabric trial, `fabric-architect` executes §4 top to bottom, dates every
-screenshot, and flips this banner to LIVE with the workspace URL. Until
-then the local path (`make transform` → DuckDB → `data/gold-parquet/`) is
-the entire serving story and every demo runs from it.
+Status (2026-09-11, supersedes the trial plan per ADR-0010): the school
+tenant offers Power BI Pro / PPU only — no Fabric capacity, so §§1–2
+(lakehouse/OneLake) are the upgrade path, not the plan. Serving v1 is
+Power BI Desktop → Pro workspace (see ADR-0010). Nothing below the lakehouse
+line has been clicked or provisioned. Until then the local path
+(`make transform` → DuckDB → `data/gold-parquet/`) is the entire serving
+story and every demo runs from it.
 
 Cost gate: provisioning anything here needs a CEO decision recorded in
 `docs/cost-log.md` BEFORE the click. Current serving spend: CAD $0.00.
