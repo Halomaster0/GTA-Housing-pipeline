@@ -12,6 +12,7 @@ Every dollar and every token that costs money is recorded here. A paid resource 
 | Date | Item | Vendor | Amount (CAD) | CEO decision | Running total |
 |---|---|---|---|---|---|
 | 2026-09-10 | Budget ceiling set at Gate 0 | — | 0.00 | `docs/charter.md` §1 | 0.00 |
+| 2026-09-11 | Fabric capacity via school account (replaces trial plan — no trial window, no conversion risk while enrolled) | school tenant | 0.00 personal | CEO decision in chat 2026-09-11; provisioning still gated on tenant capability check (HANDOVER-7 §2) | 0.00 |
 
 No spend has occurred. This is a measured zero, not a placeholder.
 
@@ -26,7 +27,7 @@ No spend has occurred. This is a measured zero, not a placeholder.
 | Embeddings | `sentence-transformers`, run locally | free | none — deliberately chosen over paid embedding APIs |
 | Classification | HF `zero-shot-classification`, cached to a silver column | free | none — never called at query time |
 | Vector store | LanceDB, local | free | none |
-| Serving | Microsoft Fabric trial | free for the trial window | **real** — see risk R2; DuckDB stays the source of truth so a lapse never breaks the build |
+| Serving | Microsoft Fabric via school account (was: trial) | $0 personal while enrolled | lower than trial risk R2 but still borrowed — DuckDB stays the source of truth so losing access never breaks the build; keep coursework and project workspaces separate |
 | Web hosting | Vercel Hobby | free | none for a non-commercial project |
 | Domain | `ishaaqkarim.dev`, already owned by the CEO | $0 incremental | none |
 | LLM | Anthropic API | **paid** — the only line item expected to draw on the budget | n/a |
