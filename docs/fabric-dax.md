@@ -7,6 +7,18 @@ provisioned refresh, every value must be read off the model and compared to
 `docs/measure-reconciliation.json` before the report publishes.** A mismatch
 means the model is wrong, never the JSON.
 
+## Prerequisites (gotchas from the v1 build)
+
+- Tables must be renamed to drop any import prefix (e.g. `gold fct_permits`
+  → `fct_permits`): table names with spaces break every bare reference, and
+  the fix is renaming once, not bracketing forever.
+- Measure names (left of `=`) must be plain letters/spaces — no `M1 — …`
+  labels, no comments in the name box. Paste formula only.
+- A "name already used" error always means the measure exists: find it in
+  the Data pane (calculator icon), check its formula, keep or delete it.
+- Geography joins on `geography_sk` (unique 1–89), never `ward_code`
+  (repeated across vintages — Power BI rejects it).
+
 ## Relationships (set once, single filter direction everywhere)
 
 - `fct_permits` / `fct_applications` → `dim_municipality`, `dim_use_type`,
@@ -44,7 +56,9 @@ CALCULATE (
    Reference values in reconciliation JSON (permits/applications by
    municipality × status tables). */
 
-/* M6 — Median applied→issued days (permits having both dates only) */
+/* M6 — Median applied→issued days (permits having both dates only).
+   LOOKUPVALUE form: needs no duplicated date tables (proven in the v1
+   build after RELATED-based drafts failed without role-playing tables). */
 Median Applied to Issued Days =
 MEDIANX (
     FILTER (
@@ -53,14 +67,12 @@ MEDIANX (
             && NOT ( ISBLANK ( fct_permits[date_issued_sk] ) )
     ),
     DATEDIFF (
-        RELATED ( AppliedDate[calendar_date] ),
-        RELATED ( IssuedDate[calendar_date] ),
+        LOOKUPVALUE ( dim_date[calendar_date], dim_date[date_sk], fct_permits[date_applied_sk] ),
+        LOOKUPVALUE ( dim_date[calendar_date], dim_date[date_sk], fct_permits[date_issued_sk] ),
         DAY
     )
 )
-/* Requires dim_date duplicated (or role-playing via USERELATIONSHIP) as
-   AppliedDate (active on date_applied_sk) and IssuedDate. Reference:
-   TOR 28d (n=460,121) · MISS 34d (n=34,581) · BRAM 44d (n=150,680). */
+/* Reference: TOR 28d (n=460,121) · MISS 34d (n=34,581) · BRAM 44d (n=150,680). */
 
 /* M7 — Median submitted→decision days (Mississauga only in v1) */
 Median Submitted to Decision Days =
@@ -71,8 +83,8 @@ MEDIANX (
             && NOT ( ISBLANK ( fct_applications[date_decision_sk] ) )
     ),
     DATEDIFF (
-        RELATED ( SubmittedDate[calendar_date] ),
-        RELATED ( DecisionDate[calendar_date] ),
+        LOOKUPVALUE ( dim_date[calendar_date], dim_date[date_sk], fct_applications[date_submitted_sk] ),
+        LOOKUPVALUE ( dim_date[calendar_date], dim_date[date_sk], fct_applications[date_decision_sk] ),
         DAY
     )
 )
