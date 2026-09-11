@@ -32,6 +32,9 @@ pipeline: ingest transform ## Run the full extract-and-land + build (Gate 2 entr
 export-gold: ## Dump gold tables to data/gold-parquet (Fabric publish-path input, ADR-0008)
 	uv run python scripts/export_gold_parquet.py
 
+export-csv: ## Dump gold tables to data/gold-csv (Power BI Desktop local import, ADR-0010)
+	uv run python scripts/export_gold_parquet.py --format csv
+
 reconcile: ## Re-run the measure library, rewrite docs/measure-reconciliation.json
 	uv run python scripts/reconcile_measures.py
 
