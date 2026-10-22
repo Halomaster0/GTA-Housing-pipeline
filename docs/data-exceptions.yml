@@ -1,0 +1,40 @@
+# Known implausible source values, with a decision for each.
+#
+# Why this file exists: on 2026-10-22 a single Toronto permit carrying 100,000
+# dwelling units moved the published Toronto net-units figure 38.8% in six weeks
+# while permit rows moved 0.71%. The data tests passed, because they check
+# row-count deltas and not measure deltas. A value no human would publish sat
+# inside a green suite.
+#
+# Rule: any permit whose unit count exceeds `unit_count_ceiling` fails
+# tests/data/test_unit_plausibility.py unless it is listed here with a reason and
+# a decision. This mirrors the >20% row-delta rule in docs/build-plan.md §5.6 --
+# the exception is allowed, being silent about it is not.
+#
+# Listing a row here does NOT remove it from the warehouse. It records that a
+# human looked. Whether an implausible value is excluded from published measures
+# is a separate, semantic decision (ADR-0002 §4) and belongs in an ADR.
+
+unit_count_ceiling: 5000
+# Toronto's largest genuine tower permits run to roughly 1,400 units
+# (1,408 / 1,261 / 1,226 / 1,089 / 1,081 / 1,002 observed 2026-10-22). 5,000
+# leaves generous headroom for a real megaproject while catching sentinels.
+
+permits:
+  - permit_number: "26 256637 BLD"
+    municipality: TOR
+    unit_count_net_new: 100000
+    status_raw: "Application On Hold"
+    first_seen: 2026-10-22
+    reason: >-
+      A round 100,000 against a next-largest of 1,408, on an application that is
+      on hold rather than issued. This is a placeholder or data-entry artifact,
+      not a measurement. It alone accounts for 100,000 of Toronto's +100,803
+      unit move; the residual +803 matches the other municipalities' growth.
+    decision: UNRESOLVED
+    decision_note: >-
+      Pending: confirm against the live Toronto CKAN record, then rule on
+      treatment (leave in place, NULL it at bronze-to-silver with an explicit
+      basis, or exclude from published measures). Until ruled, no Toronto
+      unit figure is published. Owner: data-quality-auditor with
+      director-data-engineering.
