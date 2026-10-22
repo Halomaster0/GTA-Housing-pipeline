@@ -97,6 +97,30 @@ git clone https://github.com/Halomaster0/GTA-Housing-pipeline.git
 cd GTA-Housing-pipeline
 ```
 
+### Prerequisites
+
+**[uv](https://docs.astral.sh/uv/) is required.** It manages the pinned
+dependencies and the Python 3.11 the project is pinned to, so you do not need to
+install Python yourself. There is no `pip` fallback: this repository has no
+`[build-system]`, so `pip install -e .` will not work.
+
+| Platform | Install |
+|---|---|
+| macOS / Linux | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| Windows (PowerShell) | `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 \| iex"` |
+| Any, if you already have Python | `pip install uv` |
+
+Reopen your terminal afterwards — the installer only adds `uv` to the PATH of
+new sessions — and confirm with `uv --version`.
+
+**`make` is not installed on Windows by default.** Every `make X` below is a
+thin wrapper; `make help` prints each target with the command it runs, and
+`docs/powerbi-manual.md` §0 lists the PowerShell equivalents for the targets
+that document mentions. For example `make setup` is `uv sync --extra dev`, and
+`make ingest` is `uv run python -m src.ingest --all`.
+
+### Developer workflow
+
 The intended developer workflow, once Phase 1 scaffolding is complete (tooling, dependencies, and CI are being built concurrently — see [`CONTRIBUTING.md`](CONTRIBUTING.md)), is a `Makefile`-driven setup:
 
 ```bash

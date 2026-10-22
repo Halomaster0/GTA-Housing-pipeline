@@ -2,6 +2,24 @@
 
 Thanks for looking at this. The project is public from its first commit and built in the open — see [`docs/build-plan.md`](docs/build-plan.md) for the full plan, the phase gates, and the reasoning behind the roles referenced below. This document covers the mechanics of contributing.
 
+
+## Prerequisites
+
+**[uv](https://docs.astral.sh/uv/) is required** — it manages both the pinned
+dependencies and the pinned Python 3.11, so you do not install Python yourself.
+There is no `pip` fallback: the project declares no `[build-system]`, so
+`pip install -e .` fails by design.
+
+- macOS / Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Windows (PowerShell): `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+- Already have Python: `pip install uv`
+
+Reopen the terminal afterwards (PATH is only updated for new sessions) and check
+`uv --version`.
+
+`make` is not a Windows command. Every target is a wrapper — run `make help` to
+see the command each one runs, and use that directly on PowerShell.
+
 ## Project status
 
 This is early — Phase 1 of a 5-phase build (see the [README](README.md#status) for the current honest state). Expect gaps, stubs, and `not yet built` markers. That's not a reason to hold back a contribution; it's context for what "done" means at this point.
