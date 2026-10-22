@@ -48,3 +48,13 @@ npm-debug.log*
 # OS noise
 .DS_Store
 Thumbs.db
+
+# Power BI Desktop writes these back into a PBIP project when it opens one.
+# localSettings.json carries absolute machine paths and the signed-in user's
+# cache location, so it must never reach a public repository. The committed
+# project is the generated TMDL (scripts/generate_pbip.py); everything Desktop
+# adds locally is disposable.
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+*.pbix
+*.abf
