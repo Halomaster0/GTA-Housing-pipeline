@@ -76,11 +76,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   Data sources
                 </a>
               </li>
-              <li>
-                Toronto Open Government Licence · Mississauga Terms of Use ·
-                Brampton CC BY · Peel Licence v1.0 · Statistics Canada Open
-                Licence
-              </li>
+              <li>Toronto Open Government Licence</li>
+              <li>Mississauga Terms of Use</li>
+              <li>Brampton CC BY</li>
+              <li>Peel Licence v1.0</li>
+              <li>Statistics Canada Open Licence</li>
             </ul>
           </div>
         </footer>

@@ -6,7 +6,9 @@ import {
   factTotals,
   feedsOk,
   formatInt,
-  permitsByMunicipality,
+  permitsIssuedByMunicipality,
+  permitsIssuedTotal,
+  yearSpan,
 } from "../lib/measures";
 
 export const metadata: Metadata = {
@@ -20,6 +22,8 @@ function loadMapSvg(): string {
 
 export default function Home() {
   const feeds = feedsOk();
+  const span = yearSpan();
+  const issuedByMuni = permitsIssuedByMunicipality();
   const allOk = feeds.ok === feeds.total;
   const mapSvg = loadMapSvg();
   const muniNames: Record<string, string> = {
@@ -62,14 +66,17 @@ export default function Home() {
               <div className="sub">
                 {feeds.ok} of {feeds.total} feeds reporting ok
               </div>
+              <div className="sub">last refresh {bronze.ingest_date}</div>
             </div>
           </div>
           <div className="metric">
-            <div className="value gold">
-              {formatInt(factTotals.fct_permits)}
+            <div className="value gold">{formatInt(permitsIssuedTotal())}</div>
+            <div className="label">
+              Permits issued, {span.first} to {span.last}
             </div>
             <div className="label">
-              Permits issued (gold layer) · last refresh {bronze.ingest_date}
+              of {formatInt(factTotals.fct_permits)} permit records, all
+              statuses
             </div>
           </div>
           <div className="metric">
@@ -141,10 +148,11 @@ export default function Home() {
           {Object.entries(muniNames)
             .map(
               ([code, name]) =>
-                `${name} ${formatInt(permitsByMunicipality[code] ?? null)}`,
+                `${name} ${formatInt(issuedByMuni[code] ?? null)}`,
             )
-            .join(" · ")}
-          . Caledon has no permit feed (ADR-0004). Source:
+            .join("; ")}
+          . Counts are permits issued, not all permit records. Caledon has no
+          permit feed (ADR-0004). Source:
           docs/measure-reconciliation.json, ingest date {bronze.ingest_date}.
         </figcaption>
       </figure>

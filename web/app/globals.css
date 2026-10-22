@@ -470,3 +470,199 @@ pre.code {
     border-color: var(--link);
   }
 }
+
+/* ---------- Dashboard (rendered from docs/measure-reconciliation.json) ----------
+ * Added for /dashboard. Flat, bordered, no shadow, no motion (plan §5, §6).
+ * SVG text takes its fill from the token palette so it survives dark mode. */
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0 2rem;
+}
+
+.provenance {
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+}
+
+/* Chart frame (plan §5): 1px border, caption beneath, provenance line. */
+.chart-frame {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+}
+
+.chart-frame > h3 {
+  margin-top: 0;
+}
+
+.chart-figure {
+  margin: 0;
+}
+
+.chart-figure figcaption {
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+  margin-top: 0.75rem;
+}
+
+.chart-figure figcaption p {
+  margin: 0 0 0.25rem;
+}
+
+.chart-scroll {
+  overflow-x: auto;
+}
+
+.chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Wide charts scroll inside their region rather than shrink the type below
+ * legibility on a 380px screen. */
+.chart-svg.wide {
+  min-width: 720px;
+  max-width: 900px;
+}
+
+.chart-svg.narrow {
+  max-width: 468px;
+}
+
+/* Only shown where the wide chart actually scrolls. */
+.scroll-hint {
+  display: none;
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+  margin: 0 0 0.5rem;
+}
+
+@media (max-width: 760px) {
+  .scroll-hint {
+    display: block;
+  }
+}
+
+.chart-svg text {
+  fill: var(--ink);
+  font-family: var(--font-condensed);
+  font-size: 14px;
+}
+
+.chart-svg .chart-num {
+  font-family: var(--font-mono);
+}
+
+.chart-svg .chart-num.tick {
+  font-size: 11px;
+}
+
+.chart-svg .chart-detail {
+  fill: var(--ink-secondary);
+  font-size: 12px;
+}
+
+.chart-svg .chart-grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+  stroke-opacity: 0.45;
+}
+
+.chart-svg .chart-axis {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.chart-svg .chart-divider {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.chart-svg .bar-fill {
+  fill: var(--gold-fill);
+  stroke: var(--ink);
+  stroke-width: 0.75;
+}
+
+.chart-svg .seg {
+  stroke: var(--ink);
+  stroke-width: 0.75;
+}
+
+.chart-svg .seg.series-0 {
+  fill: var(--gold-fill);
+}
+
+.chart-svg .seg.series-1 {
+  fill: var(--gold-fill);
+  fill-opacity: 0.5;
+}
+
+.chart-svg .seg.partial {
+  stroke-dasharray: 3 2;
+}
+
+.chart-svg .hatch-bg {
+  fill: var(--gold-fill);
+  fill-opacity: 0.2;
+}
+
+.chart-svg .hatch-line {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+/* Disclosure holding the table that pairs with each chart. */
+.chart-data {
+  margin-top: 1rem;
+}
+
+.chart-data summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.chart-data summary:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+table.data td.num.na {
+  font-family: var(--font-condensed);
+  font-size: 0.8125rem;
+  color: var(--ink-secondary);
+}
+
+table.data th[scope="row"] {
+  font-weight: 500;
+}
+
+/* Comparability notice: prominent by weight of border, not by colour. */
+.notice {
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  padding: 0.25rem 1.25rem 0.75rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.notice h3 {
+  margin-bottom: 0.25rem;
+}
+
+.empty.compact {
+  padding-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+.empty.compact h3 {
+  margin: 0;
+}
