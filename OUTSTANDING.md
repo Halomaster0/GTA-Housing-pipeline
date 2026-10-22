@@ -53,10 +53,13 @@ warehouse. These are labelling and definition defects, not data defects.
   case. ADR-0003 forbids publishing it as a clean number. Add the comparability
   card that `fabric-dax.md` M2 already specifies, plus NULL coverage (64.3% of
   permit rows carry no unit count).
-- [ ] **BLOCKING — `Permits Issued` is showing all permit rows.** Displayed
-  values equal `COUNT(*)`, but M1 filters on a non-blank issue date and 12,716
-  permits are APPLIED or UNDER_REVIEW. Put M1 and a bare `COUNTROWS` side by
-  side: equal means the defect is in silver, not the report.
+- [ ] **BLOCKING — `Permits Issued` overstates by 180,330 (21.8%).** The real
+  issued count is 647,589 (TOR 462,039 / MISS 34,614 / BRAM 150,936), derivable
+  by summing `permits_issued_by_municipality_year`, which is already
+  issue-date filtered. The card shows `COUNT(*)` = 827,919. Brampton is
+  overstated by nearly a third. Separately: the gap is partly un-issued permits
+  and partly permits issued outside dim_date's 2010-2028 range, which the file
+  cannot distinguish — state it as such.
 - [ ] Rule on whether the 58,890 CANCELLED permits count toward "permits
   issued", and record it in `docs/data-dictionary.md` either way.
 - [ ] Emit every published measure (M1 included) from

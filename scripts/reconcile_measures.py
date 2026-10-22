@@ -150,6 +150,27 @@ def build_report(con: duckdb.DuckDBPyConnection) -> dict:
                 "GROUP BY 1 ORDER BY 1",
             )
         },
+        # M1's reference value. Absent from the first version of this file, which
+        # is why a dashboard card labelled "Permits Issued" could show COUNT(*)
+        # (827,919) against a true 647,589 with nothing to fail against.
+        # date_issued_sk is NULL both when a permit has no issue date and when
+        # that date falls outside dim_date's range, so this is "issued, and
+        # placeable on the date axis" -- the same population the by-year series
+        # below sums to.
+        "permits_issued_by_municipality": {
+            r[0]: r[1]
+            for r in rows(
+                con,
+                "SELECT m.municipality_code, COUNT(*) FROM gold.fct_permits f "
+                "JOIN gold.dim_municipality m USING (municipality_sk) "
+                "WHERE f.date_issued_sk IS NOT NULL "
+                "GROUP BY 1 ORDER BY 1",
+            )
+        },
+        "permits_issued_total": scalar(
+            con,
+            "SELECT COUNT(*) FROM gold.fct_permits WHERE date_issued_sk IS NOT NULL",
+        ),
         "permits_issued_by_municipality_year": [
             {"municipality": r[0], "year": r[1], "permits_issued": r[2]}
             for r in rows(
@@ -273,7 +294,9 @@ def main() -> int:
 
     totals = report["fact_totals"]
     print(f"fact totals: permits={totals['fct_permits']} applications={totals['fct_applications']}")
-    print(f"permits by muni: {report['permits_by_municipality']}")
+    print(f"permits by muni (all rows): {report['permits_by_municipality']}")
+    print(f"permits issued by muni: {report['permits_issued_by_municipality']}")
+    print(f"permits issued total: {report['permits_issued_total']} of {totals['fct_permits']} rows")
     print(f"net units by muni: {report['net_units_by_municipality']}")
     print(f"permit applied->issued medians: {report['permit_applied_to_issued_median_days']}")
     print(

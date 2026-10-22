@@ -61,7 +61,7 @@ figure is a mixed-basis sum over roughly a third of the data.
 it as "not comparable — mixed basis"; add the ADR-0003 caveat card; show the
 per-municipality figures with a basis tag and the NULL coverage beside them.
 
-## D2 — `Permits Issued` is showing all permit rows, not issued permits (BLOCKING)
+## D2 — `Permits Issued` overstates by 21.8% (BLOCKING)
 
 Measure M1 in `docs/fabric-dax.md`:
 
@@ -75,20 +75,41 @@ The displayed values are 221,319 / 34,614 / 571,986 / 827,919 — identical to
 `scripts/reconcile_measures.py:144-152` computes as a plain `COUNT(*)` with no
 date filter.
 
-Both cannot be correct. `permits_by_municipality_status` records **10,888**
-permits at UNDER_REVIEW and **1,828** at APPLIED; neither state has an issue
-date, so M1 must return less than 827,919.
+Both cannot be correct, and the reconciliation file settles it.
 
-So either the visuals are bound to a bare row count rather than M1, or M1 is
-running against rows that all carry an issue date — which would be a silver-layer
-defect. **One check disambiguates:** put M1 on a card beside a bare
-`COUNTROWS(fct_permits)`. If they are equal, the problem is in the data, not the
-report.
+**Correction to the first version of this review.** I originally reported the
+overstatement as "at least 12,716 (1.5%)", reasoning only from the APPLIED and
+UNDER_REVIEW status counts, and said the file held no issue-date-filtered
+figure. That was wrong. `permits_issued_by_municipality_year` is built with an
+INNER JOIN on `date_issued_sk` to `dim_date`
+(`scripts/reconcile_measures.py:153-162`), so it is already filtered. Summing it
+gives the real figure:
 
-Overstatement is at least 12,716 (1.5%). A further **58,890** permits are
-CANCELLED, which needs its own ruling: a cancelled permit was issued and then
-withdrawn, so whether it counts toward "permits issued" is a definitional
-decision, not an oversight. It belongs in the data dictionary either way.
+| Municipality | Permits issued | All permit records | Excluded | % excluded |
+|---|---|---|---|---|
+| Toronto | 462,039 | 571,986 | 109,947 | 19.2% |
+| Mississauga | 34,614 | 34,614 | 0 | 0.0% |
+| Brampton | 150,936 | 221,319 | 70,383 | 31.8% |
+| **Total** | **647,589** | **827,919** | **180,330** | **21.8%** |
+
+**The card overstates permits issued by 180,330 — 21.8%, not 1.5%.** Brampton is
+overstated by nearly a third.
+
+Cross-check: issued >= `permits_with_both_dates` for all three, with small
+positive gaps (Toronto 1,918, Brampton 256, Mississauga 33 permits carrying an
+issue date but no applied date). The figures are internally consistent.
+
+**The gap has two causes that this file cannot separate.** `date_issued_sk` is
+NULL either because the permit has no issue date (the 12,716 at APPLIED or
+UNDER_REVIEW) or because its issue date falls outside `dim_date`'s 2010-2028
+range, which silently drops historical permits. Toronto's 109,947 dwarfs its
+8,073 un-issued permits, so most of that gap is very likely permits issued
+before 2010. That should be stated as a likelihood, not asserted, and it is a
+second finding in its own right: **the 827,919 total includes permits that
+cannot be placed on any date axis**, which is why the by-year chart sums to
+647,589 and the card says 827,919.
+
+Mississauga's 0% exclusion is consistent with its feed starting in 2018.
 
 **Root cause worth fixing in the harness, not just the report:**
 `reconcile_measures.py` emits no M1 value, so there was nothing for the

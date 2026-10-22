@@ -91,3 +91,39 @@ def test_medians_non_negative() -> None:
     for muni, entry in report["permit_applied_to_issued_median_days"].items():
         assert entry["median_days"] >= 0, f"negative median for {muni}"
         assert entry["permits_with_both_dates"] > 0
+
+
+def test_issued_permits_never_exceed_permit_rows() -> None:
+    """Permits issued must be a subset of permit rows, per municipality.
+
+    This guard exists because a dashboard card labelled "Permits Issued" shipped
+    showing COUNT(*) (827,919) when the issued population was 647,589 — a 21.8%
+    overstatement that survived review because the reconciliation file had no
+    issued figure to fail against. See
+    docs/reviews/powerbi-build-review-2026-10-22.md D2.
+    """
+    report = load_report()
+    all_rows = report["permits_by_municipality"]
+
+    issued: dict[str, int] = {}
+    for row in report["permits_issued_by_municipality_year"]:
+        issued[row["municipality"]] = issued.get(row["municipality"], 0) + row["permits_issued"]
+
+    assert issued, "permits_issued_by_municipality_year is empty"
+
+    for code, issued_count in issued.items():
+        assert code in all_rows, f"{code} has issued permits but no row count"
+        assert issued_count <= all_rows[code], (
+            f"{code}: {issued_count} issued exceeds {all_rows[code]} permit rows — "
+            "the issued filter is not being applied"
+        )
+
+    # Once `make reconcile` has run against the updated script, the first-class
+    # issued figures must agree with the by-year series they are derived from.
+    if "permits_issued_by_municipality" in report:
+        assert report["permits_issued_by_municipality"] == issued, (
+            "permits_issued_by_municipality disagrees with the by-year series"
+        )
+    if "permits_issued_total" in report:
+        assert report["permits_issued_total"] == sum(issued.values())
+        assert report["permits_issued_total"] <= report["fact_totals"]["fct_permits"]
