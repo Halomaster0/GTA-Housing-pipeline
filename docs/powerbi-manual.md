@@ -12,6 +12,16 @@ table visual). Pages 2–5, publish, and embed test are still ahead.
 ## 0. Prerequisites (all free, all $0)
 
 - Power BI Desktop installed (Windows, school or personal machine).
+- **Windows / PowerShell: `make` is not installed by default.** Every `make X`
+  in this document is a wrapper; run the command it wraps instead. The ones this
+  manual needs:
+  | Instead of | Run |
+  |---|---|
+  | `make export-csv` | `uv run python scripts/export_gold_parquet.py --format csv` |
+  | `make export-gold` | `uv run python scripts/export_gold_parquet.py` |
+  | `make reconcile` | `uv run python scripts/reconcile_measures.py` |
+  | `make test` | `uv run pytest` |
+  `make help` lists the rest with the command each one runs.
 - Repo cloned; gold CSVs present: run `make export-csv` (or
   `python scripts/export_gold_parquet.py --format csv`). Files land in
   `data/gold-csv/` (gitignored, ~125 MB total, biggest file 123 MB).
@@ -134,7 +144,7 @@ link + committed screenshots (decide then; `OUTSTANDING.md` tracks it).
 
 ## 11. Refresh SOP (each new ingest date)
 
-`make export-csv` → Desktop: refresh/replace the 7 CSV sources → re-check
+`make export-csv` (PowerShell: see §0) → Desktop: refresh/replace the 7 CSV sources → re-check
 §7 table → `make reconcile` → republish → confirm embed still loads. If any
 measure drifts beyond ±20% with no explanation, the publish fails and the
 dashboard keeps showing the last good refresh with its date.
@@ -360,7 +370,9 @@ caveat in its description: it travels with the measure wherever it is dragged.
 
 ### 14.2 First open
 
-1. `make export-csv`; check the row counts in §2 against `data/gold-csv/`.
+1. `make export-csv` (PowerShell:
+   `uv run python scripts/export_gold_parquet.py --format csv`); check the row
+   counts in §2 against `data/gold-csv/`. `fct_permits` must report 827,919.
 2. Open `powerbi/gta-housing.pbip` in Power BI Desktop. If Desktop reports that
    the Power BI Project or TMDL format is a preview feature, enable it under
    File > Options > Preview features, restart, and reopen.
