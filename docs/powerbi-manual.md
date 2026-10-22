@@ -92,8 +92,9 @@ Off by even 1: stop, do not build pages. Save as `gta-housing-v1.pbix`.
 2. **Municipal Comparison** — same volumes; per-capita panel is an EXPLICIT
    empty state ("pending StatCan census profiles", P1) plus the Caledon
    no-data card (never a zero).
-3. **Pipeline Velocity** — applied→issued histogram with medians TOR 28d /
-   MISS 34d / BRAM 44d (coverage n in `measure-reconciliation.json`);
+3. **Pipeline Velocity** — full step-by-step build in **§13**; applied→issued
+   histogram with medians TOR 28d / MISS 34d / BRAM 44d (coverage n in
+   `measure-reconciliation.json`);
    submitted→decision Mississauga-only (385d); Toronto/Brampton decision
    panels + application→permit timing are empty states citing the reason.
 4. **Geography** — ward map for Mississauga + Toronto applications (ward-
@@ -135,3 +136,179 @@ dashboard keeps showing the last good refresh with its date.
 | Geography link refused ("unique values") | Used `ward_code` | Use `geography_sk` both sides (§4) |
 | Time visuals look doubled | Two active date links on one fact | Exactly one active date role per fact (§4) |
 | Counts mismatch §7 | Stale CSVs or wrong relationship | Re-export; re-check §4; stop, don't build |
+
+---
+
+## 13. Page 3 — Pipeline Velocity, step by step
+
+The only page whose headline comparison is on a basis that is genuinely
+comparable across all three municipalities. Build it carefully; it carries more
+weight than page 1.
+
+### 13.0 The trap, before you write any DAX
+
+`dim_date[date_sk]` is `YEAR*10000 + MONTH*100 + DAY`
+(`models/gold/00_dim_date.sql:13`). **Never subtract two `date_sk` values.**
+`20260301 - 20260228` is 73, not 1. Every duration on this page must come from
+real dates. M6 and M7 already avoid this with `LOOKUPVALUE`; the calculated
+column below does it with arithmetic.
+
+### 13.1 Calculated column — days from applied to issued
+
+A histogram bins one value per row, so this must be a **column**, not a measure.
+Model view → `fct_permits` → New column.
+
+```dax
+Days Applied to Issued =
+VAR A = fct_permits[date_applied_sk]
+VAR I = fct_permits[date_issued_sk]
+VAR AppliedDate =
+    IF ( NOT ISBLANK ( A ), DATE ( INT ( A / 10000 ), MOD ( INT ( A / 100 ), 100 ), MOD ( A, 100 ) ) )
+VAR IssuedDate =
+    IF ( NOT ISBLANK ( I ), DATE ( INT ( I / 10000 ), MOD ( INT ( I / 100 ), 100 ), MOD ( I, 100 ) ) )
+RETURN
+    IF (
+        NOT ISBLANK ( AppliedDate ) && NOT ISBLANK ( IssuedDate ),
+        DATEDIFF ( AppliedDate, IssuedDate, DAY )
+    )
+```
+
+The arithmetic is valid only because *we* define `date_sk` as YYYYMMDD. It is
+used instead of two `LOOKUPVALUE` calls because those scan `dim_date` twice for
+each of 827,919 rows and can take minutes. If you would rather not depend on the
+convention, swap in the `LOOKUPVALUE` form from M6 — same answer, much slower.
+
+### 13.2 Check for negatives before building anything on it
+
+Drop a card with `MIN ( fct_permits[Days Applied to Issued] )`.
+
+If it is below zero, some permits are recorded as issued before they were
+applied for. That is a real source defect and a finding, not noise. **Do not
+filter it away silently** — it gets its own bucket below and a line on page 5.
+If the minimum is 0 or above, delete the card and carry on.
+
+### 13.3 Bucket and sort columns
+
+Two more columns on `fct_permits`. Bins from the "New group" dialog produce a
+long tail of near-empty bins, so these are explicit.
+
+```dax
+Days Bucket =
+VAR d = fct_permits[Days Applied to Issued]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( d ), "No dates",
+        d < 0, "Issued before applied",
+        d <= 7, "0-7",
+        d <= 14, "8-14",
+        d <= 30, "15-30",
+        d <= 60, "31-60",
+        d <= 90, "61-90",
+        d <= 180, "91-180",
+        d <= 365, "181-365",
+        "365+"
+    )
+```
+
+```dax
+Days Bucket Sort =
+VAR d = fct_permits[Days Applied to Issued]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( d ), 99,
+        d < 0, 0,
+        d <= 7, 1, d <= 14, 2, d <= 30, 3, d <= 60, 4,
+        d <= 90, 5, d <= 180, 6, d <= 365, 7,
+        8
+    )
+```
+
+Then select `Days Bucket` → Column tools → **Sort by column** → `Days Bucket
+Sort`. Skip this and the axis sorts alphabetically, putting "0-7" next to
+"181-365".
+
+### 13.4 Measures
+
+```dax
+/* COUNT ignores blanks, so this is exactly "permits having both dates" */
+Permits With Both Dates = COUNT ( fct_permits[Days Applied to Issued] )
+
+/* Independent twin of M6. Must agree with it — see 13.7 */
+Median Days Applied to Issued = MEDIAN ( fct_permits[Days Applied to Issued] )
+
+/* Coverage: the denominator differs per municipality and must be visible */
+Date Coverage Pct = DIVIDE ( [Permits With Both Dates], COUNTROWS ( fct_permits ) )
+
+/* Share within each municipality, so distribution shapes are comparable */
+Share of Dated Permits =
+DIVIDE (
+    [Permits With Both Dates],
+    CALCULATE ( [Permits With Both Dates], REMOVEFILTERS ( fct_permits[Days Bucket] ) )
+)
+```
+
+`Share of Dated Permits` is the one that matters. Toronto has 460,121 dated
+permits against Brampton's 150,680, so a raw-count histogram makes Toronto's
+bars dwarf Brampton's and you cannot compare the shapes — which is the entire
+question the page asks. Plot the share and state the counts separately.
+
+### 13.5 Visuals
+
+**Top — matrix.** Rows: `dim_municipality[municipality_name]`. Values:
+`Median Days Applied to Issued`, `Permits With Both Dates`, `Date Coverage Pct`.
+This is the page's answer in one object.
+
+**Middle — clustered column chart** (the histogram). X axis: `Days Bucket`.
+Y axis: `Share of Dated Permits`, formatted as a percentage. Small multiples:
+`dim_municipality[municipality_name]`. Small multiples beat a legend here —
+three side-by-side distributions read instantly, three overlapping series do
+not. Sort the X axis by `Days Bucket Sort` ascending, not by value.
+
+**Bottom left — submitted to decision.** A card with
+`Median Submitted to Decision Days` (M7) and a card with the application count,
+both filtered to Mississauga. Beside them, two text boxes, not blank space:
+
+> **Toronto — no decision dates in source.** The development applications feed
+> carries `DATE_SUBMITTED` and a current `STATUS`, with no decision date. The
+> measure is defined and cannot be computed.
+
+> **Brampton — no decision dates in source.** The planning layers carry no
+> decision date field.
+
+**Bottom right — application to permit timing.** One text box:
+
+> **Not computable.** No permit-to-application key exists in any of the three
+> feeds (`related_application_number` is NULL for all 827,919 permits). Linking
+> them on address or date would fabricate a relationship the sources do not
+> assert. See ADR-0006.
+
+**Footnote.** Coverage denominators, because the histogram hides them:
+Toronto 460,121 of 571,986 (80.4%) · Mississauga 34,581 of 34,614 (99.9%) ·
+Brampton 150,680 of 221,319 (68.1%).
+
+### 13.6 What the page must not do
+
+Do not fill the three empty states. Do not average the three medians into a
+"GTA median" — different coverage rates make that meaningless. Do not trend
+medians by year without re-stating coverage per year, since Mississauga has no
+permits before 2018.
+
+### 13.7 Verification gate — before you move to page 4
+
+From `docs/measure-reconciliation.json`, confirm on the matrix:
+
+| Municipality | Median days | Permits with both dates |
+|---|---|---|
+| Toronto | **28** | **460,121** |
+| Mississauga | **34** | **34,581** |
+| Brampton | **44** | **150,680** |
+
+Total dated permits: **645,382**. Mississauga M7: **385** days over **1,163**
+applications.
+
+`Median Days Applied to Issued` and M6 are computed two different ways and must
+return the same three numbers. If they disagree, the calculated column is wrong
+— most likely a `date_sk` subtraction crept in (13.0). If the matrix disagrees
+with the table above, stop and re-export; do not build on it.
