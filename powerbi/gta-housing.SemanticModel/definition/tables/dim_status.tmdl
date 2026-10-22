@@ -1,0 +1,72 @@
+/// One row per conformed status per track (15 rows). Permit track: APPLIED, UNDER_REVIEW, ISSUED, then terminal CLOSED / CANCELLED / EXPIRED, plus UNKNOWN. Application track: SUBMITTED, UNDER_REVIEW, then terminal APPROVED / REFUSED / WITHDRAWN / CLOSED, plus APPEALED (non-terminal) and UNKNOWN.
+/// Crosswalk: docs/conformance-matrix.md section 4.
+table dim_status
+	lineageTag: 4a624ef2-cf05-5561-8863-4df85a9680d6
+
+	/// Surrogate key. Permit track 1 to 7, application track 11 to 18.
+	column status_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 2dc4609d-609e-57ba-be2d-d16933afa7d5
+		summarizeBy: none
+		sourceColumn: status_sk
+
+	/// Conformed status code. Not unique on its own: UNDER_REVIEW, CLOSED and UNKNOWN each exist once per track. A fact only reaches rows of its own track through its relationship.
+	column status_code
+		dataType: string
+		lineageTag: 852afdf6-a1aa-53d3-8784-becaa70107db
+		summarizeBy: none
+		sourceColumn: status_code
+
+	/// Display label. Use on axes, slicers and legends.
+	column status_label
+		dataType: string
+		lineageTag: c96bd68a-ca6c-5164-ba12-21fe43cf72e4
+		summarizeBy: none
+		sourceColumn: status_label
+
+	/// Track this row belongs to: 'permit' or 'application'.
+	column applies_to
+		dataType: string
+		lineageTag: 318fd185-3d1c-5d9c-a391-9bbde44e5d87
+		summarizeBy: none
+		sourceColumn: applies_to
+
+	/// Funnel position within the track (1 = first stage), 0 for UNKNOWN. Use it to order stages in visuals; it is not unique across tracks, so it is not wired as a sort-by column.
+	column status_stage_order
+		dataType: int64
+		formatString: 0
+		lineageTag: 89ffaa41-3a16-552f-81a4-cd1c4b3e753c
+		summarizeBy: none
+		sourceColumn: status_stage_order
+
+	/// TRUE for end-of-life statuses. FALSE means still active; APPEALED is non-terminal. Drives Active Applications.
+	column is_terminal
+		dataType: boolean
+		lineageTag: db80fc0a-5fe7-5896-bb94-204a8b71abec
+		summarizeBy: none
+		sourceColumn: is_terminal
+
+	partition dim_status = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(
+						File.Contents(Text.TrimEnd(GoldCsvFolder, {"\", "/"}) & "\gold.dim_status.csv"),
+						[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+					),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{
+							{"status_sk", Int64.Type},
+							{"status_code", type text},
+							{"status_label", type text},
+							{"applies_to", type text},
+							{"status_stage_order", Int64.Type},
+							{"is_terminal", type logical}
+						},
+						"en-US"
+					)
+				in
+					Typed

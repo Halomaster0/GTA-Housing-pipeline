@@ -1,0 +1,174 @@
+/// One row per development application file (21,658 rows): Brampton 11,630, Toronto 8,601, Mississauga 1,427. Grain is the administrative file number (ADR-0005), explicitly not the project.
+/// Date roles: date_submitted_sk is the ACTIVE link to dim_date; date_decision_sk is inactive (USERELATIONSHIP) and populated for Mississauga only.
+table fct_applications
+	lineageTag: d915f7c1-b286-57d3-bafb-fa8e79a03007
+
+	/// Applications whose conformed status is not terminal (dim_status[is_terminal] = FALSE). APPEALED counts as active.
+	/// Reference (docs/measure-reconciliation.json): 2,668 overall; Toronto 1,694, Brampton 719, Mississauga 255.
+	measure 'Active Applications' = ```
+			// M3. Applications whose status is not terminal; APPEALED counts as active.
+			CALCULATE (
+				COUNTROWS ( fct_applications ),
+				dim_status[is_terminal] = FALSE ()
+			)
+			```
+		formatString: #,0
+		lineageTag: 144f928d-3216-56fc-a71b-e3fba1710da4
+
+	/// Median whole days from submission to decision, over applications that have both dates. Mississauga only in v1: Toronto and Brampton sources carry no decision date, so this returns blank for them by design (an empty state, not zero).
+	/// Reference (docs/measure-reconciliation.json): Mississauga 385 days (n=1,163).
+	measure 'Median Submitted to Decision Days' = ```
+			// M7. Median whole days from submitted to decision, over applications with both dates.
+			MEDIANX (
+				FILTER (
+					fct_applications,
+					NOT ( ISBLANK ( fct_applications[date_submitted_sk] ) )
+						&& NOT ( ISBLANK ( fct_applications[date_decision_sk] ) )
+				),
+				DATEDIFF (
+					LOOKUPVALUE ( dim_date[calendar_date], dim_date[date_sk], fct_applications[date_submitted_sk] ),
+					LOOKUPVALUE ( dim_date[calendar_date], dim_date[date_sk], fct_applications[date_decision_sk] ),
+					DAY
+				)
+			)
+			```
+		formatString: #,0.0
+		lineageTag: 724cdc93-4c11-544d-9299-e5fcd6281e03
+
+	/// Surrogate key, one per application file.
+	column application_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 5d495a71-5c5d-56fd-9976-694f4998059b
+		summarizeBy: none
+		sourceColumn: application_sk
+
+	/// FK to dim_municipality. Never NULL.
+	column municipality_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: c5448af2-8e05-597b-a8c9-f3ca5f1de7ae
+		summarizeBy: none
+		sourceColumn: municipality_sk
+
+	/// Business key: the administrative file number.
+	column application_number
+		dataType: string
+		lineageTag: 36678db7-c512-5ba1-aba6-9a68e983ce30
+		summarizeBy: none
+		sourceColumn: application_number
+
+	/// FK to dim_geography. NULL on 55 rows: unmatched ward codes (measured residual).
+	column geography_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 6b8ee940-e69e-5919-8222-d1b042bdd007
+		summarizeBy: none
+		sourceColumn: geography_sk
+
+	/// FK to dim_use_type. UNKNOWN on 20,500 of 21,658 rows (94.6%): most application feeds carry no use signal.
+	column use_type_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: e203ab97-faba-582c-bf84-089efc9fc98e
+		summarizeBy: none
+		sourceColumn: use_type_sk
+
+	/// Always 'unknown' on applications (permits use 'source-field-mapped').
+	column use_type_classification_method
+		dataType: string
+		lineageTag: 453a5ccf-706a-570b-8e1c-009924f56883
+		summarizeBy: none
+		sourceColumn: use_type_classification_method
+
+	/// FK to dim_status (application track). Never NULL.
+	column status_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 310830d8-ae74-5a84-b49d-7f20b9ff9796
+		summarizeBy: none
+		sourceColumn: status_sk
+
+	/// Source status text before conformance. Preserved for audit.
+	column status_raw
+		dataType: string
+		lineageTag: 3be3d5b8-f65a-5eee-b92c-9abb6e19d0c7
+		summarizeBy: none
+		sourceColumn: status_raw
+
+	/// FK to dim_date, submitted role. The ACTIVE date relationship.
+	column date_submitted_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: bb4aca04-e6c3-5243-970f-1bc4c037c058
+		summarizeBy: none
+		sourceColumn: date_submitted_sk
+
+	/// FK to dim_date, decision role. INACTIVE relationship. Populated for Mississauga only; Toronto and Brampton sources have no decision date, so NULL.
+	column date_decision_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 8b94f93b-dcf9-59ce-99e7-01c26f69eade
+		summarizeBy: none
+		sourceColumn: date_decision_sk
+
+	/// Proposed units where reported: Mississauga TOTAL_RES_UNITS only; Toronto and Brampton have no unit field, so NULL. Basis 'unknown' (ADR-0003). No measure uses it; never add it to unit_count_net_new.
+	column unit_count_proposed
+		dataType: int64
+		formatString: #,0
+		lineageTag: f7b8b399-6b4c-52aa-8131-24f3e6f901f7
+		summarizeBy: none
+		sourceColumn: unit_count_proposed
+
+	/// Always 'unknown' in v1 (ADR-0003).
+	column unit_count_basis
+		dataType: string
+		lineageTag: ec635126-aa53-54ae-973a-d1b5fd3488af
+		summarizeBy: none
+		sourceColumn: unit_count_basis
+
+	/// Ingest date of the batch that produced the row (lineage).
+	column ingest_batch_id
+		dataType: string
+		lineageTag: 08d9e4c6-67cc-511d-a4ae-041e75c383d4
+		summarizeBy: none
+		sourceColumn: ingest_batch_id
+
+	/// Timestamp the row was written to gold (lineage).
+	column row_loaded_at
+		dataType: dateTime
+		lineageTag: cdc4f295-64bf-5aec-9ac2-c50c369da057
+		summarizeBy: none
+		sourceColumn: row_loaded_at
+
+	partition fct_applications = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(
+						File.Contents(Text.TrimEnd(GoldCsvFolder, {"\", "/"}) & "\gold.fct_applications.csv"),
+						[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+					),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{
+							{"application_sk", Int64.Type},
+							{"municipality_sk", Int64.Type},
+							{"application_number", type text},
+							{"geography_sk", Int64.Type},
+							{"use_type_sk", Int64.Type},
+							{"use_type_classification_method", type text},
+							{"status_sk", Int64.Type},
+							{"status_raw", type text},
+							{"date_submitted_sk", Int64.Type},
+							{"date_decision_sk", Int64.Type},
+							{"unit_count_proposed", Int64.Type},
+							{"unit_count_basis", type text},
+							{"ingest_batch_id", type text},
+							{"row_loaded_at", type datetimezone}
+						},
+						"en-US"
+					)
+				in
+					Typed

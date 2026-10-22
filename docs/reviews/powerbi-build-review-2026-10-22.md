@@ -37,9 +37,14 @@ basis is **known and mixed**:
 
 | Municipality | Source expression | Basis |
 |---|---|---|
-| Toronto | `dwelling_units_created − dwelling_units_lost` | net |
-| Mississauga | `res_units` | gross |
-| Brampton | `dwellings` | gross |
+| Toronto | `dwelling_units_created − dwelling_units_lost` | net of losses |
+| Mississauga | `res_units` | as reported, no loss adjustment |
+| Brampton | `dwellings` | as reported, no loss adjustment |
+
+Calling the latter two "gross" would assert more than the sources document —
+ADR-0003 holds every source's unit semantics as unconfirmed. What the SQL does
+prove is that only Toronto subtracts demolition losses, which is enough: the
+three are not on a common basis whatever the other two fields turn out to mean.
 
 One column named `unit_count_net_new` carrying a net value for one municipality
 and gross values for two. Summing it adds a net quantity to two gross

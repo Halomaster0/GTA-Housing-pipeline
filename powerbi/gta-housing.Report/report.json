@@ -1,0 +1,17 @@
+{
+  "config": "{\"version\":\"5.0\",\"activeSectionIndex\":0,\"defaultDrillFilterOtherVisuals\":true,\"settings\":{}}",
+  "layoutOptimization": 0,
+  "resourcePackages": [],
+  "sections": [
+    {
+      "config": "{}",
+      "displayName": "Page 1",
+      "displayOption": 1,
+      "filters": "[]",
+      "height": 720.0,
+      "name": "ReportSection",
+      "visualContainers": [],
+      "width": 1280.0
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+/// One row per municipality in scope (5 rows: Toronto, Mississauga, Brampton, Peel Region, Caledon; ADR-0004).
+/// Peel Region and Caledon issue no permits in these feeds, so they have zero fact rows and show blank, never zero, against fact measures.
+table dim_municipality
+	lineageTag: 20fc796b-7224-5f30-98e2-ced720ec25c8
+
+	/// Surrogate key. Target of fct_permits[municipality_sk] and fct_applications[municipality_sk].
+	column municipality_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: c6abb78b-fb15-5b47-a498-3dee91d6e7fd
+		summarizeBy: none
+		sourceColumn: municipality_sk
+
+	/// Short code: TOR, MISS, BRAM, CALE or PEEL.
+	column municipality_code
+		dataType: string
+		lineageTag: b8ce4912-bfb2-542b-8d7d-7906e3fd7410
+		summarizeBy: none
+		sourceColumn: municipality_code
+
+	/// Display name. Use this, not the code, on axes, slicers and legends.
+	column municipality_name
+		dataType: string
+		lineageTag: 8534ac7d-c201-5e73-8b68-eed7cd77ad84
+		summarizeBy: none
+		sourceColumn: municipality_name
+
+	/// Governance tier: single-tier (Toronto), lower-tier (Peel member municipalities), upper-tier (Peel Region).
+	column municipality_tier
+		dataType: string
+		lineageTag: 06526b25-c907-5b41-888f-9c5b79ca85ef
+		summarizeBy: none
+		sourceColumn: municipality_tier
+
+	/// PEEL for the Peel member municipalities, else NULL.
+	column parent_region_code
+		dataType: string
+		lineageTag: 9563c2cc-155e-5142-a553-85a207ec92bf
+		summarizeBy: none
+		sourceColumn: parent_region_code
+
+	/// FALSE for Peel Region and Caledon: zero fact rows by construction (ADR-0004).
+	column is_permit_issuing_authority
+		dataType: boolean
+		lineageTag: 1a8e9164-206a-5ee0-8fe6-92daed5d502d
+		summarizeBy: none
+		sourceColumn: is_permit_issuing_authority
+
+	/// All NULL in v1: populated from StatCan census profiles once the series pull works. Per-capita measures are defined but not computable, so none is in this model.
+	column population_latest
+		dataType: int64
+		formatString: #,0
+		lineageTag: a02c68a3-8da3-5474-b137-df3723a4e5c8
+		summarizeBy: none
+		sourceColumn: population_latest
+
+	/// All NULL in v1. Census year of population_latest.
+	column population_reference_year
+		dataType: int64
+		formatString: 0
+		lineageTag: ebaabea0-f0e2-51dc-a345-df1e8a61f871
+		summarizeBy: none
+		sourceColumn: population_reference_year
+
+	/// All NULL in v1. Source series of population_latest.
+	column population_source
+		dataType: string
+		lineageTag: 223f8440-29a9-5177-9580-80f10409fd84
+		summarizeBy: none
+		sourceColumn: population_source
+
+	partition dim_municipality = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(
+						File.Contents(Text.TrimEnd(GoldCsvFolder, {"\", "/"}) & "\gold.dim_municipality.csv"),
+						[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+					),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{
+							{"municipality_sk", Int64.Type},
+							{"municipality_code", type text},
+							{"municipality_name", type text},
+							{"municipality_tier", type text},
+							{"parent_region_code", type text},
+							{"is_permit_issuing_authority", type logical},
+							{"population_latest", Int64.Type},
+							{"population_reference_year", Int64.Type},
+							{"population_source", type text}
+						},
+						"en-US"
+					)
+				in
+					Typed

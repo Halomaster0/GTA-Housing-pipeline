@@ -1,0 +1,123 @@
+/// One row per ward-boundary version (municipality, ward code, effective start), 89 rows (ADR-0007). Join on geography_sk only: ward_code repeats across vintages and Power BI rejects it as a key.
+/// Coverage: Toronto and Brampton permits carry NULL geography_sk (grid reference / no ward in source), so ward visuals of permits cover Mississauga only. Brampton city-versus-regional ward equivalence is UNCONFIRMED (conformance matrix section 3).
+table dim_geography
+	lineageTag: ac96fdcf-083f-5b6a-aabb-42c172b53529
+
+	/// Surrogate key, unique 1 to 89. The only valid join key from the facts.
+	column geography_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 5d7b56a6-5197-50f0-9b94-17fb6dc86d82
+		summarizeBy: none
+		sourceColumn: geography_sk
+
+	/// Lower-tier municipality name as text. Not related to dim_municipality in this model: slice facts by dim_municipality instead.
+	column municipality
+		dataType: string
+		lineageTag: 6f3bde21-d33b-5a30-9d8e-dc5aa81a9371
+		summarizeBy: none
+		sourceColumn: municipality
+
+	/// Ward code within its vintage. NOT unique across vintages.
+	column ward_code
+		dataType: string
+		lineageTag: 0109901d-6a93-5ddf-a20f-ccce8bac60fd
+		summarizeBy: none
+		sourceColumn: ward_code
+
+	/// Ward display name within its vintage.
+	column ward_name
+		dataType: string
+		lineageTag: f37c8f0b-f72d-577f-b403-5edeae2a409d
+		summarizeBy: none
+		sourceColumn: ward_name
+
+	/// Boundary version: city-wards-current (Toronto), mississauga-wards-current, peel-2018-2022, peel-2022-2026 (ADR-0007).
+	column vintage
+		dataType: string
+		lineageTag: 2842af20-6b89-54db-9608-91ad945248f0
+		summarizeBy: none
+		sourceColumn: vintage
+
+	/// First date the boundary version applies.
+	column effective_start
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 47e198c7-d256-514c-bce6-5eeb2b676c71
+		summarizeBy: none
+		sourceColumn: effective_start
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Last date the boundary version applies; NULL if open-ended.
+	column effective_end
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 382b8bdc-5752-5b74-985a-ffc2fe41f9b5
+		summarizeBy: none
+		sourceColumn: effective_end
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// TRUE for the boundary version currently in force.
+	column is_current
+		dataType: boolean
+		lineageTag: ab476bb9-eb06-53a9-ad3c-b88c1136adb8
+		summarizeBy: none
+		sourceColumn: is_current
+
+	/// NULL on every row in v1: tract linkage is unresolved (no spatial step yet).
+	column census_tract_id
+		dataType: string
+		lineageTag: 714f0e11-444c-5ffe-8f6d-c8a245bb21ac
+		summarizeBy: none
+		sourceColumn: census_tract_id
+
+	/// Always 'unresolved' in v1.
+	column census_tract_allocation_method
+		dataType: string
+		lineageTag: 59de7593-e2fb-5140-90b2-c0ac0c1f9fff
+		summarizeBy: none
+		sourceColumn: census_tract_allocation_method
+
+	/// 'unknown' in v1: no geometries are stored, codes only.
+	column geometry_precision
+		dataType: string
+		lineageTag: ec94a456-ea55-5f5a-8891-c1c822dfbf2a
+		summarizeBy: none
+		sourceColumn: geometry_precision
+
+	/// 'EPSG:4326' by convention for any future geometry.
+	column geometry_crs
+		dataType: string
+		lineageTag: 00772bd3-03be-5ecd-ad87-0960eeae9ffd
+		summarizeBy: none
+		sourceColumn: geometry_crs
+
+	partition dim_geography = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(
+						File.Contents(Text.TrimEnd(GoldCsvFolder, {"\", "/"}) & "\gold.dim_geography.csv"),
+						[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+					),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{
+							{"geography_sk", Int64.Type},
+							{"municipality", type text},
+							{"ward_code", type text},
+							{"ward_name", type text},
+							{"vintage", type text},
+							{"effective_start", type date},
+							{"effective_end", type date},
+							{"is_current", type logical},
+							{"census_tract_id", type text},
+							{"census_tract_allocation_method", type text},
+							{"geometry_precision", type text},
+							{"geometry_crs", type text}
+						},
+						"en-US"
+					)
+				in
+					Typed

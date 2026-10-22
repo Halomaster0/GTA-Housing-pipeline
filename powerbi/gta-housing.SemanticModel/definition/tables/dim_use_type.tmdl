@@ -1,0 +1,55 @@
+/// One row per conformed use type (6 rows): RESIDENTIAL, MIXED_USE, INSTITUTIONAL, INFRASTRUCTURE, OTHER (non-residential scope) and UNKNOWN (no use signal in source).
+/// Raw source values are preserved on the facts; the crosswalk is docs/conformance-matrix.md sections 1 and 2.
+table dim_use_type
+	lineageTag: b764e835-3793-5381-b12d-5a02c4f8cbbc
+
+	/// Surrogate key, 1 to 6.
+	column use_type_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 2580a94b-5a61-5592-ab3d-2a7413c2aa4c
+		summarizeBy: none
+		sourceColumn: use_type_sk
+
+	/// Conformed code, for example RESIDENTIAL or UNKNOWN.
+	column use_type_code
+		dataType: string
+		lineageTag: 408f61d9-e416-50a5-82f4-829b62a83f6f
+		summarizeBy: none
+		sourceColumn: use_type_code
+
+	/// Display label. Use on axes and slicers.
+	column use_type_label
+		dataType: string
+		lineageTag: bec72894-6516-54ca-8592-0b1d78d5fa14
+		summarizeBy: none
+		sourceColumn: use_type_label
+
+	/// Always 'both': the vocabulary is shared by permits and applications.
+	column applies_to
+		dataType: string
+		lineageTag: 6aad1a8a-c6c5-5ef4-a7e6-c8187ac18da6
+		summarizeBy: none
+		sourceColumn: applies_to
+
+	partition dim_use_type = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(
+						File.Contents(Text.TrimEnd(GoldCsvFolder, {"\", "/"}) & "\gold.dim_use_type.csv"),
+						[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+					),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{
+							{"use_type_sk", Int64.Type},
+							{"use_type_code", type text},
+							{"use_type_label", type text},
+							{"applies_to", type text}
+						},
+						"en-US"
+					)
+				in
+					Typed

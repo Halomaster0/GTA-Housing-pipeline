@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "gta-housing"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "d9fa29b0-efa2-514b-958e-37401441af5c"
+  }
+}

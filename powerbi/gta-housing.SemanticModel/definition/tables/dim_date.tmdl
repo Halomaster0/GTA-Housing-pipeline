@@ -1,0 +1,174 @@
+/// One row per calendar date, 2010-01-01 to 2028-12-31 (6,940 rows). This is the model's date table, keyed on calendar_date.
+/// date_sk is YYYYMMDD, not a day count: never subtract two date_sk values (20260301 - 20260228 = 73). Use calendar_date for any duration.
+table dim_date
+	lineageTag: c6cd520f-070a-5e7a-9754-9fed64d90fd3
+	dataCategory: Time
+
+	/// Surrogate key, YYYYMMDD. Join target for every fact date role. Not a day count: never subtract two date_sk values.
+	column date_sk
+		dataType: int64
+		formatString: 0
+		lineageTag: 56dd3d21-80bd-5b84-81de-979f11220a9f
+		summarizeBy: none
+		sourceColumn: date_sk
+
+	/// The calendar date. Key column of the date table: unique, no blanks, 2010-01-01 to 2028-12-31.
+	column calendar_date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		isKey: true
+		lineageTag: 961a7a78-989c-5cd5-a2de-c433616c41db
+		summarizeBy: none
+		sourceColumn: calendar_date
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Calendar year.
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 400e69b2-543a-54bb-96c0-b374c14be38b
+		summarizeBy: none
+		sourceColumn: year
+
+	/// Calendar quarter, 1 to 4.
+	column quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 7dd819bb-bafb-5786-b18e-62f4083b2e15
+		summarizeBy: none
+		sourceColumn: quarter
+
+	/// Calendar month number, 1 to 12.
+	column month
+		dataType: int64
+		formatString: 0
+		lineageTag: 4a6f9284-e21d-5e48-8c73-4bb61964b109
+		summarizeBy: none
+		sourceColumn: month
+
+	/// Full month name, English.
+	column month_name
+		dataType: string
+		lineageTag: 9de00e3f-1277-566d-bd35-08d813859651
+		summarizeBy: none
+		sourceColumn: month_name
+
+	/// Three-letter month abbreviation.
+	column month_short_name
+		dataType: string
+		lineageTag: c45be20e-7747-5242-a778-ad0258e36616
+		summarizeBy: none
+		sourceColumn: month_short_name
+
+	/// Day of month, 1 to 31.
+	column day_of_month
+		dataType: int64
+		formatString: 0
+		lineageTag: b1d398b8-caeb-5ff3-8411-fecef4c9b376
+		summarizeBy: none
+		sourceColumn: day_of_month
+
+	/// ISO weekday, 1 = Monday to 7 = Sunday.
+	column day_of_week_iso
+		dataType: int64
+		formatString: 0
+		lineageTag: 0feb75f6-8199-5632-ad59-0dcc12aa37b8
+		summarizeBy: none
+		sourceColumn: day_of_week_iso
+
+	/// Full weekday name, English.
+	column day_name
+		dataType: string
+		lineageTag: 111057da-7ecc-5821-9314-abe574ddeff0
+		summarizeBy: none
+		sourceColumn: day_name
+
+	/// TRUE for Saturday and Sunday.
+	column is_weekend
+		dataType: boolean
+		lineageTag: 4b9e27f2-8fb2-5989-8280-9ddb59263d0b
+		summarizeBy: none
+		sourceColumn: is_weekend
+
+	/// ISO week number.
+	column week_of_year_iso
+		dataType: int64
+		formatString: 0
+		lineageTag: 5a638052-1682-5b3a-b2af-1085b3a81994
+		summarizeBy: none
+		sourceColumn: week_of_year_iso
+
+	/// Gold computes this as YEAR(calendar_date), so it always equals year and is NOT the ISO week-numbering year. (iso_year, week_of_year_iso) mis-pairs for days near 1 January and 31 December. Use year with calendar_date instead.
+	column iso_year
+		dataType: int64
+		formatString: 0
+		lineageTag: b185d4ae-d55a-5669-9df5-24e1b1bd0c5b
+		summarizeBy: none
+		sourceColumn: iso_year
+
+	/// Day of year, 1 to 366.
+	column day_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 7226c8b1-af7c-55b0-8c65-694a99655ee7
+		summarizeBy: none
+		sourceColumn: day_of_year
+
+	/// Fiscal year. In v1 gold sets this equal to the calendar year (Director ruling 8-5, assumption A20). It is NOT an April-start fiscal year.
+	column fiscal_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 90881df6-6df1-51dd-a5cb-e1db74dff529
+		summarizeBy: none
+		sourceColumn: fiscal_year
+
+	/// Fiscal quarter. Equal to the calendar quarter in v1.
+	column fiscal_quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 7cbd2a82-5074-5a2e-9c0b-90f7dc84945c
+		summarizeBy: none
+		sourceColumn: fiscal_quarter
+
+	/// Fiscal month. Equal to the calendar month in v1.
+	column fiscal_month
+		dataType: int64
+		formatString: 0
+		lineageTag: 0ea1862a-e371-5b41-8393-142a40707b8a
+		summarizeBy: none
+		sourceColumn: fiscal_month
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(
+						File.Contents(Text.TrimEnd(GoldCsvFolder, {"\", "/"}) & "\gold.dim_date.csv"),
+						[Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+					),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{
+							{"date_sk", Int64.Type},
+							{"calendar_date", type date},
+							{"year", Int64.Type},
+							{"quarter", Int64.Type},
+							{"month", Int64.Type},
+							{"month_name", type text},
+							{"month_short_name", type text},
+							{"day_of_month", Int64.Type},
+							{"day_of_week_iso", Int64.Type},
+							{"day_name", type text},
+							{"is_weekend", type logical},
+							{"week_of_year_iso", Int64.Type},
+							{"iso_year", Int64.Type},
+							{"day_of_year", Int64.Type},
+							{"fiscal_year", Int64.Type},
+							{"fiscal_quarter", Int64.Type},
+							{"fiscal_month", Int64.Type}
+						},
+						"en-US"
+					)
+				in
+					Typed

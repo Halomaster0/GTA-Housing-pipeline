@@ -71,14 +71,28 @@ delete it, don't duplicate it.
 
 ## 7. Verify the model (gate before any page)
 
-Table visual with `dim_municipality[municipality_name]` × `Permits Issued`
-× `Net New Units`. Required, exact:
+**Corrected 2026-10-22.** This table previously listed 571,986 / 221,319 /
+34,614 under `Permits Issued`. Those are permit *record* counts, so a correctly
+built model failed this gate and the instruction below told you to stop. The
+two measures are now separate (§14) and both are checked here.
 
-| Municipality | Permits | Net units |
-|---|---|---|
-| Toronto | 571,986 | 259,840 |
-| Brampton | 221,319 | 78,957 |
-| Mississauga | 34,614 | 30,968 |
+Table visual with `dim_municipality[municipality_name]` × `Permits Issued`
+× `Permit Records` × `Net New Units`. Required, exact:
+
+| Municipality | Permits issued | Permit records | Net units |
+|---|---|---|---|
+| Toronto | 462,039 | 571,986 | 259,840 |
+| Brampton | 150,936 | 221,319 | 78,957 |
+| Mississauga | 34,614 | 34,614 | 30,968 |
+| **Total** | **647,589** | **827,919** | **do not total** |
+
+Mississauga's two permit columns are equal because every Mississauga permit
+carries an issue date inside `dim_date`'s range. Toronto and Brampton differ by
+109,947 and 70,383 — partly permits with no issue date, partly permits issued
+before 2010, which the date dimension does not cover.
+
+**Never total the net units column** (ADR-0003, review D1): Toronto subtracts
+demolition losses and the other two do not, so 369,765 is not a figure.
 
 (Caledon/Peel rows may appear blank — correct by construction, ADR-0004.)
 Off by even 1: stop, do not build pages. Save as `gta-housing-v1.pbix`.
@@ -312,3 +326,158 @@ applications.
 return the same three numbers. If they disagree, the calculated column is wrong
 — most likely a `date_sk` subtraction crept in (13.0). If the matrix disagrees
 with the table above, stop and re-export; do not build on it.
+
+---
+
+## 14. Generated PBIP path (makes §§2-6 unnecessary)
+
+Source of truth: `scripts/generate_pbip.py`. Output, committed: `powerbi/`.
+The semantic model (tables, columns, relationships, measures) is emitted as
+TMDL text, so it is diffable and reproducible instead of living in a binary
+that someone rebuilt by hand. Hand-building drifted once already: the
+2026-10-22 review (D2) found a card whose formula did not match
+`docs/fabric-dax.md`.
+
+> **Status: generated, never opened in Desktop.** It was produced on a
+> machine with no Power BI. The PBIP/TMDL format is version-sensitive, so the
+> files may be rejected by your Desktop build or load with a surprise. Treat
+> the first open as a test. **Nothing is published until §14.3 passes**, and
+> §14.4 says what to do if a file is rejected.
+
+### 14.1 What it replaces
+
+| Manual | Done by the generated project |
+|---|---|
+| §2 Import | 7 table partitions: `Csv.Document` on `gold.<table>.csv`, `PromoteHeaders`, then an explicit type for every column (no type inference). One parameter, `GoldCsvFolder`, holds the folder for all seven. |
+| §3 Renames | Table names are fixed in the model (`dim_date` ... `fct_applications`). |
+| §4 Relationships | 13, all many-to-one, single direction. Both facts to the four dimensions (`municipality_sk`, `use_type_sk`, `status_sk`, `geography_sk`), all active. Date roles: `fct_permits[date_issued_sk]` and `fct_applications[date_submitted_sk]` are the only active links; `date_applied_sk`, `date_closed_sk`, `date_decision_sk` are inactive (`USERELATIONSHIP`). |
+| §5 Date table | `dim_date` has `dataCategory: Time`; `calendar_date` is the key column. |
+| §6 Measures | 8, with a description (and the reference value) on each: `Permits Issued`, `Permit Records`, `Net New Units`, `Date Coverage Pct`, `Median Applied to Issued Days`, `Construction Value CAD` on `fct_permits`; `Active Applications`, `Median Submitted to Decision Days` on `fct_applications`. **Do not paste the `fabric-dax.md` blocks**: they would collide ("name already used"). |
+
+Every column and measure carries its definition as a TMDL description, so it
+shows in the Data pane tooltip. `Net New Units` carries the ADR-0003 mixed-basis
+caveat in its description: it travels with the measure wherever it is dragged.
+
+### 14.2 First open
+
+1. `make export-csv`; check the row counts in §2 against `data/gold-csv/`.
+2. Open `powerbi/gta-housing.pbip` in Power BI Desktop. If Desktop reports that
+   the Power BI Project or TMDL format is a preview feature, enable it under
+   File > Options > Preview features, restart, and reopen.
+3. Home > Transform data > Manage parameters > `GoldCsvFolder` > set **Current
+   value** to the absolute folder, e.g. `C:\Users\you\GTA-Housing-pipeline\data\gold-csv\`
+   (trailing slash optional). This is the only path you set; all seven tables
+   read it. The committed default, `..\data\gold-csv\`, is repo-relative from
+   `powerbi/`, but Power Query may not resolve relative paths against the
+   `.pbip`, so expect to overwrite it. Close & Apply and let all seven refresh.
+4. Model view: confirm 13 relationships, three of them dashed (inactive).
+5. Run the gate in §14.3.
+6. **Before committing anything, regenerate** (`python scripts/generate_pbip.py`).
+   Desktop re-saves the TMDL, and your absolute path would land in
+   `expressions.tmdl`, i.e. your home directory in a public repo. Regenerating
+   restores the relative default and discards Desktop's re-serialisation.
+   `python scripts/generate_pbip.py --verify-output` fails if the model files
+   differ from the generator, so run it before every commit.
+
+### 14.3 Verification gate (replaces §7 for this path)
+
+Table visual: `dim_municipality[municipality_name]` with `Permits Issued`,
+`Permit Records`, `Net New Units`, `Date Coverage Pct`. Required, exact
+(`docs/measure-reconciliation.json`):
+
+| Municipality | Permits Issued | Permit Records | Net New Units | Date Coverage Pct |
+|---|---|---|---|---|
+| Toronto | 462,039 | 571,986 | 259,840 | 80.4% |
+| Brampton | 150,936 | 221,319 | 78,957 | 68.1% |
+| Mississauga | 34,614 | 34,614 | 30,968 | 99.9% |
+| Total row | **647,589** | **827,919** | *delete this total* | 78.0% |
+
+Then: `Active Applications` 2,668 (Toronto 1,694, Brampton 719, Mississauga
+255); `Median Applied to Issued Days` Toronto 28, Mississauga 34, Brampton 44;
+`Median Submitted to Decision Days` Mississauga 385, others blank;
+`Construction Value CAD` Toronto $100,991,303,902, Mississauga $18,269,933,097,
+Brampton blank. Caledon and Peel rows are blank by construction (ADR-0004).
+
+**§7's table is superseded.** It lists 571,986 / 221,319 / 34,614 under
+`Permits Issued`. Those are all permit rows, which is now the separate
+`Permit Records` measure. The issue-date-filtered `Permits Issued` returns
+462,039 / 150,936 / 34,614 (647,589 in total). If `Permits Issued` ever shows
+827,919 it is counting every row, which is the 21.8% overstatement in review D2.
+Any page-1 card labelled "Permits Issued" must read 647,589; a card showing
+827,919 is `Permit Records` and must be labelled that way.
+
+`Net New Units` is mixed-basis (review D1): never show a total across
+municipalities, and keep the basis and 64.3% NULL-coverage note beside it.
+
+Off by even 1: stop, do not build pages. A mismatch means the model is wrong,
+never the JSON.
+
+### 14.4 If Desktop rejects something
+
+| Symptom | Likely cause | What to do |
+|---|---|---|
+| Desktop will not open the `.pbip` | Desktop older than the format, or the project/TMDL preview switch is off | Update Desktop; enable the preview features (§14.2 step 2) |
+| Error naming a `.tmdl` file and line | A syntax detail the generator assumed (see §14.5) | Note the file, line and message. Fix `scripts/generate_pbip.py` and regenerate. Do not hand-edit the output and commit it. Use the fallback below to keep working meanwhile |
+| Error naming `report.json`, `definition.pbir` or `.platform` | The deliberately minimal report shell | Fallback below. The report holds no visuals, so nothing is lost |
+| Refresh fails with "file not found" | `GoldCsvFolder` | Set the absolute path (§14.2 step 3) |
+| `row_loaded_at` shows blank | Timestamp text not parsed by Power Query | Harmless: lineage only, and no measure reads it |
+| Hidden `LocalDateTable_*` tables appear | Auto date/time is on | File > Options > Current file > Data load > Time intelligence off |
+| §14.3 values differ | Stale CSVs, or a relationship/measure fault | Re-export; then §12; do not build on it |
+
+**Fallback (Desktop provides the shell, the generator provides the model):**
+(1) In Desktop create a blank report and File > Save as > Power BI Project in a
+scratch folder, then close it. (2) In that scratch project's
+`*.SemanticModel` folder, replace `definition/` with the generated
+`powerbi/gta-housing.SemanticModel/definition/`. (3) Open the scratch `.pbip`.
+If it now loads, the fault was in the report shell or `.pbip` wrapper; if it
+still fails, the fault is TMDL syntax inside `definition/` and the error
+message names the line.
+
+### 14.5 What is pinned, and what is a guess
+
+- `compatibilityLevel: 1567` (`database.tmdl`). It is the long-standing level
+  that PBIP/TMDL samples use. Everything this model needs (M partitions,
+  parameters, inactive relationships, `dataCategory`/`isKey` date tables) exists
+  at or below it, so a Desktop build that reads TMDL should accept 1567 (not
+  verified here); Desktop raises the level itself when it saves. Pinning higher
+  buys nothing we use and risks a "created with a newer version" refusal.
+- `definition.pbism` `version: 4.0`, the first version that means "TMDL folder".
+- Report: the legacy `report.json` format (`definition.pbir` version 1.0), one
+  empty page. A Desktop that defaults to the newer PBIR folder format may offer
+  to upgrade it on save; accept, nothing is lost.
+- **Unverified, check first if a file is rejected:** descriptions written as
+  `///` doc-comments; DAX bodies in triple-backtick fences; relationship names
+  quoted; `isKey: true` written explicitly; `database` declared with no name;
+  `ref table` lines in `model.tmdl` with no `ref expression`; the minimal
+  `report.json` fields and its `config` version string; the `$schema` URLs;
+  `annotation __PBI_TimeIntelligenceEnabled = 0`.
+
+### 14.6 Guards and ownership
+
+| Command | Purpose | Exit 1 when |
+|---|---|---|
+| `python scripts/generate_pbip.py` | (Re)write the model | never |
+| `python scripts/generate_pbip.py --check-schema [warehouse]` | Compare the embedded gold spec with the live warehouse (default `data/warehouse.duckdb`) | any missing table or column, extra column, type change or reordering |
+| `python scripts/generate_pbip.py --verify-output` | Compare `powerbi/` with what the generator would write | a model file differs or is missing |
+
+Run `--check-schema` after every `make transform` that touches `models/gold/`.
+When it fails, update `GOLD_SPEC` in the script, regenerate, and redo §14.3.
+Exit code 2 means the check could not run (no warehouse file).
+
+The generator **owns the semantic model** and rewrites it every run. The
+`.pbip` and `gta-housing.Report/` are created once and never overwritten, so
+pages you build in Desktop survive regeneration. A model change made in Desktop
+(a new measure or column) exists only in your local copy until it is added to
+the script, and the next run erases it.
+
+### 14.7 Not in the generated project
+
+- **Report pages**: build per `docs/report-plan.md` and §13.
+- **§13 calculated columns** (`Days Applied to Issued`, `Days Bucket`,
+  `Days Bucket Sort`) and the §13.4 measures that depend on them. Create them
+  in Desktop, then port them into the generator or the next regeneration drops
+  them. **Skip `Date Coverage Pct` in §13.4**: the generated model already has
+  it, computed directly from the two date keys, and a second one gives "name
+  already used".
+- Hierarchies, the documented RLS role, and the per-capita measures (P1-P3).
+  The first two belong to the model but were out of scope for this change.

@@ -1,0 +1,5 @@
+/// Folder holding the seven gold.<table>.csv files written by `make export-csv`. Set it once here (Transform data, Manage parameters); every table partition reads it. The default is repo-relative from powerbi/, but Power Query may not resolve relative paths against the .pbip, so overwrite it with an absolute path on first open.
+expression GoldCsvFolder = "..\data\gold-csv\" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 94cda69c-2448-57e5-bfd6-681911e982f9
+
+	annotation PBI_ResultType = Text

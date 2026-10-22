@@ -1,0 +1,93 @@
+relationship '13624bbc-64ff-583f-961d-2481de8f8a18'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_permits.municipality_sk
+	toColumn: dim_municipality.municipality_sk
+
+relationship 'd83a1896-0495-57b0-b32f-cf041dc68b79'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_permits.use_type_sk
+	toColumn: dim_use_type.use_type_sk
+
+relationship '260b0b54-77ca-5065-ba12-68a6efb7edb4'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_permits.status_sk
+	toColumn: dim_status.status_sk
+
+relationship '3904a4e9-f27f-54fe-aa69-f3478afdf1ed'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_permits.geography_sk
+	toColumn: dim_geography.geography_sk
+
+relationship 'fd62ecd7-6848-5800-b096-18db47c191b9'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_permits.date_issued_sk
+	toColumn: dim_date.date_sk
+
+relationship '1bbcbe78-879d-571b-99eb-39b69064b554'
+	isActive: false
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_permits.date_applied_sk
+	toColumn: dim_date.date_sk
+
+relationship 'd0da2aa9-6c71-598b-9fcd-3ce1e969b05c'
+	isActive: false
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_permits.date_closed_sk
+	toColumn: dim_date.date_sk
+
+relationship '5ee0fef4-23bf-52cf-982b-bce5df03be95'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_applications.municipality_sk
+	toColumn: dim_municipality.municipality_sk
+
+relationship '12942a6a-98bb-50ec-986a-e9f148e319d6'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_applications.use_type_sk
+	toColumn: dim_use_type.use_type_sk
+
+relationship '83ffc55f-858f-5092-8232-e097515fc3ca'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_applications.status_sk
+	toColumn: dim_status.status_sk
+
+relationship '034284b2-83d0-5801-b6a9-813d0ebe89b5'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_applications.geography_sk
+	toColumn: dim_geography.geography_sk
+
+relationship '91f3e2e6-eb20-59e0-aef5-d358a0bc744c'
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_applications.date_submitted_sk
+	toColumn: dim_date.date_sk
+
+relationship 'a6c4659c-f17c-5a5f-8518-874ac69910bb'
+	isActive: false
+	fromCardinality: many
+	toCardinality: one
+	crossFilteringBehavior: oneDirection
+	fromColumn: fct_applications.date_decision_sk
+	toColumn: dim_date.date_sk
