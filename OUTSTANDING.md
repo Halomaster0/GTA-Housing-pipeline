@@ -41,6 +41,38 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
   client; record the URL choice at Gate 4b per the build plan. No custom
   domain cost approved or needed yet.
 
+## 2b. Power BI report fixes (review 2026-10-22, pages 1-2 built)
+
+Full findings: `docs/reviews/powerbi-build-review-2026-10-22.md`. Reconciliation
+against `docs/measure-reconciliation.json` PASSED — every figure matches the
+warehouse. These are labelling and definition defects, not data defects.
+
+- [ ] **BLOCKING — remove the `Net New Units` cross-municipality Total.**
+  Toronto is net (`created − lost`), Mississauga and Brampton are gross
+  (`res_units`, `dwellings`). Summing them is a category error, not a caveat
+  case. ADR-0003 forbids publishing it as a clean number. Add the comparability
+  card that `fabric-dax.md` M2 already specifies, plus NULL coverage (64.3% of
+  permit rows carry no unit count).
+- [ ] **BLOCKING — `Permits Issued` is showing all permit rows.** Displayed
+  values equal `COUNT(*)`, but M1 filters on a non-blank issue date and 12,716
+  permits are APPLIED or UNDER_REVIEW. Put M1 and a bare `COUNTROWS` side by
+  side: equal means the defect is in silver, not the report.
+- [ ] Rule on whether the 58,890 CANCELLED permits count toward "permits
+  issued", and record it in `docs/data-dictionary.md` either way.
+- [ ] Emit every published measure (M1 included) from
+  `scripts/reconcile_measures.py`. M1 has no reconciliation value today, which
+  is why the defect above was not caught by a process built to catch it.
+- [ ] Annotate the permits-by-year chart: Mississauga's coverage starts 2018,
+  Brampton and Toronto 2010. Add a coverage-start table to page 5.
+- [ ] Fix the application-status donut — one slice label (REFUSED, 347) is
+  suppressed by collision, so visible labels sum to 21,311 against a centre
+  total of 21,658. Prefer a sorted bar chart.
+- [ ] Refresh the data: the footer reads 2026-09-10, six weeks stale. Drive the
+  as-of date from the manifest rather than typed text.
+- [ ] Build page 3 (Pipeline Velocity) — fully supported: M6 medians for all
+  three municipalities (TOR 28d / MISS 34d / BRAM 44d) plus three honest empty
+  states. Strongest page in the deck for the target role.
+
 ## 3. Technical work owed (no cost — future sessions)
 
 - [ ] StatCan series pulls return HTTP 406 from here (specs stay empty until
