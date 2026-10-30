@@ -1,0 +1,80 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "checks",
+  "position": {
+    "x": 24,
+    "y": 428,
+    "z": 4,
+    "width": 1232,
+    "height": 268,
+    "tabOrder": 4
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Gold totals to match (docs/measure-reconciliation.json): Permit Records 827,919 (Toronto 571,986, Brampton 221,319, Mississauga 34,614). Permits Issued 647,589 (Toronto 462,039, Brampton 150,936, Mississauga 34,614).",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "normal"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Orphan keys, fact to dimension: 0 and 0. A non-zero count here means a broken model.",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "normal"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Unit basis: MIXED (ADR-0003). Net New Units is never totalled across municipalities.",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Pending measures: P1 per-capita (StatCan census profiles); P2 application to permit timing (ADR-0006); P3 see docs/data-dictionary.md.",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "normal"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Refresh: the ingest_batch_id table shows which extract each permit came from.",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "normal"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

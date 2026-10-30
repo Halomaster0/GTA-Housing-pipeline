@@ -1,0 +1,53 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "bar_permits_by_municipality",
+  "position": {
+    "x": 24,
+    "y": 112,
+    "z": 2,
+    "width": 620,
+    "height": 300,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_municipality"
+                    }
+                  },
+                  "Property": "municipality_name"
+                }
+              },
+              "queryRef": "dim_municipality.municipality_name"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_permits"
+                    }
+                  },
+                  "Property": "Permits Issued"
+                }
+              },
+              "queryRef": "fct_permits.Permits Issued"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

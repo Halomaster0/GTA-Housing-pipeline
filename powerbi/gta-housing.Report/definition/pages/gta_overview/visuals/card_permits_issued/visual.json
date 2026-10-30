@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "card_permits_issued",
+  "position": {
+    "x": 24,
+    "y": 212,
+    "z": 4,
+    "width": 300,
+    "height": 120,
+    "tabOrder": 4
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_permits"
+                    }
+                  },
+                  "Property": "Permits Issued"
+                }
+              },
+              "queryRef": "fct_permits.Permits Issued"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

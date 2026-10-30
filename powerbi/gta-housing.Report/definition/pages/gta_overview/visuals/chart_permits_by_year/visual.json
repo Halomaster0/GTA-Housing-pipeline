@@ -1,0 +1,70 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "chart_permits_by_year",
+  "position": {
+    "x": 24,
+    "y": 344,
+    "z": 7,
+    "width": 760,
+    "height": 356,
+    "tabOrder": 7
+  },
+  "visual": {
+    "visualType": "clusteredColumnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_date"
+                    }
+                  },
+                  "Property": "year"
+                }
+              },
+              "queryRef": "dim_date.year"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_permits"
+                    }
+                  },
+                  "Property": "Permits Issued"
+                }
+              },
+              "queryRef": "fct_permits.Permits Issued"
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_municipality"
+                    }
+                  },
+                  "Property": "municipality_name"
+                }
+              },
+              "queryRef": "dim_municipality.municipality_name"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

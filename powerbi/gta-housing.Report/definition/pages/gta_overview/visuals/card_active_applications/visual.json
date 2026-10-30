@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "card_active_applications",
+  "position": {
+    "x": 340,
+    "y": 212,
+    "z": 5,
+    "width": 300,
+    "height": 120,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_applications"
+                    }
+                  },
+                  "Property": "Active Applications"
+                }
+              },
+              "queryRef": "fct_applications.Active Applications"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

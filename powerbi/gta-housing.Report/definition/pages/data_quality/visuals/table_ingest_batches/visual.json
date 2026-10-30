@@ -1,0 +1,49 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "table_ingest_batches",
+  "position": {
+    "x": 644,
+    "y": 112,
+    "z": 3,
+    "width": 612,
+    "height": 300,
+    "tabOrder": 3
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_permits"
+                    }
+                  },
+                  "Property": "ingest_batch_id"
+                }
+              },
+              "queryRef": "fct_permits.ingest_batch_id"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_permits"
+                    }
+                  },
+                  "Property": "Permit Records"
+                }
+              },
+              "queryRef": "fct_permits.Permit Records"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "table_ward_permits",
+  "position": {
+    "x": 24,
+    "y": 112,
+    "z": 2,
+    "width": 1232,
+    "height": 400,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_geography"
+                    }
+                  },
+                  "Property": "municipality"
+                }
+              },
+              "queryRef": "dim_geography.municipality"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_geography"
+                    }
+                  },
+                  "Property": "ward_name"
+                }
+              },
+              "queryRef": "dim_geography.ward_name"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_permits"
+                    }
+                  },
+                  "Property": "Permits Issued"
+                }
+              },
+              "queryRef": "fct_permits.Permits Issued"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fct_applications"
+                    }
+                  },
+                  "Property": "Active Applications"
+                }
+              },
+              "queryRef": "fct_applications.Active Applications"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

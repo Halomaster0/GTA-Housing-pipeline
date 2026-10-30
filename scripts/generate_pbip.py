@@ -91,8 +91,11 @@ SCHEMA_PBISM = (
 )
 SCHEMA_PBIR = (
     "https://developer.microsoft.com/json-schemas/fabric/item/report/"
-    "definitionProperties/1.0.0/schema.json"
+    "definitionProperties/2.0.0/schema.json"
 )
+# definition.pbir 4.0 is the first version that accepts the PBIR folder (definition/).
+# The report body under definition/ is written by scripts/generate_pbir_report.py.
+PBIR_VERSION = "4.0"
 
 # DuckDB base type -> TMDL dataType / Power Query type used in TransformColumnTypes.
 TMDL_TYPE: dict[str, str] = {
@@ -958,7 +961,7 @@ def render_table(table: Table) -> str:
         if fmt:
             w.add(2, f"formatString: {fmt}")
         if table.date_table_key == column.name:
-            w.add(2, "isKey: true")
+            w.add(2, "isKey")
         w.add(2, f"lineageTag: {guid('column', table.name, column.name)}")
         w.add(2, "summarizeBy: none")
         w.add(2, f"sourceColumn: {column.name}")
@@ -1054,39 +1057,6 @@ def platform_json(item_type: str) -> str:
     )
 
 
-def report_json() -> str:
-    """Minimal legacy-format report: one empty page, so the project opens.
-
-    Pages are authored in Desktop per docs/report-plan.md; generating visual JSON
-    here would be brittle and is out of scope. ``config`` and the page ``config`` /
-    ``filters`` fields are JSON documents stored as strings, as the legacy format has it.
-    """
-    config = {
-        "version": "5.0",
-        "activeSectionIndex": 0,
-        "defaultDrillFilterOtherVisuals": True,
-        "settings": {},
-    }
-    page = {
-        "config": "{}",
-        "displayName": "Page 1",
-        "displayOption": 1,
-        "filters": "[]",
-        "height": 720.0,
-        "name": "ReportSection",
-        "visualContainers": [],
-        "width": 1280.0,
-    }
-    return dump_json(
-        {
-            "config": json.dumps(config, separators=(",", ":")),
-            "layoutOptimization": 0,
-            "resourcePackages": [],
-            "sections": [page],
-        }
-    )
-
-
 def build_project() -> dict[str, str]:
     """Every emitted file as {path relative to the output root: text}."""
     validate_spec()
@@ -1112,14 +1082,13 @@ def build_project() -> dict[str, str]:
         f"{REPORT_DIR}/definition.pbir": dump_json(
             {
                 "$schema": SCHEMA_PBIR,
-                "version": "1.0",
+                "version": PBIR_VERSION,
                 "datasetReference": {
                     "byPath": {"path": f"../{SEMANTIC_MODEL_DIR}"},
                     "byConnection": None,
                 },
             }
         ),
-        f"{REPORT_DIR}/report.json": report_json(),
     }
     for table in GOLD_SPEC:
         files[f"{model}/tables/{table.name}.tmdl"] = render_table(table)

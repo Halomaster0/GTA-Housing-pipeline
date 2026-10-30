@@ -1,0 +1,58 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "donut_application_status",
+  "position": {
+    "x": 800,
+    "y": 344,
+    "z": 8,
+    "width": 456,
+    "height": 356,
+    "tabOrder": 8
+  },
+  "visual": {
+    "visualType": "donutChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_status"
+                    }
+                  },
+                  "Property": "status_label"
+                }
+              },
+              "queryRef": "dim_status.status_label"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fct_applications"
+                        }
+                      },
+                      "Property": "application_sk"
+                    }
+                  },
+                  "Function": 2
+                }
+              },
+              "queryRef": "CountDistinct fct_applications.application_sk"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
