@@ -90,6 +90,10 @@ function statusSentence(items: Array<{ status: string; count: number }>) {
   return items.map((s) => `${s.status} ${formatInt(s.count)}`).join(", ");
 }
 
+// Municipalities whose net-unit figure is withheld pending review. Remove a
+// code here only once docs/data-exceptions.yml records a decision for it.
+const UNITS_UNDER_REVIEW = new Set<string>(["TOR"]);
+
 export default function Dashboard() {
   // A page that disagrees with its own source file must not ship.
   reconcileOrThrow();
@@ -567,11 +571,14 @@ export default function Dashboard() {
           <tbody>
             {codes.map((code) => {
               const u = netUnitsByMunicipality[code];
+              const held = UNITS_UNDER_REVIEW.has(code);
               return (
                 <tr key={code}>
                   <th scope="row">{municipalityName(code)}</th>
                   <td>{UNIT_EXPRESSION[code] ?? "not documented"}</td>
-                  <td className="num">{formatInt(u?.net_units ?? null)}</td>
+                  <td className="num">
+                    {held ? "Under review" : formatInt(u?.net_units ?? null)}
+                  </td>
                   <td className="num">{formatInt(u?.permit_rows ?? null)}</td>
                   <td className="num">
                     {formatInt(u?.null_unit_rows ?? null)}
@@ -589,6 +596,13 @@ export default function Dashboard() {
       </ScrollTable>
       <p className="provenance">
         {`${provenanceLine()}. Unit expressions: models/gold/05_fct_permits.sql.`}
+      </p>
+      <p>
+        Toronto net units are under review. One permit record carries an
+        implausible unit count, so the total is withheld until that record is
+        checked against the source. Its details are in{" "}
+        <code>docs/data-exceptions.yml</code>. Brampton and Mississauga are
+        unaffected.
       </p>
       <Pending measureKey="units_per_capita" />
 
