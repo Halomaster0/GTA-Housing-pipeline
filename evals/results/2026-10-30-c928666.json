@@ -1,0 +1,113 @@
+{
+  "run_date": "2026-10-30",
+  "git_sha": "c928666",
+  "overall": {
+    "correctness": 0.0,
+    "faithfulness": 1.0,
+    "refusal_accuracy": null,
+    "total_questions": 5,
+    "elapsed_seconds": 54.6
+  },
+  "by_bucket": {
+    "simple_aggregate": {
+      "correctness": 0.0,
+      "faithfulness": 1.0,
+      "refusal_accuracy": null,
+      "p50_latency_ms": 10933.2,
+      "p95_latency_ms": 13883.7,
+      "n": 5
+    }
+  },
+  "results": [
+    {
+      "id": "agg-01",
+      "bucket": "simple_aggregate",
+      "question": "What is the total number of permits issued across the GTA in the warehouse?",
+      "expected_refusal": false,
+      "passed": false,
+      "faithful": true,
+      "missing_facts": [
+        "Expected answer but got refusal: The AI query service is temporarily unavailable. Please try again."
+      ],
+      "is_refusal": true,
+      "refusal_reason": "The AI query service is temporarily unavailable. Please try again.",
+      "answer_preview": "Query refused: The AI query service is temporarily unavailable. Please try again.",
+      "sql": null,
+      "row_count": 0,
+      "latency_ms": 13883.724099956453,
+      "trace_id": "d3f52d9a-058d-484a-8024-2057b94d0175"
+    },
+    {
+      "id": "agg-02",
+      "bucket": "simple_aggregate",
+      "question": "How many total permit records exist for Toronto in the warehouse?",
+      "expected_refusal": false,
+      "passed": false,
+      "faithful": true,
+      "missing_facts": [
+        "571986"
+      ],
+      "is_refusal": false,
+      "refusal_reason": null,
+      "answer_preview": "Based on the data from the DuckDB gold warehouse, there are 576,201 total permit records for Toronto.",
+      "sql": "SELECT COUNT(*) AS total_permits FROM gold.fct_permits f JOIN gold.dim_municipality m ON f.municipality_sk = m.municipality_sk WHERE m.municipality_name = 'Toronto' LIMIT 100",
+      "row_count": 1,
+      "latency_ms": 8575.356499990448,
+      "trace_id": "503b27d3-5413-4916-803a-135426472a3d"
+    },
+    {
+      "id": "agg-03",
+      "bucket": "simple_aggregate",
+      "question": "How many permits were issued in Toronto?",
+      "expected_refusal": false,
+      "passed": false,
+      "faithful": true,
+      "missing_facts": [
+        "462039"
+      ],
+      "is_refusal": false,
+      "refusal_reason": null,
+      "answer_preview": "Based on the data from the DuckDB gold warehouse, there were **163,894** permits issued in Toronto.",
+      "sql": "SELECT COUNT(*) AS permit_count FROM gold.fct_permits f JOIN gold.dim_municipality m ON f.municipality_sk = m.municipality_sk JOIN gold.dim_status s ON f.status_sk = s.status_sk WHERE m.municipality_name = 'Toronto' AND s.applies_to = 'permit' AND s.status_code = 'ISSUED' LIMIT 100",
+      "row_count": 1,
+      "latency_ms": 10933.230999857187,
+      "trace_id": "797da8f8-b507-4bdc-9c75-0bf702bda099"
+    },
+    {
+      "id": "agg-04",
+      "bucket": "simple_aggregate",
+      "question": "How many total building permits were issued in Mississauga?",
+      "expected_refusal": false,
+      "passed": false,
+      "faithful": true,
+      "missing_facts": [
+        "34614"
+      ],
+      "is_refusal": false,
+      "refusal_reason": null,
+      "answer_preview": "Based on the data from the DuckDB gold warehouse, a total of 6,301 building permits were issued in Mississauga.",
+      "sql": "SELECT COUNT(*) AS total_permits FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_status s ON p.status_sk = s.status_sk WHERE m.municipality_name = 'Mississauga' AND s.applies_to = 'permit' AND s.status_code = 'ISSUED' LIMIT 100",
+      "row_count": 1,
+      "latency_ms": 11534.249299904332,
+      "trace_id": "59bcdb51-5995-4e63-9f0f-3aad698815c0"
+    },
+    {
+      "id": "agg-05",
+      "bucket": "simple_aggregate",
+      "question": "How many permits were issued in Brampton?",
+      "expected_refusal": false,
+      "passed": false,
+      "faithful": true,
+      "missing_facts": [
+        "150936"
+      ],
+      "is_refusal": false,
+      "refusal_reason": null,
+      "answer_preview": "Based on the data from the DuckDB gold warehouse, there were 14,700 permits issued in Brampton.",
+      "sql": "SELECT COUNT(*) AS permit_count FROM gold.fct_permits f JOIN gold.dim_municipality m ON f.municipality_sk = m.municipality_sk JOIN gold.dim_status s ON f.status_sk = s.status_sk WHERE m.municipality_name = 'Brampton' AND s.applies_to = 'permit' AND s.status_code = 'ISSUED' LIMIT 100",
+      "row_count": 1,
+      "latency_ms": 9616.096599958837,
+      "trace_id": "ae72366d-690b-4d35-8105-e4bf400e0b0c"
+    }
+  ]
+}
