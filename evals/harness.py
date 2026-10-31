@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from decimal import Decimal
 
 # Ensure repo root on sys.path when run directly
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -60,6 +61,15 @@ def _normalise(text: str) -> str:
     text = text.lower()
     text = re.sub(r"[,_\-\s]+", " ", text)
     return text.strip()
+
+
+def _json_dumps_decimal(obj: Any, **kwargs) -> str:
+    """JSON dumps with Decimal -> float conversion."""
+    def _default(o):
+        if isinstance(o, Decimal):
+            return float(o)
+        return str(o)
+    return json.dumps(obj, default=_default, **kwargs)
 
 
 def _number_in_text(number: str | int | float, text: str) -> bool:
@@ -107,7 +117,7 @@ def _check_expected_facts(
         return False, [f"Expected answer but got refusal: {response.refusal_reason}"]
 
     answer_norm = _normalise(response.answer)
-    rows_blob = _normalise(json.dumps(response.rows))
+    rows_blob = _normalise(_json_dumps_decimal(response.rows))
     missing: list[str] = []
 
     for fact in facts:
@@ -136,7 +146,7 @@ def _check_faithfulness(response: QueryResponse) -> bool:
     if not response.rows or response.is_refusal:
         return True
 
-    rows_blob = json.dumps(response.rows).replace(",", "").replace(" ", "")
+    rows_blob = _json_dumps_decimal(response.rows).replace(",", "").replace(" ", "")
     # Extract standalone digit sequences >= 3 digits from the answer
     numbers_in_answer = re.findall(r"\b\d{3,}(?:\.\d+)?\b", response.answer.replace(",", ""))
     unfaithful = [n for n in numbers_in_answer if n not in rows_blob]
@@ -332,7 +342,7 @@ def main() -> None:
     # Persist results
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     result_file = RESULTS_DIR / f"{output['run_date']}-{output['git_sha']}.json"
-    result_file.write_text(json.dumps(output, indent=2), encoding="utf-8")
+    result_file.write_text(_json_dumps_decimal(output, indent=2), encoding="utf-8")
     logger.info("Results written to %s", result_file)
 
     _print_scorecard(output)
