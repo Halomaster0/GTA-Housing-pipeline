@@ -74,7 +74,10 @@ PBISM_VERSION = "4.0"
 # Relative to powerbi/. Power Query may not resolve relative paths against the
 # .pbip location, so the manual tells the user to overwrite this with an
 # absolute path once, in the GoldCsvFolder parameter.
-CSV_FOLDER_DEFAULT = "..\\data\\gold-csv\\"
+# Points at the September export (data/gold-sept-csv/) so the model reproduces the
+# gate values in docs/measure-reconciliation.json. Switch back to gold-csv once the
+# October Toronto extract is validated and the gate is updated.
+CSV_FOLDER_DEFAULT = "..\\data\\gold-sept-csv\\"
 
 GUID_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_DNS, "gta-housing-pipeline.powerbi.pbip")
 

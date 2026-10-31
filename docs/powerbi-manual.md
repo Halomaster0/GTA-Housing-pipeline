@@ -377,11 +377,12 @@ caveat in its description: it travels with the measure wherever it is dragged.
    the Power BI Project or TMDL format is a preview feature, enable it under
    File > Options > Preview features, restart, and reopen.
 3. Home > Transform data > Manage parameters > `GoldCsvFolder` > set **Current
-   value** to the absolute folder, e.g. `C:\Users\you\GTA-Housing-pipeline\data\gold-csv\`
+   value** to the absolute folder, e.g. `C:\Users\you\GTA-Housing-pipeline\data\gold-sept-csv\`
    (trailing slash optional). This is the only path you set; all seven tables
-   read it. The committed default, `..\data\gold-csv\`, is repo-relative from
-   `powerbi/`, but Power Query may not resolve relative paths against the
-   `.pbip`, so expect to overwrite it. Close & Apply and let all seven refresh.
+   read it. The committed default, `..\data\gold-sept-csv\` (the September export,
+   which reproduces the §14.3 gate), is repo-relative from `powerbi/`, but Power
+   Query may not resolve relative paths against the `.pbip`, so expect to
+   overwrite it. Close & Apply and let all seven refresh.
 4. Model view: confirm 13 relationships, three of them dashed (inactive).
 5. Run the gate in §14.3.
 6. **Before committing anything, regenerate** (`python scripts/generate_pbip.py`).
