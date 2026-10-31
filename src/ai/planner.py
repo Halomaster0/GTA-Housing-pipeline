@@ -219,6 +219,28 @@ def plan_query(question: str) -> Plan:
 
     try:
         parsed = json.loads(text)
+        
+        # Validate that issued‑permit queries use date_issued_sk IS NOT NULL, not dim_status
+        if not parsed.get("refusal") and parsed.get("sql"):
+            sql_lower = parsed["sql"].lower()
+            # If question contains keywords like "issued permits" or "how many permits were issued"
+            if ("issued" in q_lower and "permit" in q_lower) or "how many permits were issued" in q_lower:
+                # Check if SQL contains dim_status with 'issued' (incorrect) and NOT date_issued_sk IS NOT NULL (correct)
+                has_dim_status = "dim_status" in sql_lower and "status_code" in sql_lower
+                has_date_filter = "date_issued_sk is not null" in sql_lower or "date_issued_sk is not null" in sql_lower or "date_issued_sk is not null" in sql_lower.replace(' ', '').lower()
+                if has_dim_status and not has_date_filter:
+                    # Ask the LLM to retry with correct SQL
+                    logger.warning(
+                        "Planner returned SQL for issued permits that uses dim_status instead of date_issued_sk. Refusing to allow incorrect pattern."
+                    )
+                    return Plan(
+                        is_refusal=True,
+                        refusal_reason="Issued‑permit queries must use `date_issued_sk IS NOT NULL`. Please generate a compliant query.",
+                        intent="Invalid issued‑permit query pattern",
+                        sql=None,
+                        raw_response=response,
+                    )
+        
         return Plan(
             is_refusal=parsed.get("refusal", False),
             refusal_reason=parsed.get("refusal_reason"),

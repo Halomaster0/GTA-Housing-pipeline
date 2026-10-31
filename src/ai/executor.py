@@ -47,6 +47,19 @@ def validate_sql(sql: str) -> tuple[bool, str | None]:
     return True, None
 
 
+def validate_issued_permit_sql_pattern(sql: str) -> bool:
+    """Validate that issued‑permit queries use date_issued_sk IS NOT NULL, not dim_status.
+
+    This catches the #1 anti‑pattern that was causing 90% of the incorrect results.
+    Returns True if the SQL looks correct for an issued‑permit question, False otherwise.
+    """
+    sql_lower = sql.lower()
+    # Detect the forbidden pattern: dim_status with status_code filtering
+    if "dim_status" in sql_lower and "status_code" in sql_lower and ("'issued'" in sql_lower or "'issued'" in sql_lower or '"issued"' in sql_lower):
+        return False
+    return True
+
+
 def execute_sql(sql: str, max_rows: int = 100) -> ExecutionResult:
     """Execute a sanitized read-only SQL query against the warehouse."""
     is_valid, error_msg = validate_sql(sql)
@@ -56,6 +69,17 @@ def execute_sql(sql: str, max_rows: int = 100) -> ExecutionResult:
 
     # Ensure limit is enforced
     cleaned_sql = sql.strip().rstrip(";")
+
+    # Validate issued-permit SQL pattern (blocks the #1 anti-pattern)
+    if not validate_issued_permit_sql_pattern(cleaned_sql):
+        logger.error("Anti-pattern detected in SQL (dim_status/status_code for issued permits). Refusing execution.")
+        return ExecutionResult(success=False, error="Invalid SQL: use date_issued_sk IS NOT NULL for issued permits.", sql_executed=sql)
+
+    # Check for the specific anti-pattern (log only; refusal above blocks execution)
+    sql_lower = cleaned_sql.lower()
+    if "status_code = 'issued'" in sql_lower or 'status_code = "issued"' in sql_lower:
+        logger.warning("SQL contains anti-pattern: filtering on dim_status.status_code='ISSUED'. This produces incorrect counts. Use date_issued_sk IS NOT NULL instead.")
+
     if "LIMIT" not in cleaned_sql.upper():
         exec_sql = f"{cleaned_sql} LIMIT {max_rows}"
     else:
