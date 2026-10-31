@@ -74,8 +74,7 @@ warehouse. These are labelling and definition defects, not data defects.
 - [ ] Fix the application-status donut — one slice label (REFUSED, 347) is
   suppressed by collision, so visible labels sum to 21,311 against a centre
   total of 21,658. Prefer a sorted bar chart.
-- [ ] Refresh the data: the footer reads 2026-09-10, six weeks stale. Drive the
-  as-of date from the manifest rather than typed text.
+- [x] **Data vintage decided 2026-10-31**: use current warehouse (`data/warehouse.duckdb`, 833,848, 652,715 issued) for published counts; Sept CSV (`gold-sept-csv/`, ~827,919) kept as audit comparison (`docs/data-vintage-decision-2026-10-31.md`). Toronto 100k-unit placeholder (`docs/data-exceptions.yml`, UNRESOLVED) is NOT published — cards/footnote must state the gap until the audit rules.
 - [ ] Build page 3 (Pipeline Velocity) — fully supported: M6 medians for all
   three municipalities (TOR 28d / MISS 34d / BRAM 44d) plus three honest empty
   states. Strongest page in the deck for the target role.

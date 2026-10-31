@@ -6,8 +6,7 @@ publish → embed test → refresh. Every number to check against is printed
 inline; sources of truth are `docs/measure-reconciliation.json` (values),
 `docs/fabric-dax.md` (DAX), `docs/report-plan.md` (page specs).
 
-Status: model proven 2026-09-11 (Toronto 571,986 / 259,840 verified in a
-table visual). Pages 2–5, publish, and embed test are still ahead.
+Status: PBIP rebuilt (database.tmdl bare isKey); full visuals present. Model source: warehouse.duckdb (current, 833,848 rows; issued 652,715). Sept audit CSV preserved (gold-sept-csv/, ~827,919). Toronto 100k-unit placeholder (data-exceptions.yml, UNRESOLVED) — NOT published; card/footnote states gap. Pages 2-5 verified; publish/refresh/embeds ahead.
 
 ## 0. Prerequisites (all free, all $0)
 
