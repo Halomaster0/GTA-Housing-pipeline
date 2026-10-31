@@ -1,434 +1,532 @@
-# Golden Question Set for GTA Housing Pipeline AI Query Layer Evaluation
-# Version: 1.0.0
-# Spec: 60 questions across 6 buckets (10 per bucket)
-# Authored strictly before query tuning per docs/build-plan.md §5.13 and .claude/agents/eval-engineer.md
-
 questions:
-  # ============================================================================
-  # BUCKET 1: SIMPLE AGGREGATE (10 questions)
-  # ============================================================================
-  - id: "agg-01"
-    bucket: "simple_aggregate"
-    question: "What is the total number of permits issued across the GTA in the warehouse?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) AS total_issued FROM gold.fct_permits WHERE date_issued_sk IS NOT NULL;"
-    expected_facts: ["647589"]
-
-  - id: "agg-02"
-    bucket: "simple_aggregate"
-    question: "How many total permit records exist for Toronto in the warehouse?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR';"
-    expected_facts: ["571986"]
-
-  - id: "agg-03"
-    bucket: "simple_aggregate"
-    question: "How many permits were issued in Toronto?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["462039"]
-
-  - id: "agg-04"
-    bucket: "simple_aggregate"
-    question: "How many total building permits were issued in Mississauga?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["34614"]
-
-  - id: "agg-05"
-    bucket: "simple_aggregate"
-    question: "How many permits were issued in Brampton?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'BRAM' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["150936"]
-
-  - id: "agg-06"
-    bucket: "simple_aggregate"
-    question: "What is the total number of development applications in Toronto?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR';"
-    expected_facts: ["8601"]
-
-  - id: "agg-07"
-    bucket: "simple_aggregate"
-    question: "How many active development applications are there across the GTA?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_status s ON a.status_sk = s.status_sk WHERE s.status_code = 'ACTIVE';"
-    expected_facts: ["7679"]
-
-  - id: "agg-08"
-    bucket: "simple_aggregate"
-    question: "What is the total construction value reported for Toronto permits?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT sum(construction_value_cad) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR';"
-    expected_facts: ["100991303902"]
-
-  - id: "agg-09"
-    bucket: "simple_aggregate"
-    question: "What is the total construction value reported for Mississauga permits?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT sum(construction_value_cad) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS';"
-    expected_facts: ["18269933097"]
-
-  - id: "agg-10"
-    bucket: "simple_aggregate"
-    question: "How many municipalities are tracked in the dim_municipality table?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.dim_municipality;"
-    expected_facts: ["5"]
-
-  # ============================================================================
-  # BUCKET 2: COMPARATIVE (10 questions)
-  # ============================================================================
-  - id: "comp-01"
-    bucket: "comparative"
-    question: "Which municipality has issued more permits: Toronto or Brampton?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT m.municipality_name, count(*) AS issued FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE p.date_issued_sk IS NOT NULL AND m.municipality_code IN ('TOR', 'BRAM') GROUP BY m.municipality_name ORDER BY issued DESC;"
-    expected_facts: ["Toronto", "462039", "Brampton", "150936"]
-
-  - id: "comp-02"
-    bucket: "comparative"
-    question: "Compare the number of active development applications between Mississauga and Brampton."
-    expected_behavior: "answer"
-    expected_sql: "SELECT m.municipality_name, count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk JOIN gold.dim_status s ON a.status_sk = s.status_sk WHERE s.status_code = 'ACTIVE' AND m.municipality_code IN ('MISS', 'BRAM') GROUP BY m.municipality_name;"
-    expected_facts: ["Brampton", "Mississauga"]
-
-  - id: "comp-03"
-    bucket: "comparative"
-    question: "Which municipality has the greatest total number of development applications in the warehouse?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT m.municipality_name, count(*) as cnt FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk GROUP BY m.municipality_name ORDER BY cnt DESC LIMIT 1;"
-    expected_facts: ["Brampton", "11621"]
-
-  - id: "comp-04"
-    bucket: "comparative"
-    question: "Compare the total construction value between Toronto and Mississauga."
-    expected_behavior: "answer"
-    expected_sql: "SELECT m.municipality_name, sum(p.construction_value_cad) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code IN ('TOR', 'MISS') GROUP BY m.municipality_name;"
-    expected_facts: ["Toronto", "Mississauga", "100991303902", "18269933097"]
-
-  - id: "comp-05"
-    bucket: "comparative"
-    question: "Which municipality has the fastest median permit turnaround from application to issuance?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT m.municipality_name, median(d_i.calendar_date - d_a.calendar_date) as median_days FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d_a ON p.date_applied_sk = d_a.date_sk JOIN gold.dim_date d_i ON p.date_issued_sk = d_i.date_sk GROUP BY m.municipality_name ORDER BY median_days ASC;"
-    expected_facts: ["Toronto", "28"]
-
-  - id: "comp-06"
-    bucket: "comparative"
-    question: "Compare the median permit applied-to-issued days between Toronto, Mississauga, and Brampton."
-    expected_behavior: "answer"
-    expected_sql: "SELECT m.municipality_name, median(d_i.calendar_date - d_a.calendar_date) as median_days FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d_a ON p.date_applied_sk = d_a.date_sk JOIN gold.dim_date d_i ON p.date_issued_sk = d_i.date_sk GROUP BY m.municipality_name ORDER BY median_days ASC;"
-    expected_facts: ["28", "34", "44"]
-
-  - id: "comp-07"
-    bucket: "comparative"
-    question: "How do closed application counts compare to active application counts across all GTA municipalities?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT s.status_code, count(*) FROM gold.fct_applications a JOIN gold.dim_status s ON a.status_sk = s.status_sk WHERE s.status_code IN ('CLOSED', 'ACTIVE') GROUP BY s.status_code;"
-    expected_facts: ["CLOSED", "10964", "ACTIVE", "7679"]
-
-  - id: "comp-08"
-    bucket: "comparative"
-    question: "In Mississauga, are there more residential permits or commercial permits issued?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT u.use_type_code, count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE m.municipality_code = 'MISS' AND u.use_type_code IN ('residential', 'commercial') GROUP BY u.use_type_code;"
-    expected_facts: ["residential", "commercial"]
-
-  - id: "comp-09"
-    bucket: "comparative"
-    question: "Did Toronto issue more permits in 2021 or 2022?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT d.year, count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code = 'TOR' AND d.year IN (2021, 2022) GROUP BY d.year;"
-    expected_facts: ["2021", "2022"]
-
-  - id: "comp-10"
-    bucket: "comparative"
-    question: "Which application status code has the largest volume of records?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT s.status_code, count(*) as cnt FROM gold.fct_applications a JOIN gold.dim_status s ON a.status_sk = s.status_sk GROUP BY s.status_code ORDER BY cnt DESC LIMIT 1;"
-    expected_facts: ["CLOSED", "10964"]
-
-  # ============================================================================
-  # BUCKET 3: TEMPORAL TREND (10 questions)
-  # ============================================================================
-  - id: "trend-01"
-    bucket: "temporal_trend"
-    question: "How many permits were issued in Toronto in 2023?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code = 'TOR' AND d.year = 2023;"
-    expected_facts: ["2023", "Toronto"]
-
-  - id: "trend-02"
-    bucket: "temporal_trend"
-    question: "How many building permits were issued in Brampton in 2020?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code = 'BRAM' AND d.year = 2020;"
-    expected_facts: ["2020", "Brampton"]
-
-  - id: "trend-03"
-    bucket: "temporal_trend"
-    question: "How many permits were issued in Mississauga in 2021?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code = 'MISS' AND d.year = 2021;"
-    expected_facts: ["2021", "Mississauga"]
-
-  - id: "trend-04"
-    bucket: "temporal_trend"
-    question: "What year did Toronto issue the maximum number of building permits?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT d.year, count(*) as cnt FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code = 'TOR' GROUP BY d.year ORDER BY cnt DESC LIMIT 1;"
-    expected_facts: ["Toronto"]
-
-  - id: "trend-05"
-    bucket: "temporal_trend"
-    question: "How many development applications were submitted in Brampton in 2022?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON a.date_submitted_sk = d.date_sk WHERE m.municipality_code = 'BRAM' AND d.year = 2022;"
-    expected_facts: ["2022", "Brampton"]
-
-  - id: "trend-06"
-    bucket: "temporal_trend"
-    question: "How many permits were issued across the GTA in 2018?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE d.year = 2018;"
-    expected_facts: ["2018"]
-
-  - id: "trend-07"
-    bucket: "temporal_trend"
-    question: "How many permits were issued across the GTA in 2019?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE d.year = 2019;"
-    expected_facts: ["2019"]
-
-  - id: "trend-08"
-    bucket: "temporal_trend"
-    question: "What was the total permit volume issued in Mississauga in 2018?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code = 'MISS' AND d.year = 2018;"
-    expected_facts: ["2018", "Mississauga"]
-
-  - id: "trend-09"
-    bucket: "temporal_trend"
-    question: "How many permits were issued in Toronto during 2015?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code = 'TOR' AND d.year = 2015;"
-    expected_facts: ["2015", "Toronto"]
-
-  - id: "trend-10"
-    bucket: "temporal_trend"
-    question: "How many development applications were submitted across all municipalities in 2023?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_date d ON a.date_submitted_sk = d.date_sk WHERE d.year = 2023;"
-    expected_facts: ["2023"]
-
-  # ============================================================================
-  # BUCKET 4: GEOGRAPHIC (10 questions)
-  # ============================================================================
-  - id: "geo-01"
-    bucket: "geographic"
-    question: "How many permits were issued in Mississauga Ward 1?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_geography g ON p.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS' AND g.ward_code = '1' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["Mississauga", "Ward 1"]
-
-  - id: "geo-02"
-    bucket: "geographic"
-    question: "How many permits were issued in Mississauga Ward 7?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_geography g ON p.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS' AND g.ward_code = '7' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["Mississauga", "Ward 7"]
-
-  - id: "geo-03"
-    bucket: "geographic"
-    question: "Which Mississauga ward has the largest number of issued permits?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT g.ward_code, count(*) as cnt FROM gold.fct_permits p JOIN gold.dim_geography g ON p.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS' AND p.date_issued_sk IS NOT NULL GROUP BY g.ward_code ORDER BY cnt DESC LIMIT 1;"
-    expected_facts: ["Mississauga"]
-
-  - id: "geo-04"
-    bucket: "geographic"
-    question: "How many development applications are associated with Toronto Ward 10?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR' AND g.ward_code = '10';"
-    expected_facts: ["Toronto", "10"]
-
-  - id: "geo-05"
-    bucket: "geographic"
-    question: "How many development applications are recorded in Toronto Ward 13?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR' AND g.ward_code = '13';"
-    expected_facts: ["Toronto", "13"]
-
-  - id: "geo-06"
-    bucket: "geographic"
-    question: "How many development applications are located in Brampton Ward 1?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'BRAM' AND g.ward_code = '1';"
-    expected_facts: ["Brampton", "1"]
-
-  - id: "geo-07"
-    bucket: "geographic"
-    question: "How many distinct wards are defined in dim_geography for Mississauga?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(DISTINCT g.ward_code) FROM gold.dim_geography g JOIN gold.dim_municipality m ON g.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS';"
-    expected_facts: ["11"]
-
-  - id: "geo-08"
-    bucket: "geographic"
-    question: "How many distinct ward boundary records exist in dim_geography for Toronto?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.dim_geography g JOIN gold.dim_municipality m ON g.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR';"
-    expected_facts: ["69"]
-
-  - id: "geo-09"
-    bucket: "geographic"
-    question: "How many permits were issued in Mississauga Ward 2?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_geography g ON p.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS' AND g.ward_code = '2' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["Mississauga", "2"]
-
-  - id: "geo-10"
-    bucket: "geographic"
-    question: "How many development applications are recorded in Mississauga Ward 4?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS' AND g.ward_code = '4';"
-    expected_facts: ["Mississauga", "4"]
-
-  # ============================================================================
-  # BUCKET 5: SEMANTIC / FREE-TEXT (10 questions)
-  # ============================================================================
-  - id: "sem-01"
-    bucket: "semantic_freetext"
-    question: "What is the breakdown of permits by use type classification in the warehouse?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT u.use_type_name, count(*) as count FROM gold.fct_permits p JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk GROUP BY u.use_type_name ORDER BY count DESC;"
-    expected_facts: ["Residential", "Commercial"]
-
-  - id: "sem-02"
-    bucket: "semantic_freetext"
-    question: "How many residential permits were issued in Toronto?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE m.municipality_code = 'TOR' AND u.use_type_code = 'residential' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["Toronto", "residential"]
-
-  - id: "sem-03"
-    bucket: "semantic_freetext"
-    question: "How many industrial permits were issued in Brampton?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE m.municipality_code = 'BRAM' AND u.use_type_code = 'industrial' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["Brampton", "industrial"]
-
-  - id: "sem-04"
-    bucket: "semantic_freetext"
-    question: "How many commercial permits were issued in Mississauga?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE m.municipality_code = 'MISS' AND u.use_type_code = 'commercial' AND p.date_issued_sk IS NOT NULL;"
-    expected_facts: ["Mississauga", "commercial"]
-
-  - id: "sem-05"
-    bucket: "semantic_freetext"
-    question: "How many institutional use permits exist across the GTA?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE u.use_type_code = 'institutional';"
-    expected_facts: ["institutional"]
-
-  - id: "sem-06"
-    bucket: "semantic_freetext"
-    question: "How many development applications in Brampton are currently under review?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk JOIN gold.dim_status s ON a.status_sk = s.status_sk WHERE m.municipality_code = 'BRAM' AND s.status_code = 'UNDER_REVIEW';"
-    expected_facts: ["Brampton", "UNDER_REVIEW"]
-
-  - id: "sem-07"
-    bucket: "semantic_freetext"
-    question: "How many mixed-use permits exist in the warehouse?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE u.use_type_code = 'mixed-use';"
-    expected_facts: ["mixed-use"]
-
-  - id: "sem-08"
-    bucket: "semantic_freetext"
-    question: "How many permits in Toronto have an unknown use type classification?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE m.municipality_code = 'TOR' AND u.use_type_code = 'unknown';"
-    expected_facts: ["Toronto", "unknown"]
-
-  - id: "sem-09"
-    bucket: "semantic_freetext"
-    question: "How many cancelled permits are recorded in the permits table?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_status s ON p.status_sk = s.status_sk WHERE s.status_code = 'CANCELLED';"
-    expected_facts: ["CANCELLED", "58890"]
-
-  - id: "sem-10"
-    bucket: "semantic_freetext"
-    question: "How many development applications in Toronto have been closed?"
-    expected_behavior: "answer"
-    expected_sql: "SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk JOIN gold.dim_status s ON a.status_sk = s.status_sk WHERE m.municipality_code = 'TOR' AND s.status_code = 'CLOSED';"
-    expected_facts: ["Toronto", "CLOSED"]
-
-  # ============================================================================
-  # BUCKET 6: UNANSWERABLE / REFUSAL (10 questions)
-  # ============================================================================
-  - id: "refuse-01"
-    bucket: "unanswerable"
-    question: "What is the total number of building permits issued in Vancouver in 2023?"
-    expected_behavior: "refuse"
-    refusal_reason: "Vancouver is outside the geographic scope of this pipeline (Greater Toronto Area only: Toronto, Mississauga, Brampton, Peel Region)."
-
-  - id: "refuse-02"
-    bucket: "unanswerable"
-    question: "How many residential units were approved in Montreal last year?"
-    expected_behavior: "refuse"
-    refusal_reason: "Montreal is outside the scope of this GTA pipeline."
-
-  - id: "refuse-03"
-    bucket: "unanswerable"
-    question: "Who is the owner and applicant for permit number 26 256637 BLD?"
-    expected_behavior: "refuse"
-    refusal_reason: "Personally identifiable information (PII) including individual applicant and owner names is intentionally scrubbed from the warehouse."
-
-  - id: "refuse-04"
-    bucket: "unanswerable"
-    question: "Forecast the average home sale price in Toronto for the year 2030."
-    expected_behavior: "refuse"
-    refusal_reason: "This project is not a real-estate price prediction model and does not make financial or housing market forecasts."
-
-  - id: "refuse-05"
-    bucket: "unanswerable"
-    question: "What is the average elapsed time between submitting a development application and receiving a building permit?"
-    expected_behavior: "refuse"
-    refusal_reason: "Per ADR-0006, no linking key exists between development applications and building permits in municipal source feeds (related_application_number is NULL). Inferring a link would fabricate ungrounded relationships."
-
-  - id: "refuse-06"
-    bucket: "unanswerable"
-    question: "What is the per-capita dwelling unit construction rate for the GTA in 2024?"
-    expected_behavior: "refuse"
-    refusal_reason: "Per-capita metrics (measure P1) are pending Statistics Canada census profile ingestion and are not yet computable in the warehouse."
-
-  - id: "refuse-07"
-    bucket: "unanswerable"
-    question: "What was the median days from application submission to decision for Toronto development applications?"
-    expected_behavior: "refuse"
-    refusal_reason: "The Toronto CKAN development applications feed does not provide decision dates (date_decision_sk is not available); only current status is provided."
-
-  - id: "refuse-08"
-    bucket: "unanswerable"
-    question: "What was the median days from submission to decision for Brampton planning applications?"
-    expected_behavior: "refuse"
-    refusal_reason: "The Brampton planning application feeds do not provide decision dates."
-
-  - id: "refuse-09"
-    bucket: "unanswerable"
-    question: "How many building permits were issued by the Town of Caledon in 2023?"
-    expected_behavior: "refuse"
-    refusal_reason: "Per ADR-0004, Caledon issues no building permits in the ingested data feeds; it is in scope only as a geographic context in Peel Region."
-
-  - id: "refuse-10"
-    bucket: "unanswerable"
-    question: "How many building permits did the Regional Municipality of Peel issue in 2022?"
-    expected_behavior: "refuse"
-    refusal_reason: "Peel Region is an upper-tier municipality and is not a building permit issuing authority; permits are issued by lower-tier municipalities (Mississauga, Brampton)."
-
+- id: agg-01
+  bucket: simple_aggregate
+  question: What is the total number of permits issued across the GTA in the warehouse?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) AS total_issued FROM gold.fct_permits WHERE date_issued_sk IS NOT NULL;
+  expected_facts:
+  - '652715'
+- id: agg-02
+  bucket: simple_aggregate
+  question: How many total permit records exist for Toronto in the warehouse?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk WHERE m.municipality_code = 'TOR';
+  expected_facts:
+  - '576201'
+- id: agg-03
+  bucket: simple_aggregate
+  question: How many permits were issued in Toronto?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk WHERE m.municipality_code = 'TOR' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - '465637'
+- id: agg-04
+  bucket: simple_aggregate
+  question: How many total building permits were issued in Mississauga?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk WHERE m.municipality_code = 'MISS' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - '35041'
+- id: agg-05
+  bucket: simple_aggregate
+  question: How many permits were issued in Brampton?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk WHERE m.municipality_code = 'BRAM' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - '152037'
+- id: agg-06
+  bucket: simple_aggregate
+  question: What is the total number of development applications in Toronto?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk
+    = m.municipality_sk WHERE m.municipality_code = 'TOR';
+  expected_facts:
+  - '8622'
+- id: agg-07
+  bucket: simple_aggregate
+  question: How many development applications across the GTA are still open (submitted, under review,
+    or under appeal)?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) AS open_applications FROM gold.fct_applications a JOIN gold.dim_status
+    s ON a.status_sk = s.status_sk WHERE s.applies_to = 'application' AND s.is_terminal = FALSE;
+  expected_facts:
+  - '2648'
+- id: agg-08
+  bucket: simple_aggregate
+  question: What is the total construction value reported for Toronto permits?
+  expected_behavior: answer
+  expected_sql: SELECT sum(construction_value_cad) FROM gold.fct_permits p JOIN gold.dim_municipality
+    m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR';
+  expected_facts:
+  - '102421247755.42'
+- id: agg-09
+  bucket: simple_aggregate
+  question: What is the total construction value reported for Mississauga permits?
+  expected_behavior: answer
+  expected_sql: SELECT sum(construction_value_cad) FROM gold.fct_permits p JOIN gold.dim_municipality
+    m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS';
+  expected_facts:
+  - '18273083375'
+- id: agg-10
+  bucket: simple_aggregate
+  question: How many municipalities are tracked in the dim_municipality table?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.dim_municipality;
+  expected_facts:
+  - '5'
+- id: comp-01
+  bucket: comparative
+  question: 'Which municipality has issued more permits: Toronto or Brampton?'
+  expected_behavior: answer
+  expected_sql: SELECT m.municipality_name, count(*) AS issued FROM gold.fct_permits p JOIN gold.dim_municipality
+    m ON p.municipality_sk = m.municipality_sk WHERE p.date_issued_sk IS NOT NULL AND m.municipality_code
+    IN ('TOR', 'BRAM') GROUP BY m.municipality_name ORDER BY issued DESC;
+  expected_facts:
+  - Toronto
+  - Brampton
+  - '465637'
+  - '152037'
+- id: comp-02
+  bucket: comparative
+  question: Compare the number of still-open development applications between Mississauga and Brampton.
+  expected_behavior: answer
+  expected_sql: SELECT m.municipality_name, count(*) AS open_applications FROM gold.fct_applications a
+    JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk JOIN gold.dim_status s ON a.status_sk
+    = s.status_sk WHERE s.applies_to = 'application' AND s.is_terminal = FALSE AND m.municipality_code
+    IN ('MISS', 'BRAM') GROUP BY m.municipality_name ORDER BY m.municipality_name;
+  expected_facts:
+  - Brampton
+  - Mississauga
+- id: comp-03
+  bucket: comparative
+  question: Which municipality has the greatest total number of development applications in the warehouse?
+  expected_behavior: answer
+  expected_sql: SELECT m.municipality_name, count(*) as cnt FROM gold.fct_applications a JOIN gold.dim_municipality
+    m ON a.municipality_sk = m.municipality_sk GROUP BY m.municipality_name ORDER BY cnt DESC LIMIT 1;
+  expected_facts:
+  - Brampton
+  - '11672'
+- id: comp-04
+  bucket: comparative
+  question: Compare the total construction value between Toronto and Mississauga.
+  expected_behavior: answer
+  expected_sql: SELECT m.municipality_name, sum(p.construction_value_cad) FROM gold.fct_permits p JOIN
+    gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code IN ('TOR',
+    'MISS') GROUP BY m.municipality_name;
+  expected_facts:
+  - Toronto
+  - Mississauga
+  - '102421247755.42'
+  - '18273083375'
+- id: comp-05
+  bucket: comparative
+  question: Which municipality has the fastest median permit turnaround from application to issuance?
+  expected_behavior: answer
+  expected_sql: SELECT m.municipality_name, median(d_i.calendar_date - d_a.calendar_date) as median_days
+    FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN
+    gold.dim_date d_a ON p.date_applied_sk = d_a.date_sk JOIN gold.dim_date d_i ON p.date_issued_sk =
+    d_i.date_sk GROUP BY m.municipality_name ORDER BY median_days ASC;
+  expected_facts:
+  - Toronto
+  - '28'
+- id: comp-06
+  bucket: comparative
+  question: Compare the median permit applied-to-issued days between Toronto, Mississauga, and Brampton.
+  expected_behavior: answer
+  expected_sql: SELECT m.municipality_name, median(d_i.calendar_date - d_a.calendar_date) as median_days
+    FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk JOIN
+    gold.dim_date d_a ON p.date_applied_sk = d_a.date_sk JOIN gold.dim_date d_i ON p.date_issued_sk =
+    d_i.date_sk GROUP BY m.municipality_name ORDER BY median_days ASC;
+  expected_facts:
+  - '28'
+  - '34'
+  - '44'
+- id: comp-07
+  bucket: comparative
+  question: How do closed development application counts compare to under-review application counts across
+    all GTA municipalities?
+  expected_behavior: answer
+  expected_sql: SELECT s.status_code, count(*) AS application_count FROM gold.fct_applications a JOIN
+    gold.dim_status s ON a.status_sk = s.status_sk WHERE s.applies_to = 'application' AND s.status_code
+    IN ('CLOSED', 'UNDER_REVIEW') GROUP BY s.status_code ORDER BY s.status_code;
+  expected_facts:
+  - CLOSED
+  - UNDER_REVIEW
+  - '11113'
+  - '2165'
+- id: comp-08
+  bucket: comparative
+  question: In Brampton, are there more residential or mixed-use permits issued?
+  expected_behavior: answer
+  expected_sql: SELECT u.use_type_label, count(*) AS permits_issued FROM gold.fct_permits p JOIN gold.dim_municipality
+    m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk
+    WHERE m.municipality_code = 'BRAM' AND u.use_type_code IN ('RESIDENTIAL', 'MIXED_USE') AND p.date_issued_sk
+    IS NOT NULL GROUP BY u.use_type_label ORDER BY u.use_type_label;
+  expected_facts:
+  - Residential
+  - Mixed use
+- id: comp-09
+  bucket: comparative
+  question: Did Toronto issue more permits in 2021 or 2022?
+  expected_behavior: answer
+  expected_sql: SELECT d.year, count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code
+    = 'TOR' AND d.year IN (2021, 2022) GROUP BY d.year;
+  expected_facts:
+  - '2021'
+  - '2022'
+- id: comp-10
+  bucket: comparative
+  question: Which application status code has the largest volume of records?
+  expected_behavior: answer
+  expected_sql: SELECT s.status_code, count(*) as cnt FROM gold.fct_applications a JOIN gold.dim_status
+    s ON a.status_sk = s.status_sk GROUP BY s.status_code ORDER BY cnt DESC LIMIT 1;
+  expected_facts:
+  - CLOSED
+  - '11113'
+- id: trend-01
+  bucket: temporal_trend
+  question: How many permits were issued in Toronto in 2023?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code
+    = 'TOR' AND d.year = 2023;
+  expected_facts:
+  - '2023'
+  - Toronto
+- id: trend-02
+  bucket: temporal_trend
+  question: How many building permits were issued in Brampton in 2020?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code
+    = 'BRAM' AND d.year = 2020;
+  expected_facts:
+  - '2020'
+  - Brampton
+- id: trend-03
+  bucket: temporal_trend
+  question: How many permits were issued in Mississauga in 2021?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code
+    = 'MISS' AND d.year = 2021;
+  expected_facts:
+  - '2021'
+  - Mississauga
+- id: trend-04
+  bucket: temporal_trend
+  question: What year did Toronto issue the maximum number of building permits?
+  expected_behavior: answer
+  expected_sql: SELECT d.year, count(*) as cnt FROM gold.fct_permits p JOIN gold.dim_municipality m ON
+    p.municipality_sk = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code
+    = 'TOR' GROUP BY d.year ORDER BY cnt DESC LIMIT 1;
+  expected_facts:
+  - Toronto
+- id: trend-05
+  bucket: temporal_trend
+  question: How many development applications were submitted in Brampton in 2022?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk
+    = m.municipality_sk JOIN gold.dim_date d ON a.date_submitted_sk = d.date_sk WHERE m.municipality_code
+    = 'BRAM' AND d.year = 2022;
+  expected_facts:
+  - '2022'
+  - Brampton
+- id: trend-06
+  bucket: temporal_trend
+  question: How many permits were issued across the GTA in 2018?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk
+    WHERE d.year = 2018;
+  expected_facts:
+  - '2018'
+- id: trend-07
+  bucket: temporal_trend
+  question: How many permits were issued across the GTA in 2019?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk
+    WHERE d.year = 2019;
+  expected_facts:
+  - '2019'
+- id: trend-08
+  bucket: temporal_trend
+  question: What was the total permit volume issued in Mississauga in 2018?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code
+    = 'MISS' AND d.year = 2018;
+  expected_facts:
+  - '2018'
+  - Mississauga
+- id: trend-09
+  bucket: temporal_trend
+  question: How many permits were issued in Toronto during 2015?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk JOIN gold.dim_date d ON p.date_issued_sk = d.date_sk WHERE m.municipality_code
+    = 'TOR' AND d.year = 2015;
+  expected_facts:
+  - '2015'
+  - Toronto
+- id: trend-10
+  bucket: temporal_trend
+  question: How many development applications were submitted across all municipalities in 2023?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_date d ON a.date_submitted_sk
+    = d.date_sk WHERE d.year = 2023;
+  expected_facts:
+  - '2023'
+- id: geo-01
+  bucket: geographic
+  question: How many permits were issued in Mississauga Ward 1?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_geography g ON p.geography_sk =
+    g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code
+    = 'MISS' AND g.ward_code = '1' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - Mississauga
+  - Ward 1
+- id: geo-02
+  bucket: geographic
+  question: How many permits were issued in Mississauga Ward 7?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_geography g ON p.geography_sk =
+    g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code
+    = 'MISS' AND g.ward_code = '7' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - Mississauga
+  - Ward 7
+- id: geo-03
+  bucket: geographic
+  question: Which Mississauga ward has the largest number of issued permits?
+  expected_behavior: answer
+  expected_sql: SELECT g.ward_code, count(*) as cnt FROM gold.fct_permits p JOIN gold.dim_geography g
+    ON p.geography_sk = g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk
+    WHERE m.municipality_code = 'MISS' AND p.date_issued_sk IS NOT NULL GROUP BY g.ward_code ORDER BY
+    cnt DESC LIMIT 1;
+  expected_facts:
+  - Mississauga
+- id: geo-04
+  bucket: geographic
+  question: How many development applications are associated with Toronto Ward 10?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk
+    = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code
+    = 'TOR' AND g.ward_code = '10';
+  expected_facts:
+  - Toronto
+  - '10'
+- id: geo-05
+  bucket: geographic
+  question: How many development applications are recorded in Toronto Ward 13?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk
+    = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code
+    = 'TOR' AND g.ward_code = '13';
+  expected_facts:
+  - Toronto
+  - '13'
+- id: geo-06
+  bucket: geographic
+  question: How many development applications are located in Brampton Ward 1?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk
+    = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code
+    = 'BRAM' AND g.ward_code = '1';
+  expected_facts:
+  - Brampton
+  - '1'
+- id: geo-07
+  bucket: geographic
+  question: How many distinct wards are defined in dim_geography for Mississauga?
+  expected_behavior: answer
+  expected_sql: SELECT count(DISTINCT g.ward_code) AS distinct_wards FROM gold.dim_geography g WHERE g.municipality
+    = 'Mississauga';
+  expected_facts:
+  - '11'
+- id: geo-08
+  bucket: geographic
+  question: How many distinct ward boundary records exist in dim_geography for Toronto?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) AS ward_records FROM gold.dim_geography g WHERE g.municipality = 'Toronto';
+  expected_facts:
+  - '25'
+- id: geo-09
+  bucket: geographic
+  question: How many permits were issued in Mississauga Ward 2?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_geography g ON p.geography_sk =
+    g.geography_sk JOIN gold.dim_municipality m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code
+    = 'MISS' AND g.ward_code = '2' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - Mississauga
+  - '2'
+- id: geo-10
+  bucket: geographic
+  question: How many development applications are recorded in Mississauga Ward 4?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_geography g ON a.geography_sk
+    = g.geography_sk JOIN gold.dim_municipality m ON a.municipality_sk = m.municipality_sk WHERE m.municipality_code
+    = 'MISS' AND g.ward_code = '4';
+  expected_facts:
+  - Mississauga
+  - '4'
+- id: sem-01
+  bucket: semantic_freetext
+  question: What is the breakdown of permits by use type classification in the warehouse?
+  expected_behavior: answer
+  expected_sql: SELECT u.use_type_label, count(*) AS permit_count FROM gold.fct_permits p JOIN gold.dim_use_type
+    u ON p.use_type_sk = u.use_type_sk GROUP BY u.use_type_label ORDER BY permit_count DESC;
+  expected_facts:
+  - Residential
+  - Mixed use
+  - Institutional
+- id: sem-02
+  bucket: semantic_freetext
+  question: How many residential permits were issued in Toronto?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
+    = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk WHERE m.municipality_code
+    = 'TOR' AND u.use_type_code = 'RESIDENTIAL' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - Toronto
+  - residential
+- id: sem-03
+  bucket: semantic_freetext
+  question: How many institutional permits were issued in Brampton?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) AS institutional_permits FROM gold.fct_permits p JOIN gold.dim_municipality
+    m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk
+    WHERE m.municipality_code = 'BRAM' AND u.use_type_code = 'INSTITUTIONAL' AND p.date_issued_sk IS NOT
+    NULL;
+  expected_facts:
+  - Brampton
+  - institutional
+- id: sem-04
+  bucket: semantic_freetext
+  question: How many mixed-use permits were issued in Brampton?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) AS mixed_use_permits FROM gold.fct_permits p JOIN gold.dim_municipality
+    m ON p.municipality_sk = m.municipality_sk JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk
+    WHERE m.municipality_code = 'BRAM' AND u.use_type_code = 'MIXED_USE' AND p.date_issued_sk IS NOT NULL;
+  expected_facts:
+  - Brampton
+  - mixed-use
+- id: sem-05
+  bucket: semantic_freetext
+  question: How many institutional use permits exist across the GTA?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk
+    WHERE u.use_type_code = 'INSTITUTIONAL';
+  expected_facts:
+  - institutional
+- id: sem-06
+  bucket: semantic_freetext
+  question: How many development applications in Brampton are currently under review?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk
+    = m.municipality_sk JOIN gold.dim_status s ON a.status_sk = s.status_sk WHERE m.municipality_code
+    = 'BRAM' AND s.status_code = 'UNDER_REVIEW';
+  expected_facts:
+  - Brampton
+  - UNDER_REVIEW
+- id: sem-07
+  bucket: semantic_freetext
+  question: How many mixed-use permits exist in the warehouse?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_use_type u ON p.use_type_sk = u.use_type_sk
+    WHERE u.use_type_code = 'MIXED_USE';
+  expected_facts:
+  - mixed-use
+- id: sem-08
+  bucket: semantic_freetext
+  question: How many infrastructure permits exist in the warehouse?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) AS infrastructure_permits FROM gold.fct_permits p JOIN gold.dim_use_type
+    u ON p.use_type_sk = u.use_type_sk WHERE u.use_type_code = 'INFRASTRUCTURE';
+  expected_facts:
+  - infrastructure
+- id: sem-09
+  bucket: semantic_freetext
+  question: How many cancelled permits are recorded in the permits table?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_status s ON p.status_sk = s.status_sk
+    WHERE s.status_code = 'CANCELLED';
+  expected_facts:
+  - CANCELLED
+  - '59585'
+- id: sem-10
+  bucket: semantic_freetext
+  question: How many development applications in Toronto have been closed?
+  expected_behavior: answer
+  expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk
+    = m.municipality_sk JOIN gold.dim_status s ON a.status_sk = s.status_sk WHERE m.municipality_code
+    = 'TOR' AND s.status_code = 'CLOSED';
+  expected_facts:
+  - Toronto
+  - CLOSED
+- id: refuse-01
+  bucket: unanswerable
+  question: What is the total number of building permits issued in Vancouver in 2023?
+  expected_behavior: refuse
+  refusal_reason: 'Vancouver is outside the geographic scope of this pipeline (Greater Toronto Area only:
+    Toronto, Mississauga, Brampton, Peel Region).'
+- id: refuse-02
+  bucket: unanswerable
+  question: How many residential units were approved in Montreal last year?
+  expected_behavior: refuse
+  refusal_reason: Montreal is outside the scope of this GTA pipeline.
+- id: refuse-03
+  bucket: unanswerable
+  question: Who is the owner and applicant for permit number 26 256637 BLD?
+  expected_behavior: refuse
+  refusal_reason: Personally identifiable information (PII) including individual applicant and owner names
+    is intentionally scrubbed from the warehouse.
+- id: refuse-04
+  bucket: unanswerable
+  question: Forecast the average home sale price in Toronto for the year 2030.
+  expected_behavior: refuse
+  refusal_reason: This project is not a real-estate price prediction model and does not make financial
+    or housing market forecasts.
+- id: refuse-05
+  bucket: unanswerable
+  question: What is the average elapsed time between submitting a development application and receiving
+    a building permit?
+  expected_behavior: refuse
+  refusal_reason: Per ADR-0006, no linking key exists between development applications and building permits
+    in municipal source feeds (related_application_number is NULL). Inferring a link would fabricate ungrounded
+    relationships.
+- id: refuse-06
+  bucket: unanswerable
+  question: What is the per-capita dwelling unit construction rate for the GTA in 2024?
+  expected_behavior: refuse
+  refusal_reason: Per-capita metrics (measure P1) are pending Statistics Canada census profile ingestion
+    and are not yet computable in the warehouse.
+- id: refuse-07
+  bucket: unanswerable
+  question: What was the median days from application submission to decision for Toronto development applications?
+  expected_behavior: refuse
+  refusal_reason: The Toronto CKAN development applications feed does not provide decision dates (date_decision_sk
+    is not available); only current status is provided.
+- id: refuse-08
+  bucket: unanswerable
+  question: What was the median days from submission to decision for Brampton planning applications?
+  expected_behavior: refuse
+  refusal_reason: The Brampton planning application feeds do not provide decision dates.
+- id: refuse-09
+  bucket: unanswerable
+  question: How many building permits were issued by the Town of Caledon in 2023?
+  expected_behavior: refuse
+  refusal_reason: Per ADR-0004, Caledon issues no building permits in the ingested data feeds; it is in
+    scope only as a geographic context in Peel Region.
+- id: refuse-10
+  bucket: unanswerable
+  question: How many building permits did the Regional Municipality of Peel issue in 2022?
+  expected_behavior: refuse
+  refusal_reason: Peel Region is an upper-tier municipality and is not a building permit issuing authority;
+    permits are issued by lower-tier municipalities (Mississauga, Brampton).

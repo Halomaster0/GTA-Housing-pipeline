@@ -55,8 +55,9 @@ def validate_issued_permit_sql_pattern(sql: str) -> bool:
     """
     sql_lower = sql.lower()
     # Detect the forbidden pattern: dim_status with status_code filtering
-    if "dim_status" in sql_lower and "status_code" in sql_lower and ("'issued'" in sql_lower or "'issued'" in sql_lower or '"issued"' in sql_lower):
-        return False
+    if "dim_status" in sql_lower and "status_code" in sql_lower:
+        if "'issued'" in sql_lower or '"issued"' in sql_lower:
+            return False
     return True
 
 
