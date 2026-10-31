@@ -122,7 +122,7 @@ A public repo, a live dashboard, a live NL query demo, a published eval report w
 | Embeddings | `sentence-transformers` (HF `sentence-similarity`) | Local, free, no per-call cost |
 | Classification | HF `zero-shot-classification` | Tag permit descriptions without training a classifier |
 | Tabular QA | HF `table-question-answering` | Second retrieval path alongside text-to-SQL |
-| LLM | Anthropic API via Claude Agent SDK | CEO already fluent |
+| LLM | OpenRouter (free/cheap routers + 10 credits) via FastAPI endpoint; Anthropic disabled | CEO confirmed switch 2026-10-31; cap 1000/day |
 | Eval | Custom harness + `pytest` | Owned, inspectable, CI-gated |
 | **Web app** | **Next.js (App Router) + TypeScript, deployed on Vercel** | Fastest path for the CEO; the app is a thin client, the depth is behind it |
 | **API** | **FastAPI** serving the query graph + read-only gold endpoints | Keeps Python AI code in Python; documented OpenAPI is itself an artifact |
