@@ -19,6 +19,17 @@
               {
                 "textRuns": [
                   {
+                    "value": "The row with a blank name holds Toronto and Brampton permits (612,975), which have no ward. Hide it with a visual filter: ward_name is not blank.",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "normal"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
                     "value": "Denominator: this page covers Mississauga permits (34,614), Toronto applications with a ward, and the Brampton ward rows. It is NOT the 827,919-permit universe.",
                     "textStyle": {
                       "fontSize": "11pt",

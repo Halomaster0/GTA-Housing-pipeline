@@ -65,6 +65,28 @@
           ]
         }
       }
+    },
+    "objects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Permits Issued by year and municipality'"
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

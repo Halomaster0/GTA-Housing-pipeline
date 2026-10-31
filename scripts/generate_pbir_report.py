@@ -261,8 +261,6 @@ def page_pipeline_velocity() -> list[dict]:
                 "Values": [
                     col_proj(MUNICIPALITY, "municipality_name"),
                     meas_proj(PERMITS, "Date Coverage Pct"),
-                    meas_proj(PERMITS, "Median Applied to Issued Days"),
-                    meas_proj(APPLICATIONS, "Median Submitted to Decision Days"),
                 ]
             },
         ),
@@ -302,6 +300,8 @@ def page_geography() -> list[dict]:
             "note_geography_denominator",
             (24, 528, 1232, 140),
             [
+                ("The row with a blank name holds Toronto and Brampton permits (612,975), which have no ward. "
+                 "Hide it with a visual filter: ward_name is not blank.", 11, False),
                 ("Denominator: this page covers Mississauga permits (34,614), Toronto applications with a "
                  "ward, and the Brampton ward rows. It is NOT the 827,919-permit universe.", 11, False),
                 ("Brampton ward view: equivalence is UNCONFIRMED (conformance matrix section 3).", 11, True),
@@ -366,6 +366,19 @@ def dump(obj: dict) -> str:
     return json.dumps(obj, indent=2, ensure_ascii=True) + "\n"
 
 
+# Chart titles replace the automatic ones, which show raw field names such as
+# "Count of application_sk by status_label". The title object is in the published
+# visualConfiguration schema (Title: show, text).
+CHART_TITLES = {
+    "chart_permits_by_year": "Permits Issued by year and municipality",
+    "donut_application_status": "Applications by status",
+    "bar_permits_by_municipality": "Permits Issued by municipality",
+    "bar_net_new_units": "Net New Units by municipality (mixed basis: do not total)",
+    "column_median_applied_to_issued": "Median days, applied to issued (per municipality)",
+    "column_median_submitted_to_decision": "Median days, submitted to decision (Mississauga only)",
+}
+
+
 def visual_container(spec: dict, z: int) -> dict:
     x, y, w, h = spec["box"]
     body: dict = {"visualType": spec["visualType"]}
@@ -373,8 +386,21 @@ def visual_container(spec: dict, z: int) -> dict:
         body["query"] = {
             "queryState": {role: {"projections": projs} for role, projs in spec["roles"].items()}
         }
-    if spec.get("objects"):
-        body["objects"] = spec["objects"]
+    objects = dict(spec.get("objects") or {})
+    if spec["name"] in CHART_TITLES:
+        # PBIR formatting values are expression literals: Desktop ignores a bare
+        # true or a bare string here, though the published schema accepts both.
+        text = CHART_TITLES[spec["name"]].replace("'", "''")
+        objects["title"] = [
+            {
+                "properties": {
+                    "show": {"expr": {"Literal": {"Value": "true"}}},
+                    "text": {"expr": {"Literal": {"Value": f"'{text}'"}}},
+                }
+            }
+        ]
+    if objects:
+        body["objects"] = objects
     return {
         "$schema": schema("visualContainer"),
         "name": spec["name"],
