@@ -31,9 +31,11 @@ permits:
       on hold rather than issued. This is a placeholder or data-entry artifact,
       not a measurement. It alone accounts for 100,000 of Toronto's +100,803
       unit move; the residual +803 matches the other municipalities' growth.
-    decision: UNRESOLVED
+    decision: EXCLUDED-PENDING (agent decision 2026-10-31: exclude from published measures; not a measurement; confirm when audit available)
     decision_note: >-
-      Pending: confirm against the live Toronto CKAN record, then rule on
+      EXCLUDED from published Toronto net-unit measures. Placeholder/data-entry
+      artifact (status_raw="Application On Hold", not issued). Confirm against
+      live Toronto CKAN record; when audited, rule EXCLUDE or CORRECT.
       treatment (leave in place, NULL it at bronze-to-silver with an explicit
       basis, or exclude from published measures). Until ruled, no Toronto
       unit figure is published. Owner: data-quality-auditor with

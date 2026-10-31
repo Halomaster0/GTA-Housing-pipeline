@@ -5,8 +5,8 @@ Ordered 7 steps. Tracking here. Updates appended at bottom.
 === STEP STATUS ===
 1. DATA VINTAGE DECISION     [x] DONE — docs/data-vintage-decision-2026-10-31.md (Oct = default, Sept = audit compare, Toronto 100k NOT published, UNRESOLVED)
 2. DATA FIXES (Power BI)     [ ] OPEN — BLOCKING: remove Net-New total; recompute card; CANCELLED rule; measure emission; donut fix; footer; page 3
-3. API / ROUTER SWITCH        [x] DONE — .env: API_BASE_URL=openrouter; ANTHROPIC empty; cap 1000/day; $10; free/cheap/super-cheap flags set
-4. PHASE 4 REMAINDER         [ ] OPEN — retrieval paths; /ask endpoint build; wiring planner to router endpoint
+3. API / ROUTER SWITCH        [x] DONE — .env: API_BASE_URL=openrouter; cap 1000/day; $10; free/cheap/super-cheap flags set
+4. PHASE 4 REMAINDER         [x] STARTED — /ask stub (web/app/ask/route.ts) + cap middleware (middleware.ts); full retrieval/cache/wiring remains
 5. PHASE 5 WEB                [ ] OPEN — web/ commit; deploy preview (Vercel CLI missing); Lighthouse; 90s test
 6. CLEAN-UP / VERIFY         [ ] OPEN — verify_sources; close 19 issues (needs auth); gate reviewer passes; build-plan removal
 7. THING YOU ASKED            [x] DONE — OpenRouter routing + cap settings applied; phase order set; plan committed
