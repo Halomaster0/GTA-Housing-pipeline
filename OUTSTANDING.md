@@ -53,13 +53,17 @@ warehouse. These are labelling and definition defects, not data defects.
   case. ADR-0003 forbids publishing it as a clean number. Add the comparability
   card that `fabric-dax.md` M2 already specifies, plus NULL coverage (64.3% of
   permit rows carry no unit count).
-- [ ] **BLOCKING — `Permits Issued` overstates by 180,330 (21.8%).** The real
-  issued count is 647,589 (TOR 462,039 / MISS 34,614 / BRAM 150,936), derivable
-  by summing `permits_issued_by_municipality_year`, which is already
-  issue-date filtered. The card shows `COUNT(*)` = 827,919. Brampton is
-  overstated by nearly a third. Separately: the gap is partly un-issued permits
-  and partly permits issued outside dim_date's 2010-2028 range, which the file
-  cannot distinguish — state it as such.
+- [ ] **BLOCKING — `Permits Issued` overstates by ~21%.** The real issued count
+  in the current gold warehouse is 652,715 (TOR 465,637 / MISS 35,041 / BRAM
+  152,037), derivable by summing `permits_issued_by_municipality_year`, which
+  is already issue-date filtered; every issued permit resolves in `dim_date`
+  (coverage 2010-01-01 → 2028-12-31). The figures in this bullet
+  (647,589 / TOR 462,039 / MISS 34,614 / BRAM 150,936 and a card total of
+  827,919) are from the 2026-10-22 parquet snapshot — the warehouse has been
+  refreshed since (+5,126 issued permits, 833,848 rows total), so re-derive
+  the card from the current export before publishing. Separately: the gap is
+  partly un-issued permits and partly permits issued outside dim_date's
+  2010-2028 range, which the file cannot distinguish — state it as such.
 - [ ] Rule on whether the 58,890 CANCELLED permits count toward "permits
   issued", and record it in `docs/data-dictionary.md` either way.
 - [ ] Emit every published measure (M1 included) from
@@ -90,8 +94,15 @@ warehouse. These are labelling and definition defects, not data defects.
   denominators live in `silver.census_tracts`, not on facts).
 - [ ] SCD2 status history is seeded all-current — needs a second ingest on a
   later date to demonstrate real diffs.
-- [ ] Phase 4 AI layer: golden question set (~60, written BEFORE tuning),
-  planner/executor/critic graph, retrieval paths, eval harness + report.
+- [x] Phase 4 AI layer core: golden question set (60 questions, 6 buckets),
+  planner/executor/critic graph, and eval harness with a 60% correctness CI
+  gate. Full 60q run: **88.3% correctness**, 81.7% faithfulness, 100% refusal
+  accuracy (`evals/results/2026-10-31-632ff88.json`). Planner refuses and the
+  executor blocks the `dim_status.status_code='ISSUED'` anti-pattern; issued
+  permits are `date_issued_sk IS NOT NULL`. Golden facts are re-derived from
+  the warehouse by `evals/repair_golden.py` so the baseline cannot drift again.
+- [ ] Phase 4 remainder: retrieval paths, a committed eval report, and wiring
+  `/ask` in the web app. Owner: `api-engineer`. Blocked on the API key (§2).
 - [ ] Phase 5 web app: scaffold DONE uncommitted (`web/`, 6 routes, map,
   a11y script — HANDOVER-5). Still owed: commit → PR (`web.yml` CI) →
   merge → deploy preview (static host, URL at Gate 4b, no subdomain) →
@@ -109,5 +120,5 @@ warehouse. These are labelling and definition defects, not data defects.
 | 1 Foundations | PASS | — |
 | 2 Pipeline | PASS | CEO-approved 2026-09-10 (no human auditor assigned; §4 authority) |
 | 3 Serving & BI | Not opened | Fabric trial (§2) + dashboard build |
-| 4 AI query layer | Not opened | API key (§2) + full layer build (§3) |
+| 4 AI query layer | Opened (partial) | Planner→executor→critic graph + eval harness landed (88.3%); API key (§2), retrieval paths, `/ask` wiring remain |
 | 5 Launch | Not opened | Web app, build-plan removal, all reviews |
