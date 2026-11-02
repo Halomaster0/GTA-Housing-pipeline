@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
   "name": "chart_permits_by_year",
   "position": {
     "x": 24,
     "y": 344,
     "z": 7,
-    "height": 356,
     "width": 760,
+    "height": 356,
     "tabOrder": 7
   },
   "visual": {
@@ -26,25 +26,7 @@
                   "Property": "year"
                 }
               },
-              "queryRef": "dim_date.year",
-              "active": true
-            }
-          ]
-        },
-        "Series": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_municipality"
-                    }
-                  },
-                  "Property": "municipality_name"
-                }
-              },
-              "queryRef": "dim_municipality.municipality_name"
+              "queryRef": "dim_date.year"
             }
           ]
         },
@@ -64,8 +46,47 @@
               "queryRef": "fct_permits.Permits Issued"
             }
           ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_municipality"
+                    }
+                  },
+                  "Property": "municipality_name"
+                }
+              },
+              "queryRef": "dim_municipality.municipality_name"
+            }
+          ]
         }
       }
+    },
+    "objects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Permits Issued by year and municipality'"
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

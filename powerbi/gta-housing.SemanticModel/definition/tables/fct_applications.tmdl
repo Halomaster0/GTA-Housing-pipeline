@@ -5,18 +5,19 @@ table fct_applications
 
 	/// Applications whose conformed status is not terminal (dim_status[is_terminal] = FALSE). APPEALED counts as active.
 	/// Reference (docs/measure-reconciliation.json): 2,668 overall; Toronto 1,694, Brampton 719, Mississauga 255.
-	measure 'Active Applications' =
+	measure 'Active Applications' = ```
 			// M3. Applications whose status is not terminal; APPEALED counts as active.
 			CALCULATE (
 				COUNTROWS ( fct_applications ),
 				dim_status[is_terminal] = FALSE ()
 			)
+			```
 		formatString: #,0
 		lineageTag: 144f928d-3216-56fc-a71b-e3fba1710da4
 
 	/// Median whole days from submission to decision, over applications that have both dates. Mississauga only in v1: Toronto and Brampton sources carry no decision date, so this returns blank for them by design (an empty state, not zero).
 	/// Reference (docs/measure-reconciliation.json): Mississauga 385 days (n=1,163).
-	measure 'Median Submitted to Decision Days' =
+	measure 'Median Submitted to Decision Days' = ```
 			// M7. Median whole days from submitted to decision, over applications with both dates.
 			MEDIANX (
 				FILTER (
@@ -30,6 +31,7 @@ table fct_applications
 					DAY
 				)
 			)
+			```
 		formatString: #,0.0
 		lineageTag: 724cdc93-4c11-544d-9299-e5fcd6281e03
 
@@ -170,4 +172,3 @@ table fct_applications
 					)
 				in
 					Typed
-

@@ -410,12 +410,55 @@ def visual_container(spec: dict, z: int) -> dict:
         ]
     if objects:
         body["objects"] = objects
-    return {
+    container = {
         "$schema": schema("visualContainer"),
         "name": spec["name"],
         "position": {"x": x, "y": y, "z": z, "width": w, "height": h, "tabOrder": z},
         "visual": body,
     }
+    if spec["name"] == "table_ward_permits":
+        # Visual filter ward_name is not blank: hides the row of Toronto and Brampton
+        # permits, which have no ward. Copied from Power BI Desktop's saved file.
+        container["filterConfig"] = {
+            "filters": [
+                {
+                    "name": "5eaeb01713b0d8c10734",
+                    "field": {
+                        "Column": {
+                            "Expression": {"SourceRef": {"Entity": GEOGRAPHY}},
+                            "Property": "ward_name",
+                        }
+                    },
+                    "type": "Categorical",
+                    "filter": {
+                        "Version": 2,
+                        "From": [{"Name": "d", "Entity": GEOGRAPHY, "Type": 0}],
+                        "Where": [
+                            {
+                                "Condition": {
+                                    "Not": {
+                                        "Expression": {
+                                            "In": {
+                                                "Expressions": [
+                                                    {
+                                                        "Column": {
+                                                            "Expression": {"SourceRef": {"Source": "d"}},
+                                                            "Property": "ward_name",
+                                                        }
+                                                    }
+                                                ],
+                                                "Values": [[{"Literal": {"Value": "null"}}]],
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                    },
+                }
+            ]
+        }
+    return container
 
 
 def build_files() -> dict[str, str]:

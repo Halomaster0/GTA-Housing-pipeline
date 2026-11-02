@@ -15,12 +15,11 @@ table dim_date
 	/// The calendar date. Key column of the date table: unique, no blanks, 2010-01-01 to 2028-12-31.
 	column calendar_date
 		dataType: dateTime
-		isKey
 		formatString: yyyy-mm-dd
+		isKey
 		lineageTag: 961a7a78-989c-5cd5-a2de-c433616c41db
 		summarizeBy: none
 		sourceColumn: calendar_date
-
 		annotation UnderlyingDateTimeDataType = Date
 
 	/// Calendar year.
@@ -173,4 +172,3 @@ table dim_date
 					)
 				in
 					Typed
-

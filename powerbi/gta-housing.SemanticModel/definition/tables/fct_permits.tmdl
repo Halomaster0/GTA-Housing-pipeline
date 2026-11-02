@@ -7,22 +7,24 @@ table fct_permits
 	/// Permits that carry an issue date (date_issued_sk is not blank). This is the only valid 'issued' count and the only one that matches a by-year chart.
 	/// Not the same as Permit Records. Permit Records is every permit row; this excludes rows with no issue date, which is a mix of permits never issued and permits whose issue date falls outside dim_date's 2010-2028 range (the split is not measured).
 	/// Reference (docs/measure-reconciliation.json): 647,589 overall; Toronto 462,039, Brampton 150,936, Mississauga 34,614. If a card labelled 'Permits Issued' shows 827,919 it is Permit Records mislabelled, a 21.8% overstatement (build review D2).
-	measure 'Permits Issued' =
+	measure 'Permits Issued' = ```
 			// M1. Permits that carry an issue date (date_issued_sk is not blank).
 			// Not the same as Permit Records, which counts every permit row.
 			CALCULATE (
 				COUNTROWS ( fct_permits ),
 				NOT ( ISBLANK ( fct_permits[date_issued_sk] ) )
 			)
+			```
 		formatString: #,0
 		lineageTag: 43c03403-4bb9-5c8a-8367-4b3d9504a8d6
 
 	/// Every row in fct_permits: the total permit population, one row per building permit, regardless of status or dates. NOT 'permits issued'.
 	/// 180,330 of these rows (21.8%) have no date_issued_sk, so they cannot be placed on the date axis: a by-year chart sums to Permits Issued, not to this measure.
 	/// Reference (docs/measure-reconciliation.json): 827,919 overall; Toronto 571,986, Brampton 221,319, Mississauga 34,614.
-	measure 'Permit Records' =
+	measure 'Permit Records' = ```
 			// Every row in fct_permits, whether or not the permit has an issue date.
 			COUNTROWS ( fct_permits )
+			```
 		formatString: #,0
 		lineageTag: 7d0176dd-37ec-52f4-9d9a-692cf4e49fcb
 
@@ -30,16 +32,17 @@ table fct_permits
 	/// 64.3% of permit rows (532,330 of 827,919) carry no unit count: Brampton 60.1%, Mississauga 80.9%, Toronto 64.9%. SUM skips them; they are not zeros.
 	/// Gold stamps unit_count_basis = 'unknown' on every row pending source documentation (ADR-0003). Negative values are real Toronto demolition losses.
 	/// Reference (docs/measure-reconciliation.json): Toronto 259,840; Brampton 78,957; Mississauga 30,968. Their sum, 369,765, is NOT a valid figure.
-	measure 'Net New Units' =
+	measure 'Net New Units' = ```
 			// M2. Sum of unit_count_net_new; NULL rows are skipped by SUM.
 			// Mixed basis: do not total across municipalities (ADR-0003).
 			SUM ( fct_permits[unit_count_net_new] )
+			```
 		formatString: #,0
 		lineageTag: ed87eff4-2c4a-5e02-b1e0-ede2c56fb425
 
 	/// Share of permit records that carry both date_applied_sk and date_issued_sk: the population Median Applied to Issued Days is computed over. Show it wherever that median is shown, because each municipality's median covers a different share of its permits.
 	/// Reference (docs/measure-reconciliation.json): 645,382 of 827,919 = 78.0% overall; Toronto 80.4% (460,121 of 571,986), Mississauga 99.9% (34,581 of 34,614), Brampton 68.1% (150,680 of 221,319).
-	measure 'Date Coverage Pct' =
+	measure 'Date Coverage Pct' = ```
 			// Share of permit rows that have BOTH an applied date and an issued date.
 			DIVIDE (
 				CALCULATE (
@@ -49,13 +52,14 @@ table fct_permits
 				),
 				COUNTROWS ( fct_permits )
 			)
+			```
 		formatString: 0.0%
 		lineageTag: 5e7fb914-1d95-5efa-ad5c-2b1d955638b2
 
 	/// Median whole days from application to issue, over permits that have both dates (645,382 of 827,919). Valid per municipality only: coverage differs by municipality (see Date Coverage Pct), so do not average the three medians into a GTA figure.
 	/// Reference (docs/measure-reconciliation.json): Toronto 28 days (n=460,121), Mississauga 34 (n=34,581), Brampton 44 (n=150,680).
 	/// Computed through dim_date[calendar_date] with LOOKUPVALUE, never by subtracting date_sk values.
-	measure 'Median Applied to Issued Days' =
+	measure 'Median Applied to Issued Days' = ```
 			// M6. Median whole days from applied to issued, over permits with both dates.
 			// LOOKUPVALUE form: needs no role-playing date tables.
 			MEDIANX (
@@ -70,14 +74,16 @@ table fct_permits
 					DAY
 				)
 			)
+			```
 		formatString: #,0.0
 		lineageTag: ad95f7d0-cf3c-577b-9795-2cf7d52ecd1f
 
 	/// Sum of construction_value_cad (CAD). Toronto and Mississauga only: the Brampton feed has no value field, so Brampton returns blank, not zero. Toronto has 373,693 permits with no value, so this is a sum over reported values, not over all permits.
 	/// Reference (docs/measure-reconciliation.json): Toronto $100,991,303,902; Mississauga $18,269,933,097.
-	measure 'Construction Value CAD' =
+	measure 'Construction Value CAD' = ```
 			// M8. Sum of declared construction value in CAD; blank where the source has none.
 			SUM ( fct_permits[construction_value_cad] )
+			```
 		formatString: \$#,0
 		lineageTag: d4433ddd-d68b-5c5a-86b0-d94ea01ac852
 
@@ -261,4 +267,3 @@ table fct_permits
 					)
 				in
 					Typed
-

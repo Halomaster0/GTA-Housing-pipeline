@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
   "name": "column_median_submitted_to_decision",
   "position": {
     "x": 664,
     "y": 112,
     "z": 3,
-    "height": 300,
     "width": 592,
+    "height": 300,
     "tabOrder": 3
   },
   "visual": {
@@ -26,8 +26,7 @@
                   "Property": "municipality_name"
                 }
               },
-              "queryRef": "dim_municipality.municipality_name",
-              "active": true
+              "queryRef": "dim_municipality.municipality_name"
             }
           ]
         },
@@ -49,6 +48,28 @@
           ]
         }
       }
+    },
+    "objects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Median days, submitted to decision (Mississauga only)'"
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

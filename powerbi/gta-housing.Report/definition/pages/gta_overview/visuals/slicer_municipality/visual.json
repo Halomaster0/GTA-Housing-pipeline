@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
   "name": "slicer_municipality",
   "position": {
     "x": 260,
     "y": 112,
     "z": 3,
-    "height": 84,
     "width": 320,
+    "height": 84,
     "tabOrder": 3
   },
   "visual": {
@@ -26,8 +26,7 @@
                   "Property": "municipality_name"
                 }
               },
-              "queryRef": "dim_municipality.municipality_name",
-              "active": true
+              "queryRef": "dim_municipality.municipality_name"
             }
           ]
         }
