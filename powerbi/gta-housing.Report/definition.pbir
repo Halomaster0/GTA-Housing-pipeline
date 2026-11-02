@@ -4,7 +4,6 @@
   "datasetReference": {
     "byPath": {
       "path": "../gta-housing.SemanticModel"
-    },
-    "byConnection": null
+    }
   }
 }

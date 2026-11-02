@@ -46,6 +46,7 @@ table dim_geography
 		lineageTag: 47e198c7-d256-514c-bce6-5eeb2b676c71
 		summarizeBy: none
 		sourceColumn: effective_start
+
 		annotation UnderlyingDateTimeDataType = Date
 
 	/// Last date the boundary version applies; NULL if open-ended.
@@ -55,6 +56,7 @@ table dim_geography
 		lineageTag: 382b8bdc-5752-5b74-985a-ffc2fe41f9b5
 		summarizeBy: none
 		sourceColumn: effective_end
+
 		annotation UnderlyingDateTimeDataType = Date
 
 	/// TRUE for the boundary version currently in force.
@@ -121,3 +123,4 @@ table dim_geography
 					)
 				in
 					Typed
+

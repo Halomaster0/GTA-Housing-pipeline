@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "slicer_year",
   "position": {
     "x": 24,
     "y": 112,
     "z": 2,
-    "width": 220,
     "height": 84,
+    "width": 220,
     "tabOrder": 2
   },
   "visual": {
@@ -26,7 +26,8 @@
                   "Property": "year"
                 }
               },
-              "queryRef": "dim_date.year"
+              "queryRef": "dim_date.year",
+              "active": true
             }
           ]
         }

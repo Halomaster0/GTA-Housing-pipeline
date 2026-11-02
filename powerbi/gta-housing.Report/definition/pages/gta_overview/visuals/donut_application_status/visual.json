@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "donut_application_status",
   "position": {
     "x": 800,
     "y": 344,
     "z": 8,
-    "width": 456,
     "height": 356,
+    "width": 456,
     "tabOrder": 8
   },
   "visual": {
@@ -26,7 +26,8 @@
                   "Property": "status_label"
                 }
               },
-              "queryRef": "dim_status.status_label"
+              "queryRef": "dim_status.status_label",
+              "active": true
             }
           ]
         },
@@ -53,28 +54,6 @@
           ]
         }
       }
-    },
-    "objects": {
-      "title": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Applications by status'"
-                }
-              }
-            }
-          }
-        }
-      ]
     }
   }
 }

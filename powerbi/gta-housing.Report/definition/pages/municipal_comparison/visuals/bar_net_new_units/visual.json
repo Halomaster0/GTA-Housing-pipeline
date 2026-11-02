@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "bar_net_new_units",
   "position": {
     "x": 24,
     "y": 428,
     "z": 4,
-    "width": 620,
     "height": 268,
+    "width": 620,
     "tabOrder": 4
   },
   "visual": {
@@ -26,7 +26,8 @@
                   "Property": "municipality_name"
                 }
               },
-              "queryRef": "dim_municipality.municipality_name"
+              "queryRef": "dim_municipality.municipality_name",
+              "active": true
             }
           ]
         },
@@ -48,28 +49,6 @@
           ]
         }
       }
-    },
-    "objects": {
-      "title": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Net New Units by municipality (mixed basis: do not total)'"
-                }
-              }
-            }
-          }
-        }
-      ]
     }
   }
 }

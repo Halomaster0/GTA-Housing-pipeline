@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "card_permits_issued",
   "position": {
     "x": 24,
     "y": 212,
     "z": 4,
-    "width": 300,
     "height": 120,
+    "width": 300,
     "tabOrder": 4
   },
   "visual": {
@@ -31,6 +31,39 @@
           ]
         }
       }
+    },
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            }
+          }
+        }
+      ]
     }
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "5b86a761e8d41db0117d",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fct_permits"
+              }
+            },
+            "Property": "Permits Issued"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

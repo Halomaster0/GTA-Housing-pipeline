@@ -58,3 +58,6 @@ Thumbs.db
 **/.pbi/cache.abf
 *.pbix
 *.abf
+
+# Power BI Desktop local cache (per user, never shared)
+.pbi/

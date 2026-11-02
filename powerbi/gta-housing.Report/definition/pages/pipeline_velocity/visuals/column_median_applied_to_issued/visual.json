@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "column_median_applied_to_issued",
   "position": {
     "x": 24,
     "y": 112,
     "z": 2,
-    "width": 620,
     "height": 300,
+    "width": 620,
     "tabOrder": 2
   },
   "visual": {
@@ -26,7 +26,8 @@
                   "Property": "municipality_name"
                 }
               },
-              "queryRef": "dim_municipality.municipality_name"
+              "queryRef": "dim_municipality.municipality_name",
+              "active": true
             }
           ]
         },
@@ -48,28 +49,6 @@
           ]
         }
       }
-    },
-    "objects": {
-      "title": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Median days, applied to issued (per municipality)'"
-                }
-              }
-            }
-          }
-        }
-      ]
     }
   }
 }

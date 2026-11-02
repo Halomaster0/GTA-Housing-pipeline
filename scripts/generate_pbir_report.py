@@ -392,6 +392,10 @@ def visual_container(spec: dict, z: int) -> dict:
             "queryState": {role: {"projections": projs} for role, projs in spec["roles"].items()}
         }
     objects = dict(spec.get("objects") or {})
+    if spec["name"] == "card_permits_issued":
+        # Callout value > Display units = None, as Power BI Desktop saves it
+        # (labelDisplayUnits 1 means None; the D suffix marks a double).
+        objects["labels"] = [{"properties": {"labelDisplayUnits": {"expr": {"Literal": {"Value": "1D"}}}}}]
     if spec["name"] in CHART_TITLES:
         # PBIR formatting values are expression literals: Desktop ignores a bare
         # true or a bare string here, though the published schema accepts both.

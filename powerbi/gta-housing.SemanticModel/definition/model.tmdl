@@ -10,6 +10,8 @@ annotation PBI_QueryOrder = ["GoldCsvFolder","dim_date","dim_municipality","dim_
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
+annotation PBI_ProTooling = ["DevMode"]
+
 ref table dim_date
 ref table dim_municipality
 ref table dim_use_type
@@ -17,3 +19,4 @@ ref table dim_status
 ref table dim_geography
 ref table fct_permits
 ref table fct_applications
+
