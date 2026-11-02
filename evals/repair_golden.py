@@ -32,7 +32,8 @@ import yaml
 
 HERE = Path(__file__).resolve().parent
 GOLDEN = HERE / "golden_questions.yaml"
-DB = HERE.parent / "data" / "warehouse.duckdb"
+# Re-baselined 2026-11-02 against the September build (the /ask data source).
+DB = HERE.parent / "data" / "warehouse-sept.duckdb"
 
 # --- Corrected reference SQL -------------------------------------------------
 SQL_OVERRIDES: dict[str, str] = {

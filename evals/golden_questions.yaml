@@ -5,7 +5,7 @@ questions:
   expected_behavior: answer
   expected_sql: SELECT count(*) AS total_issued FROM gold.fct_permits WHERE date_issued_sk IS NOT NULL;
   expected_facts:
-  - '652715'
+  - '647589'
 - id: agg-02
   bucket: simple_aggregate
   question: How many total permit records exist for Toronto in the warehouse?
@@ -13,7 +13,7 @@ questions:
   expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
     = m.municipality_sk WHERE m.municipality_code = 'TOR';
   expected_facts:
-  - '576201'
+  - '571986'
 - id: agg-03
   bucket: simple_aggregate
   question: How many permits were issued in Toronto?
@@ -21,7 +21,7 @@ questions:
   expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
     = m.municipality_sk WHERE m.municipality_code = 'TOR' AND p.date_issued_sk IS NOT NULL;
   expected_facts:
-  - '465637'
+  - '462039'
 - id: agg-04
   bucket: simple_aggregate
   question: How many total building permits were issued in Mississauga?
@@ -29,7 +29,7 @@ questions:
   expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
     = m.municipality_sk WHERE m.municipality_code = 'MISS' AND p.date_issued_sk IS NOT NULL;
   expected_facts:
-  - '35041'
+  - '34614'
 - id: agg-05
   bucket: simple_aggregate
   question: How many permits were issued in Brampton?
@@ -37,7 +37,7 @@ questions:
   expected_sql: SELECT count(*) FROM gold.fct_permits p JOIN gold.dim_municipality m ON p.municipality_sk
     = m.municipality_sk WHERE m.municipality_code = 'BRAM' AND p.date_issued_sk IS NOT NULL;
   expected_facts:
-  - '152037'
+  - '150936'
 - id: agg-06
   bucket: simple_aggregate
   question: What is the total number of development applications in Toronto?
@@ -45,7 +45,7 @@ questions:
   expected_sql: SELECT count(*) FROM gold.fct_applications a JOIN gold.dim_municipality m ON a.municipality_sk
     = m.municipality_sk WHERE m.municipality_code = 'TOR';
   expected_facts:
-  - '8622'
+  - '8601'
 - id: agg-07
   bucket: simple_aggregate
   question: How many development applications across the GTA are still open (submitted, under review,
@@ -54,7 +54,7 @@ questions:
   expected_sql: SELECT count(*) AS open_applications FROM gold.fct_applications a JOIN gold.dim_status
     s ON a.status_sk = s.status_sk WHERE s.applies_to = 'application' AND s.is_terminal = FALSE;
   expected_facts:
-  - '2648'
+  - '2668'
 - id: agg-08
   bucket: simple_aggregate
   question: What is the total construction value reported for Toronto permits?
@@ -62,7 +62,7 @@ questions:
   expected_sql: SELECT sum(construction_value_cad) FROM gold.fct_permits p JOIN gold.dim_municipality
     m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'TOR';
   expected_facts:
-  - '102421247755.42'
+  - '100991303902.29'
 - id: agg-09
   bucket: simple_aggregate
   question: What is the total construction value reported for Mississauga permits?
@@ -70,7 +70,7 @@ questions:
   expected_sql: SELECT sum(construction_value_cad) FROM gold.fct_permits p JOIN gold.dim_municipality
     m ON p.municipality_sk = m.municipality_sk WHERE m.municipality_code = 'MISS';
   expected_facts:
-  - '18273083375'
+  - '18269933097'
 - id: agg-10
   bucket: simple_aggregate
   question: How many municipalities are tracked in the dim_municipality table?
@@ -88,8 +88,8 @@ questions:
   expected_facts:
   - Toronto
   - Brampton
-  - '465637'
-  - '152037'
+  - '462039'
+  - '150936'
 - id: comp-02
   bucket: comparative
   question: Compare the number of still-open development applications between Mississauga and Brampton.
@@ -109,7 +109,7 @@ questions:
     m ON a.municipality_sk = m.municipality_sk GROUP BY m.municipality_name ORDER BY cnt DESC LIMIT 1;
   expected_facts:
   - Brampton
-  - '11672'
+  - '11630'
 - id: comp-04
   bucket: comparative
   question: Compare the total construction value between Toronto and Mississauga.
@@ -120,8 +120,8 @@ questions:
   expected_facts:
   - Toronto
   - Mississauga
-  - '102421247755.42'
-  - '18273083375'
+  - '18269933097'
+  - '100991303902.29'
 - id: comp-05
   bucket: comparative
   question: Which municipality has the fastest median permit turnaround from application to issuance?
@@ -156,8 +156,8 @@ questions:
   expected_facts:
   - CLOSED
   - UNDER_REVIEW
-  - '11113'
-  - '2165'
+  - '10964'
+  - '2178'
 - id: comp-08
   bucket: comparative
   question: In Brampton, are there more residential or mixed-use permits issued?
@@ -187,7 +187,7 @@ questions:
     s ON a.status_sk = s.status_sk GROUP BY s.status_code ORDER BY cnt DESC LIMIT 1;
   expected_facts:
   - CLOSED
-  - '11113'
+  - '10964'
 - id: trend-01
   bucket: temporal_trend
   question: How many permits were issued in Toronto in 2023?
@@ -459,7 +459,7 @@ questions:
     WHERE s.status_code = 'CANCELLED';
   expected_facts:
   - CANCELLED
-  - '59585'
+  - '58890'
 - id: sem-10
   bucket: semantic_freetext
   question: How many development applications in Toronto have been closed?
