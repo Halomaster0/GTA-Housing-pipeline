@@ -138,17 +138,44 @@ def _check_expected_facts(
     return passed, missing
 
 
+# Metric version 3 (2026-11-02). Changes from version 1:
+#   v2: numbers repeated from the question (for example a year the user typed)
+#       are not checked. Version 1 counted them, which marked correct trend
+#       answers unfaithful.
+#   v3: a Decimal keeps its scale in the rows text (SUM of cents returns
+#       '18269933097.00'; the v1 float conversion dropped the '.00'), and figures
+#       written as 'billion', 'million' or 'thousand' are not read as raw digits.
+# Results files record which version scored them.
+FAITHFULNESS_METRIC_VERSION = 3
+
+
+def _json_dumps_exact(obj: Any) -> str:
+    """JSON text for faithfulness checks: Decimals keep their scale ('18269933097.00')."""
+    def _default(o):
+        if isinstance(o, Decimal):
+            return format(o, "f")
+        return str(o)
+    return json.dumps(obj, default=_default)
+
+
 def _check_faithfulness(response: QueryResponse) -> bool:
     """
-    Numbers cited in answer must all appear in rows.
+    Numbers cited in answer must appear in rows, or be echoed from the question.
     Returns True if faithful (or no rows to check against).
     """
     if not response.rows or response.is_refusal:
         return True
 
-    rows_blob = _json_dumps_decimal(response.rows).replace(",", "").replace(" ", "")
+    rows_blob = _json_dumps_exact(response.rows).replace(",", "").replace(" ", "")
+    question_nums = set(re.findall(r"\d{3,}", response.question.replace(",", "")))
+    # Drop scaled figures such as '100.99 billion': the exact figure is checked
+    # on its own; the scaled rendering is not a raw number in the rows.
+    answer_text = re.sub(
+        r"\d[\d.]*\s*(?:billion|million|thousand)", "", response.answer.replace(",", "")
+    )
     # Extract standalone digit sequences >= 3 digits from the answer
-    numbers_in_answer = re.findall(r"\b\d{3,}(?:\.\d+)?\b", response.answer.replace(",", ""))
+    numbers_in_answer = re.findall(r"\b\d{3,}(?:\.\d+)?\b", answer_text)
+    numbers_in_answer = [n for n in numbers_in_answer if n not in question_nums]
     unfaithful = [n for n in numbers_in_answer if n not in rows_blob]
     return len(unfaithful) == 0
 
@@ -274,6 +301,7 @@ def run_harness(
     output: dict[str, Any] = {
         "run_date": date.today().isoformat(),
         "git_sha": _get_git_sha(),
+        "faithfulness_metric_version": FAITHFULNESS_METRIC_VERSION,
         "overall": overall,
         "by_bucket": scorecard,
         "results": results,

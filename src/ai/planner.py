@@ -151,7 +151,7 @@ class Plan:
     raw_response: dict[str, Any] = field(default_factory=dict)
 
 
-def plan_query(question: str) -> Plan:
+def plan_query(question: str, _retry: bool = False) -> Plan:
     """Analyze a user question and generate a structured execution plan or refusal."""
     logger.info("Planning question: %s", question)
     
@@ -276,6 +276,11 @@ def plan_query(question: str) -> Plan:
                 sql=text,
                 raw_response=response
             )
+        # One retry: a single unparseable reply refused the question outright
+        # (trend-06, 2026-11-02). Costs one extra model call, only on this path.
+        if not _retry:
+            logger.warning("Planner output unparseable; retrying once.")
+            return plan_query(question, _retry=True)
         return Plan(
             is_refusal=True,
             refusal_reason="Could not construct a valid query plan for this question.",
