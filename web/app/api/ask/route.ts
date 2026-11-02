@@ -1,5 +1,5 @@
-// /ask — Phase 4 NL query endpoint (wired to OpenRouter + planner/executor graph)
-// Route: POST /ask  Body: { question: string }
+// /api/ask — Phase 4 NL query endpoint (moved from /ask: the page owns that path) (wired to OpenRouter + planner/executor graph)
+// Route: POST /api/ask  Body: { question: string }
 // Guards: date_issued_sk IS NOT NULL only; refusal for uncomputable; cap at 1000/day
 // Router: OpenRouter (free/cheap/super-cheap, cap 1000/day, $10 ceiling)
 // Status: Wired — calls FastAPI backend (src/ai.api) for planner→executor→critic
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       trace_id: data.trace_id,
       latency_ms: data.latency_ms,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     return NextResponse.json({ error: 'internal', detail: String(e) }, { status: 500 });
   }
 }
