@@ -63,7 +63,18 @@
               {
                 "textRuns": [
                   {
-                    "value": "Refresh: the ingest_batch_id table shows which extract each permit came from.",
+                    "value": "Source: September export, ingest 2026-09-10 (docs/data-quality-report.md). October data is held until the Toronto extract is validated.",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "normal"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "CANCELLED: 58,890 permits; 19,577 carry an issue date and are counted in Permits Issued under the current rule. Director decision pending.",
                     "textStyle": {
                       "fontSize": "11pt",
                       "fontWeight": "normal"

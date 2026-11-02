@@ -3,8 +3,8 @@ Plan file: PHASE_4_5_ORDER.md
 Ordered 7 steps. Tracking here. Updates appended at bottom.
 
 === STEP STATUS ===
-1. DATA VINTAGE DECISION     [x] DONE — docs/data-vintage-decision-2026-10-31.md (Oct = default, Sept = audit compare, Toronto 100k NOT published, UNRESOLVED)
-2. DATA FIXES (Power BI)     [ ] OPEN — BLOCKING: remove Net-New total; recompute card; CANCELLED rule; measure emission; donut fix; footer; page 3
+1. DATA VINTAGE DECISION     [x] DONE — docs/data-vintage-decision-2026-10-31.md (revised 2026-11-02: Sept = published until Oct Toronto validation, Oct = working warehouse, Toronto 100k NOT published, EXCLUDED-PENDING)
+2. DATA FIXES (Power BI)     [ ] OPEN — BLOCKING: remove Net-New total; Permits Issued card on Sept 647,589 (not Oct); CANCELLED rule; measure emission; donut fix; footer; page 3
 3. API / ROUTER SWITCH        [x] DONE — .env: API_BASE_URL=openrouter; cap 1000/day; $10; free/cheap/super-cheap flags set
 4. PHASE 4 REMAINDER         [x] STARTED — /ask stub (web/app/ask/route.ts) + cap middleware (middleware.ts); full retrieval/cache/wiring remains
 5. PHASE 5 WEB                [ ] OPEN — web/ commit; deploy preview (Vercel CLI missing); Lighthouse; 90s test

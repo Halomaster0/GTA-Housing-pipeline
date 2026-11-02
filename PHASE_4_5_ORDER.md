@@ -1,13 +1,13 @@
 # PHASE 4 + 5 — ORDERED TODO (from OUTSTANDING.md + your hits)
-Week of 2026-10-31. Status: Phase 4 AI core DONE (88.3%). Phase 4 remainder / Phase 5 / data-vintage decision open.
+Week of 2026-10-31. Status: Phase 4 AI core DONE (88.3%). Data-vintage decision MADE 2026-11-02 (Sept published, Oct working). Phase 4 remainder / Phase 5 open.
 
 ORDER (do not skip):
-1. DATA VINTAGE DECISION [BLOCKING] — Sept (gold-sept-csv) vs Oct (warehouse.duckdb 833,848).
+1. DATA VINTAGE DECISION [DECIDED 2026-11-02] — Sept (gold-sept-csv) vs Oct (warehouse.duckdb 833,848).
    - Sept passes gate (matches pbix); Oct has +5,126 permits (refreshed source feeds) + unverified Tokyo.
-   - Action: confirm with data-quality-auditor whether Oct Toronto data is safely excluded; if yes → switch default to Oct; else keep Sept + document.
+   - Decision: published figures stay on Sept (gold-sept-csv) until October Toronto data is validated; Oct warehouse is the working source. See docs/data-vintage-decision-2026-10-31.md (Update 2026-11-02).
 2. DATA FIXES (Power BI) — from review 2026-10-22 / OPEN.
     a. Remove Net New cross-muncipality Total (BLOCKING — category error).
-    b. Recompute Permits Issued from current gold (652,715) — fix card + footnote [BLOCKING].
+    b. Permits Issued card + footnote on the Sept export (647,589 issued; 827,919 records) — fix card + footnote [BLOCKING]. Do not switch to 652,715 until October Toronto validation.
     c. Rule CANCELLED (58,890) whether counts as issued → record in docs/data-dictionary.md.
     d. Emit all measures from scripts/reconcile_measures.py (M1 has no recon value).
     e. Annotate by-year chart coverage starts (MISS 2018; TOR/BRAM 2010).

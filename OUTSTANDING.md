@@ -53,16 +53,14 @@ warehouse. These are labelling and definition defects, not data defects.
   case. ADR-0003 forbids publishing it as a clean number. Add the comparability
   card that `fabric-dax.md` M2 already specifies, plus NULL coverage (64.3% of
   permit rows carry no unit count).
-- [ ] **BLOCKING — `Permits Issued` overstates by ~21%.** The real issued count
-  in the current gold warehouse is 652,715 (TOR 465,637 / MISS 35,041 / BRAM
-  152,037), derivable by summing `permits_issued_by_municipality_year`, which
-  is already issue-date filtered; every issued permit resolves in `dim_date`
-  (coverage 2010-01-01 → 2028-12-31). The figures in this bullet
-  (647,589 / TOR 462,039 / MISS 34,614 / BRAM 150,936 and a card total of
-  827,919) are from the 2026-10-22 parquet snapshot — the warehouse has been
-  refreshed since (+5,126 issued permits, 833,848 rows total), so re-derive
-  the card from the current export before publishing. Separately: the gap is
-  partly un-issued permits and partly permits issued outside dim_date's
+- [ ] **BLOCKING — `Permits Issued` overstates by ~21%.** Published figures stay on the
+  September export (decision 2026-11-02; `docs/data-vintage-decision-2026-10-31.md`,
+  Update 2026-11-02): Permits Issued 647,589 (TOR 462,039 / MISS 34,614 /
+  BRAM 150,936) against 827,919 permit records. The card must not present the
+  827,919 records as issued. The October warehouse count (652,715 issued; TOR
+  465,637 / MISS 35,041 / BRAM 152,037; 833,848 rows) is the working figure only
+  and is not published until October Toronto data is validated. Separately: the
+  gap is partly un-issued permits and partly permits issued outside dim_date's
   2010-2028 range, which the file cannot distinguish — state it as such.
 - [ ] Rule on whether the 58,890 CANCELLED permits count toward "permits
   issued", and record it in `docs/data-dictionary.md` either way.
@@ -74,7 +72,13 @@ warehouse. These are labelling and definition defects, not data defects.
 - [ ] Fix the application-status donut — one slice label (REFUSED, 347) is
   suppressed by collision, so visible labels sum to 21,311 against a centre
   total of 21,658. Prefer a sorted bar chart.
-- [x] **Data vintage decided 2026-10-31**: use current warehouse (`data/warehouse.duckdb`, 833,848, 652,715 issued) for published counts; Sept CSV (`gold-sept-csv/`, ~827,919) kept as audit comparison (`docs/data-vintage-decision-2026-10-31.md`). Toronto 100k-unit placeholder (`docs/data-exceptions.yml`, UNRESOLVED) is NOT published — cards/footnote must state the gap until the audit rules.
+- [x] **Data vintage decided 2026-10-31, revised 2026-11-02**: published figures stay on the
+  September export (`data/gold-sept-csv/`, 2026-09-10 ingest; Permit Records 827,919,
+  Permits Issued 647,589) until October Toronto data is validated. The October
+  warehouse (`data/warehouse.duckdb`, 833,848 rows, 652,715 issued) is the working
+  source only. Toronto 100k-unit placeholder (`docs/data-exceptions.yml`,
+  EXCLUDED-PENDING) stays excluded from published Toronto net units pending audit.
+  See `docs/data-vintage-decision-2026-10-31.md`.
 - [ ] Build page 3 (Pipeline Velocity) — fully supported: M6 medians for all
   three municipalities (TOR 28d / MISS 34d / BRAM 44d) plus three honest empty
   states. Strongest page in the deck for the target role.

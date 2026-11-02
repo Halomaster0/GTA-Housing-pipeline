@@ -6,7 +6,7 @@ publish → embed test → refresh. Every number to check against is printed
 inline; sources of truth are `docs/measure-reconciliation.json` (values),
 `docs/fabric-dax.md` (DAX), `docs/report-plan.md` (page specs).
 
-Status: PBIP rebuilt (database.tmdl bare isKey); full visuals present. Model source: warehouse.duckdb (current, 833,848 rows; issued 652,715). Sept audit CSV preserved (gold-sept-csv/, ~827,919). Toronto 100k-unit placeholder (data-exceptions.yml, UNRESOLVED) — NOT published; card/footnote states gap. Pages 2-5 verified; publish/refresh/embeds ahead.
+Status: PBIP rebuilt (database.tmdl bare isKey); full visuals present. Published model source: the September export (gold-sept-csv/, ingest 2026-09-10, 827,919 permit records, 647,589 issued), per the 2026-11-02 decision to hold September until the October Toronto extract is validated. The October warehouse (833,848 rows; 652,715 issued) is the working source only. Toronto 100k-unit placeholder (data-exceptions.yml) is excluded from published net units; the Municipal Comparison and Data Quality pages state the gap. Pages 2-5 verified; publish/refresh/embeds ahead.
 
 ## 0. Prerequisites (all free, all $0)
 

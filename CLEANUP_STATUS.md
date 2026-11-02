@@ -6,7 +6,7 @@ Remote: origin/main in sync (fast-forward merge done)
 
 DATA / VINTAGE STATUS (your note — honored)
 - docs/data-exceptions.yml preserves the 2026-10-22 Toronto-data anomaly (100k-unit placeholder, UNRESOLVED, do not publish Toronto units until ruled by data-quality-auditor + director-data-engineering). Held, not hidden.
-- OUTSTANDING.md updated: Phase 4 AI layer core closed at 88.3%; issued-permit counts refreshed (652,715 / TOR 465,637 / MISS 35,041 / BRAM 152,037 from current warehouse, not the Oct 22 647,589 figure). Note made that Oct Toronto data unavailable, holding Sep snapshot.
+- OUTSTANDING.md updated: Phase 4 AI layer core closed at 88.3%; working issued-permit count from the current warehouse recorded (652,715 / TOR 465,637 / MISS 35,041 / BRAM 152,037). Published figures stay on the Sept export (647,589 issued) until October Toronto data is validated (decision 2026-11-02).
 - No uncommitted data-change files: only the passing eval result + repaired golden YAML + repaired planner SQL + updated docs.
 
 EVAL (resolve the "conflicting scores")

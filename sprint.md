@@ -3,6 +3,7 @@ Branch main (HEAD == 85be2dc):
 - Phase 4 AI core: DONE (88.3% eval committed, 2026-10-31-632ff88 preserved)
 - Router: switch complete — .env=OpenRouter (sk-or-v1-eb8b2b…), ANTHROPIC cleared, cap 1000/day, $10 ceiling
 - Audit decision: Toronto 100k-unit EXCLUDED (docs/data-exceptions.yml, documented in sprint and RESUME_PROMPT)
+- Published data: September export (data/gold-sept-csv/) until October Toronto data is validated; October warehouse is the working source (docs/data-vintage-decision-2026-10-31.md, Update 2026-11-02).
 - /ask: WIRED — route.ts → src/ai/api.py FastAPI POST /ask → graph.run_query() (planner→executor→critic). Committed 85be2dc. Refusal guard enforces date_issued_sk IS NOT NULL, PII, price forecast, etc. Citations returned from critic review. Middleware cap enforced (1000/day, preference free_first).
 - API backend: src/ai/server.py entrypoint (uvicorn port 8000) added; CORS enabled for Next.js frontend.
 

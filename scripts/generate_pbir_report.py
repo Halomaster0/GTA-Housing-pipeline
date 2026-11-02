@@ -224,6 +224,8 @@ def page_municipal_comparison() -> list[dict]:
                 ("Per-capita (P1): pending StatCan census profiles. Not shown as zero.", 11, True),
                 ("Caledon: no permits in these feeds. In scope as geography (ADR-0004). "
                  "Blank, never zero.", 11, False),
+                ("Toronto net units are excluded pending audit: one unverified 100,000-unit placeholder "
+                 "(26 256637 BLD, first seen 2026-10-22). It is not in the September data shown here.", 11, False),
             ],
         ),
     ]
@@ -347,7 +349,10 @@ def page_data_quality() -> list[dict]:
                 ("Unit basis: MIXED (ADR-0003). Net New Units is never totalled across municipalities.", 11, True),
                 ("Pending measures: P1 per-capita (StatCan census profiles); P2 application to permit timing "
                  "(ADR-0006); P3 see docs/data-dictionary.md.", 11, False),
-                ("Refresh: the ingest_batch_id table shows which extract each permit came from.", 11, False),
+                ("Source: September export, ingest 2026-09-10 (docs/data-quality-report.md). October data is "
+                 "held until the Toronto extract is validated.", 11, False),
+                ("CANCELLED: 58,890 permits; 19,577 carry an issue date and are counted in Permits Issued under "
+                 "the current rule. Director decision pending.", 11, False),
             ],
         ),
     ]

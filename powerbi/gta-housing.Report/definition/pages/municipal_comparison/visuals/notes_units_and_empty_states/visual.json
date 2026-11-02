@@ -70,6 +70,17 @@
                     }
                   }
                 ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Toronto net units are excluded pending audit: one unverified 100,000-unit placeholder (26 256637 BLD, first seen 2026-10-22). It is not in the September data shown here.",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "fontWeight": "normal"
+                    }
+                  }
+                ]
               }
             ]
           }
