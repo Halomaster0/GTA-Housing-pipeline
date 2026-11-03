@@ -13,8 +13,8 @@ Four local governments in the Toronto area each publish their own records of new
 
 **Not finished:**
 
-- **`/ask` is not hosted.** It calls a FastAPI service (`src/ai/server.py`) that is not deployed anywhere. `/ask` works only when you run that service yourself, with a built warehouse and an OpenRouter key.
-- **Publication (Phase 5) is open.** Deployment, the Lighthouse pass and the remaining human steps are tracked in [`OUTSTANDING.md`](OUTSTANDING.md).
+- **`/ask` is live** at [gta-housing-pipeline.vercel.app/ask](https://gta-housing-pipeline.vercel.app/ask). It calls a FastAPI service deployed as the `gta-housing-api` Vercel project. The service's spend is capped by a $0.50 limit on the OpenRouter key, not by the app.
+- **Publication (Phase 5) is partly done.** The site is deployed on Vercel. The Lighthouse pass and the remaining human steps are still open; see [`OUTSTANDING.md`](OUTSTANDING.md).
 - **Toronto net-unit counts are withheld** from published figures pending audit ([`docs/data-exceptions.yml`](docs/data-exceptions.yml)). The published figures stay on the September build until October Toronto data is validated ([`docs/data-vintage-decision-2026-10-31.md`](docs/data-vintage-decision-2026-10-31.md)).
 - **Fabric serving is deferred** ([ADR-0008](docs/decisions/0008-deferred-fabric-serving.md), [ADR-0010](docs/decisions/0010-pro-workspace-no-lakehouse.md)). Serving v1 is Power BI Desktop and a Pro workspace, with DuckDB as the source of truth.
 
@@ -40,7 +40,7 @@ silver tables in data/warehouse.duckdb
   v
 gold star schema in data/warehouse.duckdb
   |-- scripts/export_gold_parquet.py -> gold CSV / Parquet -> Power BI report
-  |-- src/ai: planner -> executor -> critic, served by src/ai/server.py -> web/ /ask
+  |-- src/ai: planner -> executor -> critic, served by src/ai/api.py on Vercel -> web/ /ask
   '-- evals/harness.py (60 golden questions) -> evals/results/*.json -> web/ /evals
 ```
 
@@ -114,9 +114,9 @@ npm run lint
 npm run test:a11y     # static accessibility checks on web/out/ (run after build)
 ```
 
-`npm run test:a11y` currently reports one failure: the tables on `/evals` have no captions. That is an open item, not a passing check.
+`npm run test:a11y` passes on all seven pages.
 
-`/ask` needs the FastAPI service running (see below). The web app reads `API_BASE_URL` and defaults to `http://localhost:8000`.
+`/ask` needs the FastAPI service. The site reads `NEXT_PUBLIC_API_URL` at build time. If it is unset, `/ask` shows a "not connected" message and sends no request.
 
 ## The query API (`/ask` backend)
 
@@ -124,7 +124,9 @@ npm run test:a11y     # static accessibility checks on web/out/ (run after build
 uv run --extra api python -m src.ai.server   # FastAPI on http://localhost:8000; GET /health, POST /ask
 ```
 
-This needs a warehouse at `DUCKDB_PATH` and `OPENROUTER_API_KEY`. The service is not hosted anywhere, so `/ask` is local-only for now.
+This needs a warehouse at `DUCKDB_PATH` and `OPENROUTER_API_KEY`.
+
+In production the same code runs on Vercel as the `gta-housing-api` project. `app.py` exposes `src/ai/api.py`, and `.vercelignore` ships the September warehouse. The production settings are `OPENROUTER_API_KEY` (secret), `ALLOWED_ORIGINS` (the site's origin) and `TRACES_DIR=/tmp/traces`. The project's framework is set to FastAPI in its settings, not in the repo.
 
 ## Environment
 
@@ -134,7 +136,7 @@ Copy `.env.example` to `.env` (git-ignored) and uncomment or fill in only what y
 |---|---|---|
 | `OPENROUTER_API_KEY` | none | LLM calls in the query layer and the eval harness |
 | `DUCKDB_PATH` | `data/warehouse-sept.duckdb` | warehouse read by `/ask` and the eval harness |
-| `API_BASE_URL` | `http://localhost:8000` | where the web app finds the FastAPI service |
+| `NEXT_PUBLIC_API_URL` | none | build-time address of the query API the site calls for `/ask` |
 | `LLM_DAILY_SPEND_CEILING_USD` | `2.0` | daily spend ceiling for LLM calls |
 | `API_RATE_LIMIT_PER_MINUTE` | `60` | per-IP rate limit on the API |
 | `LOG_LEVEL` | `INFO` | structlog level |

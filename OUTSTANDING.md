@@ -37,9 +37,9 @@ blocks anything else unless marked BLOCKING. Spend to date: CAD $0.00 / $50.00.
   (`/ask`) cannot run without it. Design guards already exist in the plan
   (rate limits, daily ceiling, cached fallbacks); the key + ceiling number
   are the missing inputs. Owner-to-be: `api-engineer` + `cost-controller`.
-- [ ] **Domain/hosting** (Phase 5) — Vercel free tier covers the thin Next.js
-  client; record the URL choice at Gate 4b per the build plan. No custom
-  domain cost approved or needed yet.
+- [x] **Domain/hosting** (Phase 5) — deployed on Vercel: the site at
+  gta-housing-pipeline.vercel.app and the query API at gta-housing-api.vercel.app.
+  No custom domain approved yet.
 
 ## 2b. Power BI report fixes (review 2026-10-22, pages 1-2 built)
 
