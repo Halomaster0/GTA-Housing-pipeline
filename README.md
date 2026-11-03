@@ -1,157 +1,191 @@
 # GTA Housing Pipeline
 
-Four local governments in the Toronto area each publish their own records of new buildings and housing projects, in four different formats and with four different sets of definitions. This project collects that public data, reconciles it into one consistent set of tables, and lets someone ask plain-English questions about it and get answers tied back to the underlying records — with the entire build process, including its gaps, kept visible in this repository.
+Four local governments in the Toronto area each publish their own records of new buildings and housing projects, in different formats and with different definitions. This project collects that public data, reconciles it into one set of DuckDB tables, and lets someone ask plain-English questions about it and get answers tied back to the underlying rows. The build process, including its gaps, is kept in this repository.
 
 ## Status
 
-**Phase 1 of 5 — foundations and source verification. In active development.**
+**Built and working locally:**
 
-Nothing beyond the directory skeleton, this document, and repository scaffolding exists yet: no ingestion has run, no warehouse has been built, no AI layer exists, no dashboard is published, no web app is deployed, and no evaluation has been scored. Sections below are marked **(not yet built)** where that applies — take that marker literally, not as modesty. The full phase plan, gate criteria, and agent responsibilities behind this build live in [`docs/build-plan.md`](docs/build-plan.md).
+- **Ingestion and warehouse (Phases 1-2).** 20 ingest specs in `config/ingest.yml` pull from the Toronto open-data portal (CKAN), the Peel, Mississauga and Brampton ArcGIS endpoints, and Statistics Canada, into bronze files. DuckDB silver and gold layers are built from hand-written SQL in `models/`. Gates 1 and 2 are recorded as PASS in `docs/gates/`.
+- **Power BI report (Phase 3).** A Power BI Project (`powerbi/gta-housing.pbip`) with five pages, plus a September PDF export. See [Power BI report](#power-bi-report).
+- **AI query layer (Phase 4).** A planner, executor and critic over the gold warehouse, a 60-question golden set, and an eval harness that scores correctness, faithfulness and refusals. See [Results](#results).
+- **Web app (Phase 4b).** A Next.js app in `web/` with the routes `/`, `/ask`, `/dashboard`, `/evals`, `/data-quality` and `/architecture`.
 
-## Live links
+**Not finished:**
 
-The intended public surface is a single Next.js application, with every artifact reachable from one link. **None of it is deployed yet.** No link below is live; this table exists so the intended shape is legible before the substance is, and so nobody has to guess at a URL that currently 404s.
+- **`/ask` is not hosted.** It calls a FastAPI service (`src/ai/server.py`) that runs only on a machine where you start it. Nothing is deployed behind it. `/ask` works only when you run that service with a built warehouse and an OpenRouter key.
+- **Publication (Phase 5) is open.** Deployment, the Lighthouse pass and the remaining human steps are tracked in [`OUTSTANDING.md`](OUTSTANDING.md).
+- **Toronto net-unit counts are withheld** from published figures pending audit ([`docs/data-exceptions.yml`](docs/data-exceptions.yml)). The published figures stay on the September build until October Toronto data is validated ([`docs/data-vintage-decision-2026-10-31.md`](docs/data-vintage-decision-2026-10-31.md)).
+- **Fabric serving is deferred** ([ADR-0008](docs/decisions/0008-deferred-fabric-serving.md), [ADR-0010](docs/decisions/0010-pro-workspace-no-lakehouse.md)). Serving v1 is Power BI Desktop and a Pro workspace, with DuckDB as the source of truth.
 
-| Route | Purpose | Status |
-|---|---|---|
-| `/` | System overview and live pipeline status | not yet deployed |
-| `/ask` | Natural-language query console — answer, retrieved rows, executed SQL, trace | not yet deployed |
-| `/dashboard` | Embedded Power BI report | not yet deployed |
-| `/evals` | Live scorecard rendered from committed evaluation results | not yet deployed |
-| `/architecture` | Architecture write-up | not yet deployed |
+## What is hard about it
 
-The one artifact that is live today is this repository.
+Calling four APIs is not the hard part. Toronto, Mississauga, Brampton and Peel each define "development application", "unit" and "status" differently, so the same event is categorised and counted differently depending on the portal. Reconciling them into one dimensional model is a modelling judgement, made row type by row type and written up in [`docs/decisions/`](docs/decisions/) where the definitions cannot be reconciled without changing what a metric means.
 
-## Architecture (target state — not yet built)
+Grounding is the second hard part. An answer has to rest on the rows that were actually retrieved. The claim is tested by a fixed set of 60 questions with known answers, checked mechanically for whether each number in a response appears in the rows returned. Committed runs live under `evals/results/`, weaker ones included.
 
-Nothing below this heading is running. This is the design the project is building toward, reproduced from the build plan so a reader does not have to open a second document to see the target shape.
+The third is keeping the build independent of any cloud trial. DuckDB is the source of truth, so the pipeline, the tests and the queries still run locally if a Fabric trial lapses.
+
+## How the pipeline fits together
 
 ```
-┌─ SOURCES ────────────────────────────────────────────────────────────┐
-│  Toronto CKAN REST API   │  Peel / Mississauga / Brampton ArcGIS Hub │
-│  StatCan (CSV + SDMX)    │  (optional) CMHC housing starts           │
-└────────────┬─────────────────────────────────────────────────────────┘
-             │  extract (Python, idempotent, checkpointed)
-             ▼
-┌─ BRONZE ── raw landed files, immutable, partitioned by ingest_date ──┐
-│            Parquet on local disk (dev) → OneLake (prod)              │
-└────────────┬─────────────────────────────────────────────────────────┘
-             │  DuckDB — typed, deduped, conformed
-             ▼
-┌─ SILVER ── cleaned entities: permits, applications, parcels,        ─┐
-│            municipalities, census_tracts, dwelling_units             │
-└────────────┬─────────────────────────────────────────────────────────┘
-             │  hand-written gold SQL (no auto-generation)
-             ▼
-┌─ GOLD ──── star schema: fct_permits, fct_applications,              ─┐
-│            dim_municipality, dim_date, dim_geography, dim_use_type   │
-└──────┬──────────────────────────────────────┬────────────────────────┘
-       │                                       │
-       ▼                                       ▼
-┌─ SERVING ─────────────────┐        ┌─ AI QUERY LAYER ────────────────┐
-│  Microsoft Fabric         │        │  Planner agent                  │
-│  → Power BI semantic model│◄───────┤  Retriever (embeddings/pgvector │
-│  → published report       │        │    or LanceDB) + text-to-SQL    │
-└───────────────────────────┘        │  Executor (read-only SQL)       │
-                                     │  Critic (faithfulness check)    │
-                                     └────────────┬────────────────────┘
-                                                  ▼
-                                     ┌─ EVAL HARNESS ──────────────────┐
-                                     │  golden question set (~60 Qs)   │
-                                     │  scored: correctness, faith-    │
-                                     │  fulness, latency, cost, refusal│
-                                     │  CI-gated, versioned results    │
-                                     └────────────┬────────────────────┘
-       │                                          │
-       └──────────────────┬───────────────────────┘
-                          ▼
-┌─ PUBLIC WEB APP (URL decided at Gate 4b) ────────────────────────────┐
-│  /            system overview + live pipeline status                 │
-│  /ask         NL query console — answer, rows, SQL, trace            │
-│  /dashboard   embedded Power BI report                               │
-│  /evals       live scorecard rendered from evals/results/*.json      │
-│  /architecture  the write-up, rendered                               │
-└──────────────────────────────────────────────────────────────────────┘
+Toronto CKAN, Peel / Mississauga / Brampton ArcGIS, Statistics Canada
+  |  src/ingest (config/ingest.yml, 20 specs)
+  v
+data/bronze/{source}/ingest_date=YYYY-MM-DD/      raw files, one partition per run
+  |  src/transform runs models/silver/*.sql       (10 files)
+  v
+silver tables in data/warehouse.duckdb
+  |  src/transform runs models/gold/*.sql         (5 dimensions, 2 facts)
+  v
+gold star schema in data/warehouse.duckdb
+  |-- scripts/export_gold_parquet.py -> gold CSV / Parquet -> Power BI report
+  |-- src/ai: planner -> executor -> critic, served by src/ai/server.py -> web/ /ask
+  '-- evals/harness.py (60 golden questions) -> evals/results/*.json -> web/ /evals
 ```
 
-**A note on the web app.** The Next.js application is deliberately a thin client over a documented FastAPI contract. It exists to make the rest of the system visible, not to be the point of the project. The engineering substance is the ingestion pipeline, the dimensional warehouse model, the multi-agent query orchestration graph, and the evaluation harness that scores it — all of which run and are testable independent of whether the frontend looks polished. Read this repository as a data and AI platform with a viewer attached to it, not as a Next.js application with a database behind it.
+## Prerequisites
 
-## What's genuinely hard about it
+- **[uv](https://docs.astral.sh/uv/)** manages the pinned Python 3.11 and every dependency. There is no `pip` fallback, because the project has no build backend.
+- **Node.js 22** for `web/` (the version CI uses).
+- **Internet access** for `make ingest` and `make verify-sources`.
+- **An OpenRouter API key** for `/ask` and the eval harness. Nothing else needs a key.
+- **Power BI Desktop** (Windows) to open the report.
+- **`make` is optional.** The Makefile wraps the commands below, and `make help` lists the targets. `make` is not installed by default on Windows, so run the commands directly there.
 
-The hard part of this project is not calling four APIs. Toronto, Mississauga, Brampton, and Peel each publish their own definition of a "development application," a "unit," and a "status" — the same real-world event is categorized, timestamped, and counted differently depending on which portal it came from. Reconciling four incompatible schemas into one dimensional model is a modelling judgement, made row-type by row-type and documented with the reasoning attached, not a mechanical column-mapping exercise. Where the definitions genuinely cannot be reconciled without changing what a metric means, that gets written down as a decision record rather than quietly resolved by whichever mapping was convenient.
-
-The second hard part is grounding. A language model asked a question about this data has to answer using the rows that were actually retrieved, not rows it recalls having seen somewhere or numbers it estimates as plausible. Asserting that an answer is grounded is easy; proving it is not. That proof has to come from a scored evaluation harness — a fixed set of questions with known-correct answers, checked mechanically for whether every number and every named entity in a response actually appears in the rows returned for that query — run in CI, with the scores from the losing runs published alongside the winning ones.
-
-The third hard part is keeping the local build's fate independent of a cloud trial. The serving layer targets Microsoft Fabric and Power BI, and Fabric trials expire. DuckDB is the source of truth for development specifically so that if the Fabric trial lapses, the pipeline still runs, the tests still pass, and the data can still be queried and demonstrated locally without waiting on anyone's cloud subscription.
-
-## Results
-
-No numbers have been measured yet. Nothing has been ingested, transformed, retrieved, or evaluated. When a number does appear in this section, it will be accompanied by a link to the committed script and the committed output file that produced it — never a bare figure. Until then, this section stays exactly this short rather than gesturing at numbers that don't exist.
-
-## How to run it
-
-**Today, nothing in this repository produces a result yet.** What you can do right now is clone it and read the plan:
+## Setup
 
 ```bash
 git clone https://github.com/Halomaster0/GTA-Housing-pipeline.git
 cd GTA-Housing-pipeline
+uv sync --extra dev --extra api     # pinned pipeline, dev tools and the FastAPI service
 ```
 
-### Prerequisites
+`make setup` runs `uv sync --extra dev`, which is enough for the pipeline and tests without the API.
 
-**[uv](https://docs.astral.sh/uv/) is required.** It manages the pinned
-dependencies and the Python 3.11 the project is pinned to, so you do not need to
-install Python yourself. There is no `pip` fallback: this repository has no
-`[build-system]`, so `pip install -e .` will not work.
+If you plan to commit, install the git hooks once per clone with `uv run pre-commit install`. They run ruff, gitleaks and commitlint.
 
-| Platform | Install |
-|---|---|
-| macOS / Linux | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| Windows (PowerShell) | `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 \| iex"` |
-| Any, if you already have Python | `pip install uv` |
+## Build the data
 
-Reopen your terminal afterwards — the installer only adds `uv` to the PATH of
-new sessions — and confirm with `uv --version`.
-
-**`make` is not installed on Windows by default.** Every `make X` below is a
-thin wrapper; `make help` prints each target with the command it runs, and
-`docs/powerbi-manual.md` §0 lists the PowerShell equivalents for the targets
-that document mentions. For example `make setup` is `uv sync --extra dev`, and
-`make ingest` is `uv run python -m src.ingest --all`.
-
-### Developer workflow
-
-The intended developer workflow, once Phase 1 scaffolding is complete (tooling, dependencies, and CI are being built concurrently — see [`CONTRIBUTING.md`](CONTRIBUTING.md)), is a `Makefile`-driven setup:
+`data/` is git-ignored and nothing in it is committed. Build it from source:
 
 ```bash
-make setup            # install pinned dependencies
-make verify-sources   # confirm every data source is live before anything is built on it
-make test             # run the test suite
-make lint             # static checks
-make typecheck        # type checks
-make all              # the full local pipeline, start to finish
+uv run python -m src.ingest --all                           # make ingest: fetch every spec into data/bronze/
+uv run python -m src.transform --all --report               # make transform: build silver and gold in data/warehouse.duckdb
+uv run python scripts/export_gold_parquet.py --format csv   # make export-csv: gold CSVs in data/gold-csv/
+uv run python scripts/export_gold_parquet.py                # make export-gold: gold Parquet in data/gold-parquet/
 ```
 
-None of these targets should be assumed to exist or to succeed until a specific commit's CI run demonstrates it — check the workflow status on the commit in question rather than taking this section's word for it. This section will be rewritten with concrete, verified instructions as each piece lands, and the `oss-maintainer` role runs a "cold clone drill" — a fresh clone, followed literally from the README, timed — at every phase gate specifically to catch instructions that only work because of context that isn't written down.
+Two things to know before you commit anything:
+
+- `make transform` deletes and rebuilds `data/warehouse.duckdb`, and it rewrites `docs/data-quality-report.md`, which is tracked. Review that diff before committing.
+- `make reconcile` (`uv run python scripts/reconcile_measures.py`) rewrites `docs/measure-reconciliation.json`, which is also tracked.
+
+To check that every source is still live, run `uv run python scripts/verify_sources.py` (`make verify-sources`). It needs internet access.
+
+## Checks
+
+```bash
+uv run pytest                 # make test (data tests skip if no built warehouse)
+uv run ruff check .           # make lint
+uv run ruff format --check .  # the format check CI runs
+uv run mypy src               # make typecheck
+```
+
+## Eval harness
+
+```bash
+uv run python evals/harness.py --limit 10   # quick smoke run
+uv run python evals/harness.py              # make eval: all 60 questions
+```
+
+The harness needs a warehouse at `DUCKDB_PATH` (see [Environment](#environment)) and `OPENROUTER_API_KEY`. A full run makes LLM calls for every question and took 17 to 23 minutes in the committed runs.
+
+Each run writes `evals/results/{date}-{git sha}.json`, **including a failed run**. Without a warehouse or key, the harness writes a 0% result and exits 1. Delete that file before committing.
+
+## Web app
+
+```bash
+cd web
+npm ci
+npm run dev           # development server, http://localhost:3000
+npm run build         # production build; static pages go to web/out/
+npm run lint
+npm run test:a11y     # static accessibility checks on web/out/ (run after build)
+```
+
+`npm run test:a11y` currently reports one failure: the tables on `/evals` have no captions. That is an open item, not a passing check.
+
+`/ask` needs the FastAPI service running (see below). The web app reads `API_BASE_URL` and defaults to `http://localhost:8000`.
+
+## The query API (`/ask` backend)
+
+```bash
+uv run --extra api python -m src.ai.server   # FastAPI on http://localhost:8000; GET /health, POST /ask
+```
+
+This needs a warehouse at `DUCKDB_PATH` and `OPENROUTER_API_KEY`. The service is not hosted anywhere, so `/ask` is local-only for now.
+
+## Environment
+
+Copy `.env.example` to `.env` (git-ignored) and uncomment or fill in only what you need. Blank numeric values crash the config loader, so leave a line commented out rather than blank. The variables the code reads are:
+
+| Variable | Default | Used for |
+|---|---|---|
+| `OPENROUTER_API_KEY` | none | LLM calls in the query layer and the eval harness |
+| `DUCKDB_PATH` | `data/warehouse-sept.duckdb` | warehouse read by `/ask` and the eval harness |
+| `API_BASE_URL` | `http://localhost:8000` | where the web app finds the FastAPI service |
+| `LLM_DAILY_SPEND_CEILING_USD` | `2.0` | daily spend ceiling for LLM calls |
+| `API_RATE_LIMIT_PER_MINUTE` | `60` | per-IP rate limit on the API |
+| `LOG_LEVEL` | `INFO` | structlog level |
+
+## Data you need locally
+
+| Path | Made by | Used by |
+|---|---|---|
+| `data/bronze/` | `make ingest` | `make transform` |
+| `data/warehouse.duckdb` | `make transform` | exports, reconcile, data tests |
+| `data/gold-csv/` | `make export-csv` | Power BI report (gold CSV import) |
+| `data/gold-parquet/` | `make export-gold` | the serving contract ([ADR-0008](docs/decisions/0008-deferred-fabric-serving.md)) |
+| `data/warehouse-sept.duckdb` | **no command in this repo** | default `DUCKDB_PATH` for `/ask` and the harness |
+| `data/gold-sept-csv/` | **no command in this repo** | default `GoldCsvFolder` in the Power BI model |
+
+The two September paths are local files that hold the 2026-09-10 build, which is what the published report shows (see [`docs/data-vintage-decision-2026-10-31.md`](docs/data-vintage-decision-2026-10-31.md)). To run `/ask` or the harness against what `make transform` builds, set `DUCKDB_PATH=data/warehouse.duckdb`. The October warehouse has different counts from the September build, so answers will differ from the committed September-era runs.
+
+## Power BI report
+
+- `powerbi/gta-housing.pbip` opens in Power BI Desktop. It has five pages: GTA overview, municipal comparison, pipeline velocity, geography, and data quality.
+- The semantic model is generated TMDL in `powerbi/gta-housing.SemanticModel/` by `scripts/generate_pbip.py`. The report pages are generated by `scripts/generate_pbir_report.py`. Check both match the generators with `uv run python scripts/generate_pbip.py --verify-output` and `uv run python scripts/generate_pbir_report.py --verify`. See [`docs/powerbi-manual.md`](docs/powerbi-manual.md) §14.
+- On first open, set the `GoldCsvFolder` parameter (Transform data, then Manage parameters) to an absolute path to the folder `make export-csv` wrote, normally `data/gold-csv`. The default points at `data\gold-sept-csv`, which no command creates.
+- `powerbi/Exports/gta-housing.pdf` is a PDF export of the report from the September build.
+- **The copy in the Power BI service is not refreshed from this repository.** Treat it as stale. The local `.pbip` and the PDF are the reference.
+
+## Results
+
+The latest committed eval run is [`evals/results/2026-11-02-2571861.json`](evals/results/2026-11-02-2571861.json) (git `2571861`, faithfulness metric v3): 60 questions, **90.0% correctness**, 100% faithfulness, 100% refusal accuracy.
+
+Only compare runs with the same `faithfulness_metric_version`. The earlier runs in `evals/results/` have no version field and used an unversioned metric. `2026-11-02-2571861-metric2.json` is the same commit scored under metric v2.
+
+## Repository layout
+
+- `config/` ingest specs and the source registry
+- `src/ingest`, `src/transform`, `src/common`, `src/ai` the pipeline and query layer
+- `models/silver`, `models/gold` hand-written SQL, with a grain header on every file
+- `scripts/` exports, source and measure checks, Power BI generators
+- `evals/` golden questions, the harness and committed results
+- `tests/` unit and data tests
+- `web/` the Next.js app
+- `powerbi/` the Power BI project and PDF export
+- `docs/` the build plan, decisions (ADRs), gate records, data dictionary, source notes and handovers
+
+Start with [`docs/build-plan.md`](docs/build-plan.md) for the plan and phase gates, and [`OUTSTANDING.md`](OUTSTANDING.md) for what remains.
 
 ## What it doesn't do
 
-- **Not a real-estate price prediction model.** It does not forecast prices, and it makes no forecasting claims of any kind.
-- **Not a startup.** There is no auth system, no billing, and no multi-tenancy. It is a single public read-only analytics artifact.
-- **Not a scraper.** It ingests only from official municipal APIs and open-data endpoints — no scraping of pages that aren't meant to be machine-read.
-- **Not a Kaggle notebook.** If a piece of work doesn't run on a schedule, unattended, it is not considered done, regardless of whether it produced a nice result once.
+- **It is not a price model.** It does not forecast prices or make forecasting claims.
+- **It is not a startup.** There is no auth, billing or multi-tenancy. It is a single public read-only analytics artifact.
+- **It is not a scraper.** It reads only official municipal APIs and open-data endpoints.
 
-## Data sources and licences (not yet verified)
+## Contributing and licence
 
-The target source families are:
-
-- **Toronto** — CKAN REST API (open data portal)
-- **Peel, Mississauga, and Brampton** — ArcGIS Hub REST endpoints
-- **Statistics Canada** — CSV and SDMX data
-- **CMHC housing starts** — optional, if licensing and access permit it
-
-None of these has been confirmed live, licensed for public reuse, or profiled for the fields this project needs — that verification is the explicit job of Phase 1 and is tracked in [`docs/sources/`](docs/sources/) (currently empty; each source gets its own file once verified against a live call, not a search result) and enforced going forward by a committed `scripts/verify_sources.py` liveness check. No licence claim is made here until a source has been verified and its exact licence name recorded. Until then, treat every source in this list as unconfirmed.
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for local setup, commit conventions, and the PR process; [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) for community standards; and [`SECURITY.md`](SECURITY.md) to report a vulnerability or a data-handling concern. This project is MIT licensed — see [`LICENSE`](LICENSE).
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for local setup, commit conventions and the PR process, [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), and [`SECURITY.md`](SECURITY.md) to report a vulnerability or a data-handling concern. This project is MIT licensed; see [`LICENSE`](LICENSE).
