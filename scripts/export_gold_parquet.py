@@ -1,9 +1,9 @@
 """Export gold star-schema tables for the serving layer.
 
-Default format is parquet — the Fabric publish-path input (ADR-0008).
+Default format is parquet - the Fabric publish-path input (ADR-0008).
 ``--format csv`` exists for one practical reason: Power BI Desktop's Parquet
 connector takes a URL, not a local file, so local serving via Desktop uses
-Get Data → Text/CSV instead (ADR-0010 path). Same rows, same grain —
+Get Data -> Text/CSV instead (ADR-0010 path). Same rows, same grain -
 ``reconcile_measures.py`` verifies counts against the warehouse either way.
 
 Usage:

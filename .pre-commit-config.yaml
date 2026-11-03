@@ -5,6 +5,13 @@ default_install_hook_types:
   - pre-commit
   - commit-msg
 
+# The commitlint hook is a Node hook. With no version pinned, pre-commit's nodeenv
+# can resolve an alpha Node release and fail to install the hook (seen on Windows,
+# 2026-11-03). Every commit then fails with an install error, and nothing enforces
+# the commit format. Pin the Node line that CI uses (web.yml: Node 22).
+default_language_version:
+  node: "22.12.0"
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

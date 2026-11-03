@@ -17,24 +17,33 @@ There is no `pip` fallback: the project declares no `[build-system]`, so
 Reopen the terminal afterwards (PATH is only updated for new sessions) and check
 `uv --version`.
 
-`make` is not a Windows command. Every target is a wrapper — run `make help` to
-see the command each one runs, and use that directly on PowerShell.
+`make` is not a Windows command. Every target is a thin wrapper around one command.
+`make help` lists the targets, and the README gives the underlying command for each one,
+so you can run it directly in PowerShell.
 
 ## Project status
 
-This is early — Phase 1 of a 5-phase build (see the [README](README.md#status) for the current honest state). Expect gaps, stubs, and `not yet built` markers. That's not a reason to hold back a contribution; it's context for what "done" means at this point.
+The ingestion pipeline, the DuckDB warehouse, the Power BI report and the eval harness are built. `/ask` is not hosted yet, and publication (Phase 5) is open. The [README](README.md#status) states what is and is not finished, and [`OUTSTANDING.md`](OUTSTANDING.md) lists what remains. Expect gaps. That is not a reason to hold back a contribution. It is context for what "done" means right now.
 
 ## Local setup
 
-Setup is driven by the `Makefile` (owned and being built concurrently with this document — check its current contents rather than assuming every target below already works):
+The `Makefile` drives setup. The README has the full command list, and these are the main targets:
 
 ```bash
-make setup            # install pinned dependencies
+make setup            # install pinned dependencies (uv sync --extra dev)
 make verify-sources   # confirm every data source this project depends on is actually live
 make test             # run the test suite
-make lint             # static analysis / style checks
-make typecheck        # type checks
-make all              # the full local pipeline: setup, ingest, transform, test, eval
+make lint             # ruff lint
+make typecheck        # mypy on src/
+make all              # setup, lint, typecheck and test
+```
+
+`make pipeline` (ingest, then transform) and `make eval` need internet access, a built warehouse, and for `make eval` an OpenRouter key. See the README.
+
+Install the git hooks once per clone. They run ruff, gitleaks and commitlint, so a non-conventional commit message is refused locally:
+
+```bash
+uv run pre-commit install     # installs the pre-commit and commit-msg hooks from .pre-commit-config.yaml
 ```
 
 Run `make verify-sources` before you build anything that depends on a data source. If it fails, the source is not something to build against yet — file an issue with the `data-source` label instead (template below).
