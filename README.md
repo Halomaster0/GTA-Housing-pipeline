@@ -13,7 +13,7 @@ Four local governments in the Toronto area each publish their own records of new
 
 **Not finished:**
 
-- **`/ask` is not hosted.** It calls a FastAPI service (`src/ai/server.py`) that runs only on a machine where you start it. Nothing is deployed behind it. `/ask` works only when you run that service with a built warehouse and an OpenRouter key.
+- **`/ask` is not hosted.** It calls a FastAPI service (`src/ai/server.py`) that is not deployed anywhere. `/ask` works only when you run that service yourself, with a built warehouse and an OpenRouter key.
 - **Publication (Phase 5) is open.** Deployment, the Lighthouse pass and the remaining human steps are tracked in [`OUTSTANDING.md`](OUTSTANDING.md).
 - **Toronto net-unit counts are withheld** from published figures pending audit ([`docs/data-exceptions.yml`](docs/data-exceptions.yml)). The published figures stay on the September build until October Toronto data is validated ([`docs/data-vintage-decision-2026-10-31.md`](docs/data-vintage-decision-2026-10-31.md)).
 - **Fabric serving is deferred** ([ADR-0008](docs/decisions/0008-deferred-fabric-serving.md), [ADR-0010](docs/decisions/0010-pro-workspace-no-lakehouse.md)). Serving v1 is Power BI Desktop and a Pro workspace, with DuckDB as the source of truth.
