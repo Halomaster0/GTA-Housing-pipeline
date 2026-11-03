@@ -45,9 +45,22 @@ web/out/
 *.tsbuildinfo
 npm-debug.log*
 
-# OS noise
+# OS and editor noise
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Local Claude Code state: per-machine permissions and nested agent worktrees.
+# Committed agent definitions under .claude/agents/ stay tracked.
+.claude/settings.local.json
+.claude/worktrees/
+
+# Output written by CI steps or local runs; never committed.
+verify_output.txt
+coverage.xml
+*.log
 
 # Power BI Desktop writes these back into a PBIP project when it opens one.
 # localSettings.json carries absolute machine paths and the signed-in user's
