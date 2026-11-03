@@ -11,12 +11,12 @@ Four local governments in the Toronto area each publish their own records of new
 - **AI query layer (Phase 4).** A planner, executor and critic over the gold warehouse, a 60-question golden set, and an eval harness that scores correctness, faithfulness and refusals. See [Results](#results).
 - **Web app (Phase 4b).** A Next.js app in `web/` with the routes `/`, `/ask`, `/dashboard`, `/evals`, `/data-quality` and `/architecture`.
 
-**Not finished:**
+**Next steps:**
 
-- **`/ask` is live** at [gta-housing-pipeline.vercel.app/ask](https://gta-housing-pipeline.vercel.app/ask). It calls a FastAPI service deployed as the `gta-housing-api` Vercel project. The service's spend is capped by a $0.50 limit on the OpenRouter key, not by the app.
-- **Publication (Phase 5) is partly done.** The site is deployed on Vercel. The Lighthouse pass and the remaining human steps are still open; see [`OUTSTANDING.md`](OUTSTANDING.md).
-- **Toronto net-unit counts are withheld** from published figures pending audit ([`docs/data-exceptions.yml`](docs/data-exceptions.yml)). The published figures stay on the September build until October Toronto data is validated ([`docs/data-vintage-decision-2026-10-31.md`](docs/data-vintage-decision-2026-10-31.md)).
-- **Fabric serving is deferred** ([ADR-0008](docs/decisions/0008-deferred-fabric-serving.md), [ADR-0010](docs/decisions/0010-pro-workspace-no-lakehouse.md)). Serving v1 is Power BI Desktop and a Pro workspace, with DuckDB as the source of truth.
+- **`/ask` is live** at [gta-housing-pipeline.vercel.app/ask](https://gta-housing-pipeline.vercel.app/ask). The next step is app-level spend tracking. Today the $0.50 cap is a limit on the OpenRouter key.
+- **Publication (Phase 5):** the Lighthouse pass and the remaining human steps are tracked in [`OUTSTANDING.md`](OUTSTANDING.md).
+- **Toronto net-unit counts** are held back from published figures until the audit in [`docs/data-exceptions.yml`](docs/data-exceptions.yml) is done. Published figures stay on the September build until October Toronto data is validated ([`docs/data-vintage-decision-2026-10-31.md`](docs/data-vintage-decision-2026-10-31.md)).
+- **Fabric serving** is deferred ([ADR-0008](docs/decisions/0008-deferred-fabric-serving.md), [ADR-0010](docs/decisions/0010-pro-workspace-no-lakehouse.md)). Serving today is Power BI Desktop with a Pro workspace, and DuckDB is the source of truth.
 
 ## What is hard about it
 
