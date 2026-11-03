@@ -55,10 +55,11 @@ def validate_issued_permit_sql_pattern(sql: str) -> bool:
     """
     sql_lower = sql.lower()
     # Detect the forbidden pattern: dim_status with status_code filtering
-    if "dim_status" in sql_lower and "status_code" in sql_lower:
-        if "'issued'" in sql_lower or '"issued"' in sql_lower:
-            return False
-    return True
+    return not (
+        "dim_status" in sql_lower
+        and "status_code" in sql_lower
+        and ("'issued'" in sql_lower or '"issued"' in sql_lower)
+    )
 
 
 def execute_sql(sql: str, max_rows: int = 100) -> ExecutionResult:
@@ -73,13 +74,21 @@ def execute_sql(sql: str, max_rows: int = 100) -> ExecutionResult:
 
     # Validate issued-permit SQL pattern (blocks the #1 anti-pattern)
     if not validate_issued_permit_sql_pattern(cleaned_sql):
-        logger.error("Anti-pattern detected in SQL (dim_status/status_code for issued permits). Refusing execution.")
-        return ExecutionResult(success=False, error="Invalid SQL: use date_issued_sk IS NOT NULL for issued permits.", sql_executed=sql)
+        logger.error(
+            "Anti-pattern detected in SQL (dim_status/status_code for issued permits). Refusing execution."
+        )
+        return ExecutionResult(
+            success=False,
+            error="Invalid SQL: use date_issued_sk IS NOT NULL for issued permits.",
+            sql_executed=sql,
+        )
 
     # Check for the specific anti-pattern (log only; refusal above blocks execution)
     sql_lower = cleaned_sql.lower()
     if "status_code = 'issued'" in sql_lower or 'status_code = "issued"' in sql_lower:
-        logger.warning("SQL contains anti-pattern: filtering on dim_status.status_code='ISSUED'. This produces incorrect counts. Use date_issued_sk IS NOT NULL instead.")
+        logger.warning(
+            "SQL contains anti-pattern: filtering on dim_status.status_code='ISSUED'. This produces incorrect counts. Use date_issued_sk IS NOT NULL instead."
+        )
 
     if "LIMIT" not in cleaned_sql.upper():
         exec_sql = f"{cleaned_sql} LIMIT {max_rows}"
@@ -93,7 +102,7 @@ def execute_sql(sql: str, max_rows: int = 100) -> ExecutionResult:
             rel = con.execute(exec_sql)
             columns = [desc[0] for desc in rel.description] if rel.description else []
             raw_rows = rel.fetchall()
-            rows = [dict(zip(columns, row)) for row in raw_rows]
+            rows = [dict(zip(columns, row, strict=False)) for row in raw_rows]
             elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
             return ExecutionResult(
@@ -115,4 +124,3 @@ def execute_sql(sql: str, max_rows: int = 100) -> ExecutionResult:
             sql_executed=exec_sql,
             error=str(exc),
         )
-

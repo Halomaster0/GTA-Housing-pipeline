@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+
 import httpx
 
 from src.common import config
@@ -24,9 +25,9 @@ FREE_MODELS = [
 
 # Lowest-cost paid models to fall back on
 CHEAP_MODELS = [
-    "mistralai/mistral-nemo",            # ~$0.03/M prompt, $0.03/M completion
+    "mistralai/mistral-nemo",  # ~$0.03/M prompt, $0.03/M completion
     "meta-llama/llama-3.1-8b-instruct",  # ~$0.05/M prompt, $0.08/M completion
-    "deepseek/deepseek-chat",            # ~$0.26/M prompt, $1.03/M completion
+    "deepseek/deepseek-chat",  # ~$0.26/M prompt, $1.03/M completion
 ]
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -77,7 +78,9 @@ def complete(
                     data = res.json()
                     content = data["choices"][0]["message"]["content"]
                     if not content:
-                        logger.warning("Free model %s returned empty/null content; skipping.", model)
+                        logger.warning(
+                            "Free model %s returned empty/null content; skipping.", model
+                        )
                         continue
                     actual_model = data.get("model", model)
                     logger.info("Successfully routed to free model: %s", actual_model)
@@ -112,7 +115,9 @@ def complete(
                     data = res.json()
                     content = data["choices"][0]["message"]["content"]
                     if not content:
-                        logger.warning("Paid model %s returned empty/null content; skipping.", model)
+                        logger.warning(
+                            "Paid model %s returned empty/null content; skipping.", model
+                        )
                         continue
                     actual_model = data.get("model", model)
                     logger.info("Successfully routed to cheap paid model: %s", actual_model)
@@ -132,4 +137,3 @@ def complete(
             logger.warning("Paid model %s error: %s", model, exc)
 
     raise LLMError("All model endpoints (free and cheapest paid) failed to respond.")
-

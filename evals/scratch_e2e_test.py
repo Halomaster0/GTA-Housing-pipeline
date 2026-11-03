@@ -1,14 +1,14 @@
 """End-to-end smoke test for the multi-agent query graph."""
+
 import logging
 import sys
-import os
 
 # Ensure repo root is on the path
 sys.path.insert(0, r"C:\Users\Halom\Documents\GTA-Housing-pipeline")
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
-from src.ai.graph import run_query
+from src.ai.graph import run_query  # noqa: E402
 
 print("=" * 60)
 print("TEST 1: Answerable question (Mississauga permits)")
@@ -49,4 +49,3 @@ print(f"  latency_ms : {r4.latency_ms:.0f}")
 print()
 
 print("All tests done. Check traces/ directory for JSON trace files.")
-

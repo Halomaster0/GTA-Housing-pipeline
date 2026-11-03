@@ -21,17 +21,17 @@ import subprocess
 import sys
 import time
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 import yaml
-from decimal import Decimal
 
 # Ensure repo root on sys.path when run directly
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from src.ai.graph import QueryResponse, run_query
+from src.ai.graph import QueryResponse, run_query  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -65,10 +65,12 @@ def _normalise(text: str) -> str:
 
 def _json_dumps_decimal(obj: Any, **kwargs) -> str:
     """JSON dumps with Decimal -> float conversion."""
+
     def _default(o):
         if isinstance(o, Decimal):
             return float(o)
         return str(o)
+
     return json.dumps(obj, default=_default, **kwargs)
 
 
@@ -77,10 +79,8 @@ def _number_in_text(number: str | int | float, text: str) -> bool:
     n = str(number).replace(",", "").replace(" ", "")
     # Accept with or without thousands separator
     variants = {n, f"{int(float(n)):,}" if n.replace(".", "").isdigit() else n}
-    for v in variants:
-        if v in text.replace(",", "").replace(" ", ""):
-            return True
-    return False
+    text_norm = text.replace(",", "").replace(" ", "")
+    return any(v in text_norm for v in variants)
 
 
 def _check_expected_facts(
@@ -109,9 +109,7 @@ def _check_expected_facts(
     facts: list[Any] = question_entry.get("expected_facts", [])
     if not facts:
         # No facts specified; if we got an answer (not refusal) consider pass
-        return not response.is_refusal, (
-            ["Unexpected refusal"] if response.is_refusal else []
-        )
+        return not response.is_refusal, (["Unexpected refusal"] if response.is_refusal else [])
 
     if response.is_refusal:
         return False, [f"Expected answer but got refusal: {response.refusal_reason}"]
@@ -151,10 +149,12 @@ FAITHFULNESS_METRIC_VERSION = 3
 
 def _json_dumps_exact(obj: Any) -> str:
     """JSON text for faithfulness checks: Decimals keep their scale ('18269933097.00')."""
+
     def _default(o):
         if isinstance(o, Decimal):
             return format(o, "f")
         return str(o)
+
     return json.dumps(obj, default=_default)
 
 
@@ -231,7 +231,8 @@ def run_harness(
             "id": qid,
             "bucket": bucket,
             "question": question,
-            "expected_refusal": qentry.get("expected_refusal", False) or qentry.get("expected_behavior") == "refuse",
+            "expected_refusal": qentry.get("expected_refusal", False)
+            or qentry.get("expected_behavior") == "refuse",
             "passed": passed,
             "faithful": faithful,
             "missing_facts": missing_facts,
@@ -248,8 +249,12 @@ def run_harness(
         # Accumulate per-bucket stats
         if bucket not in bucket_stats:
             bucket_stats[bucket] = {
-                "total": 0, "passed": 0, "faithful": 0,
-                "latencies": [], "refusal_correct": 0, "refusal_total": 0,
+                "total": 0,
+                "passed": 0,
+                "faithful": 0,
+                "latencies": [],
+                "refusal_correct": 0,
+                "refusal_total": 0,
             }
         bs = bucket_stats[bucket]
         bs["total"] += 1
@@ -275,7 +280,8 @@ def run_harness(
             "faithfulness": round(bs["faithful"] / bs["total"], 3) if bs["total"] else 0,
             "refusal_accuracy": (
                 round(bs["refusal_correct"] / bs["refusal_total"], 3)
-                if bs["refusal_total"] else None
+                if bs["refusal_total"]
+                else None
             ),
             "p50_latency_ms": round(lats[n // 2], 1) if lats else None,
             "p95_latency_ms": round(lats[int(n * 0.95)], 1) if lats else None,
@@ -291,9 +297,7 @@ def run_harness(
     overall = {
         "correctness": round(total_passed / total_q, 3) if total_q else 0,
         "faithfulness": round(total_faithful / total_q, 3) if total_q else 0,
-        "refusal_accuracy": (
-            round(refusal_correct / len(refusal_qs), 3) if refusal_qs else None
-        ),
+        "refusal_accuracy": (round(refusal_correct / len(refusal_qs), 3) if refusal_qs else None),
         "total_questions": total_q,
         "elapsed_seconds": round(total_elapsed, 1),
     }
@@ -311,7 +315,9 @@ def run_harness(
 
 
 def _print_scorecard(output: dict[str, Any]) -> None:
-    import sys, io
+    import io
+    import sys
+
     # Force UTF-8 output on Windows to avoid cp1252 encode errors
     if hasattr(sys.stdout, "buffer"):
         out = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -354,7 +360,9 @@ def _print_scorecard(output: dict[str, Any]) -> None:
 
     out.write(sep + "\n")
     if weakest_bucket:
-        out.write(f"\n  Weakest bucket: {weakest_bucket} ({weakest_score * 100:.1f}% correctness)\n")
+        out.write(
+            f"\n  Weakest bucket: {weakest_bucket} ({weakest_score * 100:.1f}% correctness)\n"
+        )
     out.write("\n")
     out.flush()
 

@@ -7,7 +7,6 @@ import logging
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
-from pathlib import Path
 from typing import Any
 
 from src.ai import critic, executor, planner
@@ -69,6 +68,8 @@ def run_query(question: str) -> QueryResponse:
 
     # 2. EXECUTOR STAGE (with max 1 retry on SQL failure)
     t0 = time.perf_counter()
+    # The planner contract: a non-refusal plan always carries SQL.
+    assert plan.sql is not None, "non-refusal plan must carry SQL"
     exec_result = executor.execute_sql(plan.sql)
     stages["executor"] = {
         "latency_ms": (time.perf_counter() - t0) * 1000.0,
@@ -98,7 +99,8 @@ def run_query(question: str) -> QueryResponse:
         else:
             logger.warning(
                 "[%s] Retry planner refused or returned no SQL: %s",
-                trace_id, plan_retry.refusal_reason
+                trace_id,
+                plan_retry.refusal_reason,
             )
 
     if not exec_result.success:
@@ -155,4 +157,3 @@ def _persist_trace(response: QueryResponse) -> None:
         logger.info("[%s] Persisted trace to %s", response.trace_id, trace_path)
     except Exception as exc:
         logger.error("Failed to persist trace %s: %s", response.trace_id, exc)
-

@@ -67,7 +67,9 @@ def distinct_count(entity: str, prop: str) -> dict:
     """Aggregation Function 2 is distinct count (PBIR semanticQuery 1.4.0)."""
     return {
         "Aggregation": {
-            "Expression": {"Column": {"Expression": {"SourceRef": {"Entity": entity}}, "Property": prop}},
+            "Expression": {
+                "Column": {"Expression": {"SourceRef": {"Entity": entity}}, "Property": prop}
+            },
             "Function": 2,
         }
     }
@@ -96,7 +98,10 @@ def text_box(name: str, box: tuple, paragraphs: list[tuple[str, int, bool]]) -> 
             "textRuns": [
                 {
                     "value": text,
-                    "textStyle": {"fontSize": f"{size}pt", "fontWeight": "bold" if bold else "normal"},
+                    "textStyle": {
+                        "fontSize": f"{size}pt",
+                        "fontWeight": "bold" if bold else "normal",
+                    },
                 }
             ]
         }
@@ -140,7 +145,12 @@ def page_gta_overview() -> list[dict]:
             "slicer",
             {"Values": [col_proj(MUNICIPALITY, "municipality_name")]},
         ),
-        visual("card_permits_issued", (24, 212, 300, 120), "card", {"Values": [meas_proj(PERMITS, "Permits Issued")]}),
+        visual(
+            "card_permits_issued",
+            (24, 212, 300, 120),
+            "card",
+            {"Values": [meas_proj(PERMITS, "Permits Issued")]},
+        ),
         visual(
             "card_active_applications",
             (340, 212, 300, 120),
@@ -152,8 +162,16 @@ def page_gta_overview() -> list[dict]:
             (656, 212, 600, 120),
             [
                 ("Permits Issued: permits carrying an issue date (647,589 in total).", 11, False),
-                ("Permit Records: every permit row (827,919). Different measure, different label.", 11, False),
-                ("Net New Units is mixed-basis and is shown per municipality on the next page only.", 11, False),
+                (
+                    "Permit Records: every permit row (827,919). Different measure, different label.",
+                    11,
+                    False,
+                ),
+                (
+                    "Net New Units is mixed-basis and is shown per municipality on the next page only.",
+                    11,
+                    False,
+                ),
             ],
         ),
         visual(
@@ -170,7 +188,10 @@ def page_gta_overview() -> list[dict]:
             "donut_application_status",
             (800, 344, 456, 356),
             "donutChart",
-            {"Category": [col_proj(STATUS, "status_label")], "Y": [count_proj(APPLICATIONS, "application_sk")]},
+            {
+                "Category": [col_proj(STATUS, "status_label")],
+                "Y": [count_proj(APPLICATIONS, "application_sk")],
+            },
         ),
     ]
 
@@ -217,15 +238,35 @@ def page_municipal_comparison() -> list[dict]:
             "notes_units_and_empty_states",
             (664, 428, 592, 268),
             [
-                ("Net New Units is MIXED BASIS (ADR-0003). Toronto is created minus lost; Mississauga and "
-                 "Brampton are as reported. Compare within a municipality only.", 11, False),
-                ("Never total it across municipalities. The chart has no total on purpose.", 11, True),
-                ("64.3% of permit rows carry no unit count; SUM skips them, they are not zeros.", 11, False),
+                (
+                    "Net New Units is MIXED BASIS (ADR-0003). Toronto is created minus lost; Mississauga and "
+                    "Brampton are as reported. Compare within a municipality only.",
+                    11,
+                    False,
+                ),
+                (
+                    "Never total it across municipalities. The chart has no total on purpose.",
+                    11,
+                    True,
+                ),
+                (
+                    "64.3% of permit rows carry no unit count; SUM skips them, they are not zeros.",
+                    11,
+                    False,
+                ),
                 ("Per-capita (P1): pending StatCan census profiles. Not shown as zero.", 11, True),
-                ("Caledon: no permits in these feeds. In scope as geography (ADR-0004). "
-                 "Blank, never zero.", 11, False),
-                ("Toronto net units are excluded pending audit: one unverified 100,000-unit placeholder "
-                 "(26 256637 BLD, first seen 2026-10-22). It is not in the September data shown here.", 11, False),
+                (
+                    "Caledon: no permits in these feeds. In scope as geography (ADR-0004). "
+                    "Blank, never zero.",
+                    11,
+                    False,
+                ),
+                (
+                    "Toronto net units are excluded pending audit: one unverified 100,000-unit placeholder "
+                    "(26 256637 BLD, first seen 2026-10-22). It is not in the September data shown here.",
+                    11,
+                    False,
+                ),
             ],
         ),
     ]
@@ -271,9 +312,17 @@ def page_pipeline_velocity() -> list[dict]:
             (800, 428, 456, 268),
             [
                 ("Submitted to decision (M7): Mississauga only (385-day median).", 11, False),
-                ("Toronto and Brampton: no decision dates in source. Empty by design, not omitted.", 11, False),
+                (
+                    "Toronto and Brampton: no decision dates in source. Empty by design, not omitted.",
+                    11,
+                    False,
+                ),
                 ("Application to permit timing (P2): pending, see ADR-0006.", 11, True),
-                ("Medians cover different shares of permits; read Date Coverage Pct beside them.", 11, False),
+                (
+                    "Medians cover different shares of permits; read Date Coverage Pct beside them.",
+                    11,
+                    False,
+                ),
             ],
         ),
     ]
@@ -302,13 +351,29 @@ def page_geography() -> list[dict]:
             "note_geography_denominator",
             (24, 528, 1232, 140),
             [
-                ("The row with a blank name holds Toronto and Brampton permits (612,975), which have no ward. "
-                 "Hide it with a visual filter: ward_name is not blank.", 11, False),
-                ("Denominator: this page covers Mississauga permits (34,614), Toronto applications with a "
-                 "ward, and the Brampton ward rows. It is NOT the 827,919-permit universe.", 11, False),
-                ("Brampton ward view: equivalence is UNCONFIRMED (conformance matrix section 3).", 11, True),
-                ("dim_geography holds every vintage. Set a visual filter Is Current = true before reading "
-                 "ward names, or wards repeat.", 11, False),
+                (
+                    "The row with a blank name holds Toronto and Brampton permits (612,975), which have no ward. "
+                    "Hide it with a visual filter: ward_name is not blank.",
+                    11,
+                    False,
+                ),
+                (
+                    "Denominator: this page covers Mississauga permits (34,614), Toronto applications with a "
+                    "ward, and the Brampton ward rows. It is NOT the 827,919-permit universe.",
+                    11,
+                    False,
+                ),
+                (
+                    "Brampton ward view: equivalence is UNCONFIRMED (conformance matrix section 3).",
+                    11,
+                    True,
+                ),
+                (
+                    "dim_geography holds every vintage. Set a visual filter Is Current = true before reading "
+                    "ward names, or wards repeat.",
+                    11,
+                    False,
+                ),
             ],
         ),
     ]
@@ -336,23 +401,52 @@ def page_data_quality() -> list[dict]:
             "table_ingest_batches",
             (644, 112, 612, 300),
             "tableEx",
-            {"Values": [col_proj(PERMITS, "ingest_batch_id"), meas_proj(PERMITS, "Permit Records")]},
+            {
+                "Values": [
+                    col_proj(PERMITS, "ingest_batch_id"),
+                    meas_proj(PERMITS, "Permit Records"),
+                ]
+            },
         ),
         text_box(
             "checks",
             (24, 428, 1232, 268),
             [
-                ("Gold totals to match (docs/measure-reconciliation.json): Permit Records 827,919 "
-                 "(Toronto 571,986, Brampton 221,319, Mississauga 34,614). Permits Issued 647,589 "
-                 "(Toronto 462,039, Brampton 150,936, Mississauga 34,614).", 11, False),
-                ("Orphan keys, fact to dimension: 0 and 0. A non-zero count here means a broken model.", 11, False),
-                ("Unit basis: MIXED (ADR-0003). Net New Units is never totalled across municipalities.", 11, True),
-                ("Pending measures: P1 per-capita (StatCan census profiles); P2 application to permit timing "
-                 "(ADR-0006); P3 see docs/data-dictionary.md.", 11, False),
-                ("Source: September export, ingest 2026-09-10 (docs/data-quality-report.md). October data is "
-                 "held until the Toronto extract is validated.", 11, False),
-                ("CANCELLED: 58,890 permits; 19,577 carry an issue date and are counted in Permits Issued under "
-                 "the current rule. Director decision pending.", 11, False),
+                (
+                    "Gold totals to match (docs/measure-reconciliation.json): Permit Records 827,919 "
+                    "(Toronto 571,986, Brampton 221,319, Mississauga 34,614). Permits Issued 647,589 "
+                    "(Toronto 462,039, Brampton 150,936, Mississauga 34,614).",
+                    11,
+                    False,
+                ),
+                (
+                    "Orphan keys, fact to dimension: 0 and 0. A non-zero count here means a broken model.",
+                    11,
+                    False,
+                ),
+                (
+                    "Unit basis: MIXED (ADR-0003). Net New Units is never totalled across municipalities.",
+                    11,
+                    True,
+                ),
+                (
+                    "Pending measures: P1 per-capita (StatCan census profiles); P2 application to permit timing "
+                    "(ADR-0006); P3 see docs/data-dictionary.md.",
+                    11,
+                    False,
+                ),
+                (
+                    "Source: September export, ingest 2026-09-10 (docs/data-quality-report.md). October data is "
+                    "held until the Toronto extract is validated.",
+                    11,
+                    False,
+                ),
+                (
+                    "CANCELLED: 58,890 permits; 19,577 carry an issue date and are counted in Permits Issued under "
+                    "the current rule. Director decision pending.",
+                    11,
+                    False,
+                ),
             ],
         ),
     ]
@@ -395,7 +489,9 @@ def visual_container(spec: dict, z: int) -> dict:
     if spec["name"] == "card_permits_issued":
         # Callout value > Display units = None, as Power BI Desktop saves it
         # (labelDisplayUnits 1 means None; the D suffix marks a double).
-        objects["labels"] = [{"properties": {"labelDisplayUnits": {"expr": {"Literal": {"Value": "1D"}}}}}]
+        objects["labels"] = [
+            {"properties": {"labelDisplayUnits": {"expr": {"Literal": {"Value": "1D"}}}}}
+        ]
     if spec["name"] in CHART_TITLES:
         # PBIR formatting values are expression literals: Desktop ignores a bare
         # true or a bare string here, though the published schema accepts both.
@@ -442,7 +538,9 @@ def visual_container(spec: dict, z: int) -> dict:
                                                 "Expressions": [
                                                     {
                                                         "Column": {
-                                                            "Expression": {"SourceRef": {"Source": "d"}},
+                                                            "Expression": {
+                                                                "SourceRef": {"Source": "d"}
+                                                            },
                                                             "Property": "ward_name",
                                                         }
                                                     }
@@ -464,7 +562,9 @@ def visual_container(spec: dict, z: int) -> dict:
 def build_files() -> dict[str, str]:
     """Every emitted file as {path relative to the Report folder: text}."""
     files: dict[str, str] = {
-        f"{DEFINITION}/version.json": dump({"$schema": schema("versionMetadata"), "version": PBIR_VERSION}),
+        f"{DEFINITION}/version.json": dump(
+            {"$schema": schema("versionMetadata"), "version": PBIR_VERSION}
+        ),
         f"{DEFINITION}/report.json": dump(
             {
                 "$schema": schema("report"),
@@ -528,9 +628,15 @@ def verify(report: Path, files: dict[str, str]) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT, help="Report folder to write.")
-    parser.add_argument("--verify", action="store_true", help="Fail if files differ from the generator.")
-    parser.add_argument("--force", action="store_true", help="Overwrite an existing definition/ folder.")
+    parser.add_argument(
+        "--report", type=Path, default=DEFAULT_REPORT, help="Report folder to write."
+    )
+    parser.add_argument(
+        "--verify", action="store_true", help="Fail if files differ from the generator."
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Overwrite an existing definition/ folder."
+    )
     args = parser.parse_args(argv)
 
     files = build_files()
