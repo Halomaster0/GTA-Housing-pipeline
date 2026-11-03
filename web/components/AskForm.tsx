@@ -66,6 +66,7 @@ export function AskForm() {
   return (
     <>
       <form
+        className="ask-form"
         onSubmit={(e) => {
           e.preventDefault();
           const q = question.trim();
@@ -80,7 +81,7 @@ export function AskForm() {
           rows={3}
           onChange={(e) => setQuestion(e.target.value)}
         />
-        <button type="submit" disabled={busy || !question.trim()}>
+        <button type="submit" className="button primary" disabled={busy || !question.trim()}>
           {busy ? "Working…" : "Ask"}
         </button>
       </form>
