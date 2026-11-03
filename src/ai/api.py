@@ -44,7 +44,7 @@ class AskResponse(BaseModel):
 
 
 @app.get("/health")
-def health():
+def health() -> dict[str, str]:
     return {"status": "ok", "service": "gta-housing-query-api"}
 
 

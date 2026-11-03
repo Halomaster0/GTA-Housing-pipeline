@@ -132,9 +132,7 @@ QUESTION_REWRITES: dict[str, str] = {
         "How do closed development application counts compare to under-review "
         "application counts across all GTA municipalities?"
     ),
-    "comp-08": (
-        "In Brampton, are there more residential or mixed-use permits issued?"
-    ),
+    "comp-08": ("In Brampton, are there more residential or mixed-use permits issued?"),
     "sem-03": "How many institutional permits were issued in Brampton?",
     "sem-04": "How many mixed-use permits were issued in Brampton?",
     "sem-08": "How many infrastructure permits exist in the warehouse?",
@@ -249,9 +247,7 @@ def main() -> None:
         if stale_counts:
             if numeric_values:
                 kept += numeric_values
-                changes.append(
-                    f"{qid}: counts {stale_counts} -> {numeric_values}"
-                )
+                changes.append(f"{qid}: counts {stale_counts} -> {numeric_values}")
             else:
                 changes.append(f"{qid}: counts {stale_counts} but query returned no number")
         elif qid in LABEL_OVERRIDES:

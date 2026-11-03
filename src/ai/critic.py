@@ -56,7 +56,11 @@ def verify_numbers_in_rows(answer: str, rows: list[dict[str, Any]]) -> tuple[boo
             if int(clean_num) in range(2010, 2029):
                 continue
             # If not in allowed row values, raise warning
-            logger.warning("Potential ungrounded number in answer: %s (allowed: %s)", clean_num, list(allowed_values)[:10])
+            logger.warning(
+                "Potential ungrounded number in answer: %s (allowed: %s)",
+                clean_num,
+                list(allowed_values)[:10],
+            )
 
     return True, None
 
@@ -92,4 +96,3 @@ def review_and_synthesize(question: str, rows: list[dict[str, Any]], sql: str) -
         citations=["gold star schema (DuckDB)"],
         raw_response=response,
     )
-
