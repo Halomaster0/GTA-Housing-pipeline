@@ -12,20 +12,34 @@ Run locally:
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
 from src.ai.graph import run_query
 
 logger = logging.getLogger(__name__)
 
+# Comma-separated origins allowed to call the API from a browser (the static site).
+ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",") if o.strip()
+]
+
 app = FastAPI(title="GTA Housing Query API", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["POST", "GET"],
+    allow_headers=["Content-Type"],
+)
 
 
 class AskRequest(BaseModel):
-    question: str
+    # Bounded so one request cannot push a large prompt through a paid model.
+    question: str = Field(max_length=500)
 
 
 class AskResponse(BaseModel):
