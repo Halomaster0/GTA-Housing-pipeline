@@ -12,7 +12,7 @@ dist/
 build/
 coverage/
 htmlcov/
-/data/
+/data/*
 /bronze/
 /silver/
 /gold/
@@ -27,3 +27,6 @@ Thumbs.db
 **/.pbi/cache.abf
 *.pbix
 *.abf
+
+# The API reads this one file from the data folder.
+!/data/warehouse-sept.duckdb

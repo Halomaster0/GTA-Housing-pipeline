@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any
 
 from src.ai import critic, executor, planner
@@ -14,7 +16,8 @@ from src.common import config
 
 logger = logging.getLogger(__name__)
 
-TRACES_DIR = config.REPO_ROOT / "traces"
+# Set TRACES_DIR=/tmp/traces on Vercel, where the function bundle is read-only.
+TRACES_DIR = Path(os.getenv("TRACES_DIR", str(config.REPO_ROOT / "traces")))
 
 
 @dataclass
@@ -148,10 +151,15 @@ def run_query(question: str) -> QueryResponse:
 
 
 def _persist_trace(response: QueryResponse) -> None:
-    """Write the full JSON execution trace to traces/{trace_id}.json."""
-    TRACES_DIR.mkdir(parents=True, exist_ok=True)
+    """Write the full JSON execution trace to {TRACES_DIR}/{trace_id}.json.
+
+    A failed write is logged, never raised: on Vercel the bundle is read-only
+    and the trace directory has to be /tmp, so a missing directory must not
+    fail the request.
+    """
     trace_path = TRACES_DIR / f"{response.trace_id}.json"
     try:
+        TRACES_DIR.mkdir(parents=True, exist_ok=True)
         data = asdict(response)
         trace_path.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
         logger.info("[%s] Persisted trace to %s", response.trace_id, trace_path)
