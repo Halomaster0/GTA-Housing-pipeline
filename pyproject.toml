@@ -3,7 +3,7 @@ name = "gta-housing-pipeline"
 version = "0.1.0"
 description = "GTA Housing & Development Intelligence Platform: ingestion, dimensional modelling, and an evaluated LLM query layer over Greater Toronto Area municipal open data."
 readme = "README.md"
-requires-python = "==3.11.*"
+requires-python = ">=3.11,<3.13"
 license = "MIT"
 authors = [{ name = "Ishaaq Karim" }]
 
@@ -20,6 +20,9 @@ dependencies = [
     "pyarrow==25.0.1",
     "python-dotenv==1.2.3",
     "structlog==26.1.0",
+    # The query API is what Vercel deploys from this project, so its web framework
+    # is a base dependency. The rest of the api extra stays optional.
+    "fastapi==0.141.1",
 ]
 
 # Split into groups so CI installs only what a given job needs. `dev` is the only

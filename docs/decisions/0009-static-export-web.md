@@ -51,3 +51,18 @@ server surface and an API route with nobody to call it securely.
 
 `/ask` gets its FastAPI backend (add the route's client + server wiring as
 its own ADR), or the project outgrows static hosting.
+
+## Amendment (2026-11-03): the query API is a separate runtime
+
+The site is still a static export. `/ask` now calls a separate FastAPI service
+(deployed as the `gta-housing-api` Vercel project) from the browser, and
+`NEXT_PUBLIC_API_URL` at build time names that service. This is the first runtime
+fetch on the site, and it is allowed only for `/ask`.
+
+- The site still makes no fetches for numbers. Every figure on the site is still
+  built from committed artifacts.
+- The API enforces a question length limit (500 characters) and CORS for the
+  site's origin only. Spend is capped at the OpenRouter key (a $0.50 limit set in
+  the OpenRouter dashboard), because the app has no shared counter.
+- If `NEXT_PUBLIC_API_URL` is unset, `/ask` shows a "not connected" message and
+  makes no request.
