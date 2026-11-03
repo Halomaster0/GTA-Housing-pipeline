@@ -30,3 +30,6 @@ Thumbs.db
 
 # The API reads this one file from the data folder.
 !/data/warehouse-sept.duckdb
+
+# Agent worktrees hold full copies of the repo; never upload them.
+.claude

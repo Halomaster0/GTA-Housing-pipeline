@@ -63,6 +63,7 @@ export default function Evals() {
 
       <h2>Overall</h2>
       <table>
+        <caption>Overall scores, latest run</caption>
         <thead>
           <tr>
             <th>Correctness</th>
@@ -81,6 +82,7 @@ export default function Evals() {
 
       <h2>By bucket</h2>
       <table>
+        <caption>Scores by question bucket, latest run</caption>
         <thead>
           <tr>
             <th>Bucket</th>
@@ -113,6 +115,7 @@ export default function Evals() {
         from different faithfulness metric versions are not directly comparable.
       </p>
       <table>
+        <caption>Every committed eval run</caption>
         <thead>
           <tr>
             <th>Date</th>

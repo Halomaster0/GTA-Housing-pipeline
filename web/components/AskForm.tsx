@@ -123,6 +123,7 @@ export function AskForm() {
               </h3>
               <div className="scroll">
                 <table>
+                  <caption>Rows returned by the query</caption>
                   <thead>
                     <tr>
                       {Object.keys(result.rows[0]).map((c) => (
