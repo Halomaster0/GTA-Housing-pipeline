@@ -46,8 +46,8 @@ test: ## Run the pytest suite (unit + data tests)
 	fi; \
 	exit $$status
 
-eval: ## Run the golden-question evaluation harness and print a scorecard
-	@echo "eval: not implemented -- the eval harness lands in Phase 4 (see docs/build-plan.md §6)"
+eval: ## Run the golden-question eval harness (needs a warehouse and OPENROUTER_API_KEY; see README)
+	uv run python evals/harness.py
 
 report: ## Regenerate docs/data-quality-report.md from the warehouse (eval-report.md lands in Phase 4)
 	uv run python -m src.transform --report
