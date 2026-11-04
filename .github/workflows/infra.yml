@@ -1,0 +1,43 @@
+name: infra
+
+# Checks the AWS Terraform without any cloud access: formatting and validation only.
+# No credentials, no `plan`, no `apply`. Those run on a developer machine (see
+# docs/decisions/0011-aws-analytics-layer.md).
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/aws
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.16.6"
+          terraform_wrapper: false
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      - name: Init without a backend (no cloud access)
+        run: terraform init -backend=false -input=false
+
+      - name: Validate
+        run: terraform validate

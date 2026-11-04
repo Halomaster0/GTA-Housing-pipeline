@@ -74,3 +74,15 @@ coverage.xml
 
 # Power BI Desktop local cache (per user, never shared)
 .pbi/
+
+# Terraform (infra/aws). State holds resource IDs and can hold secrets, so it never
+# leaves the machine. Real *.tfvars hold the alert email and deployer ARN. The
+# lock file (.terraform.lock.hcl) is committed on purpose.
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
+crash.log
+*.tfplan
+infra/aws/tfplan
