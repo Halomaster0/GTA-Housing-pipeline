@@ -13,8 +13,9 @@ Every dollar and every token that costs money is recorded here. A paid resource 
 |---|---|---|---|---|---|
 | 2026-09-10 | Budget ceiling set at Gate 0 | — | 0.00 | `docs/charter.md` §1 | 0.00 |
 | 2026-09-11 | Fabric capacity via school account (replaces trial plan — no trial window, no conversion risk while enrolled) | school tenant | 0.00 personal | CEO decision in chat 2026-09-11; provisioning still gated on tenant capability check (HANDOVER-7 §2) | 0.00 |
+| 2026-11-04 | AWS analytics layer (ADR-0011). Personal AWS account on the FREE plan, USD 100 of credits remaining at 2026-11-04, expiring 2027-05-04. Monthly budget USD 2.50 (hand-made), credits excluded, alerts at actual 50/80/100% plus forecast 80%. Smoke test (S3, Glue, Athena, `SELECT 1`) scanned 0 bytes and was torn down. | AWS (personal account) | 0.00 spent (USD 100.00 credits remaining) | Owner's request in chat 2026-11-04: "get this live asap to count the experience". Not an accepted spend; the ceiling line above still governs. | 0.00 |
 
-No spend has occurred. This is a measured zero, not a placeholder.
+No spend has occurred. This is a measured zero, not a placeholder. The AWS line is in USD and sits outside the CAD ceiling above. Credits are the only funding, and the budget alert is the guardrail. **Day-2 entry (human):** after about 24 hours, record gross cost for the `project=gta-housing` tag and the credits applied here. Cost Explorer lags, so this is not yet known.
 
 ---
 

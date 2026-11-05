@@ -125,3 +125,28 @@ warehouse. These are labelling and definition defects, not data defects.
 | 3 Serving & BI | Not opened | Fabric trial (§2) + dashboard build |
 | 4 AI query layer | Opened (partial) | Planner→executor→critic graph + eval harness landed (88.3%); API key (§2), retrieval paths, `/ask` wiring remain |
 | 5 Launch | Not opened | Web app, build-plan removal, all reviews |
+
+## 5. Post-completion extension: AWS analytics layer (does not reopen any gate)
+
+Added 2026-11-04, outside the gate sequence. It is an optional verification path,
+not part of the pipeline or the serving decision. Decision and limits:
+[ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
+
+- [x] Stage 0 smoke test (2026-11-04, us-east-2; scanned 0 bytes; torn down).
+- [x] Budget edited (2026-11-04): IncludeCredit=false, actual 80% alert added.
+      The existing hand-made budget already filters out credit and refund records.
+- [ ] **Root MFA is not enabled** (IAM account summary, 2026-11-04). Owner action.
+- [ ] Budget alert test or console screenshot confirming it is active (redacted).
+- [ ] Terraform PR 1 (`feat/aws-analytics-terraform`, commit `e1573d9`): reviewed,
+      not yet merged.
+- [ ] Parity PR (commit `c33c6eb`): reviewed, not yet merged. Parity test not yet run.
+- [ ] Docs PR: ADR-0011, README section, `.env.example`, this section, cost-log entry,
+      HANDOVER-8.
+- [ ] **Owner review of the Terraform plan, then `terraform apply`** (creates billable
+      resources in the personal account; the owner runs it).
+- [ ] Parity run after apply; record bytes scanned in `docs/aws-parity-report.md`.
+- [ ] Day-2 cost entry in `docs/cost-log.md` (owner).
+- [ ] Decide the lifecycle: destroy after evidence capture (default) or keep the near-free
+      parts. Destroy is the owner's command: `terraform -chdir=infra/aws destroy`.
+- [ ] Stage 5 (GitHub OIDC parity in CI): skipped unless the owner asks, and only if
+      the deployment is kept.
