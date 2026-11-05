@@ -144,9 +144,9 @@ not part of the pipeline or the serving decision. Decision and limits:
 - [x] Parity run 2026-11-05: 13 of 13 pass. Report: `docs/aws-parity-report.md`.
 - [x] Terraform budget reads back `IncludeCredit=false`, limit USD 5, actual alerts at
       50/80/100%.
-- [ ] Terraform PR 1 (`feat/aws-analytics-terraform`, commit `e1573d9`): reviewed,
-      not yet merged. PR #59 holds all commits.
-- [ ] Owner review of PR #59 (do not merge your own PRs).
+- [x] PR #59 merged to `main` (`56f8a48`, 2026-11-05) by admin squash-merge after owner
+      approval. Repo review requirement was overridden for this PR only.
+- [ ] README and future-features list brought up to date (docs branch `docs/aws-readme`).
 - [ ] Day-2 cost entry in `docs/cost-log.md` (owner).
 - [ ] Hand-made budget "My Monthly Cost Budget": delete when convenient (owner).
 - [ ] Decide the lifecycle: destroy after evidence capture (default) or keep the near-free

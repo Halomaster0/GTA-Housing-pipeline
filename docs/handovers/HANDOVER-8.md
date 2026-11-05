@@ -4,7 +4,8 @@
 Continues `HANDOVER-7.md`, which is unchanged. This is a post-completion extension and
 does not reopen any gate.
 
-**Status (2026-11-05): deployed to the personal AWS account (us-east-2) and verified. The
+**Status (2026-11-05): merged to `main` as `56f8a48` (PR #59, admin squash-merge after owner
+approval). Deployed to the AWS account (us-east-2) and verified. The
 parity test passes 13 of 13 tests, including the negative tests. Resources are left
 running, not destroyed, so the cost can be read in Cost Explorer. Branch
 `feat/aws-analytics-terraform`, PR #59. The owner chose to proceed without root MFA
