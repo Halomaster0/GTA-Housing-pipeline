@@ -4,10 +4,19 @@
 Continues `HANDOVER-7.md`, which is unchanged. This is a post-completion extension and
 does not reopen any gate.
 
-**Status: code and plan are ready on branch `feat/aws-analytics-terraform`. Nothing is
-applied. The parity test has not run against AWS. Root MFA is not enabled. The owner
-must review the plan and run `apply`. Spend to date: USD 0.00 (credits remaining USD
-100.00 at 2026-11-04).**
+**Status: code and plan are ready on branch `feat/aws-analytics-terraform` (PR #59).
+Nothing is applied. The owner decided to proceed without root MFA (accepted risk, see
+§4a). The `terraform apply` was attempted by the assistant and denied by the
+auto-mode classifier, so it has not run. The parity test has not run against AWS.
+Spend to date: USD 0.00 (credits remaining USD 100.00 at 2026-11-04).**
+
+### 4a. Accepted risk: root MFA is off
+
+The owner asked to continue without enabling root MFA, after the console would not
+allow it. Root sign-in goes through the owner's Google or GitHub account, so that
+account's two-step verification is the main protection and must be on. Root is for
+account settings only. Revisit: enable root MFA when the console allows it, and
+re-check with `aws iam get-account-summary` (`AccountMFAEnabled` should be 1).
 
 ---
 

@@ -135,7 +135,12 @@ not part of the pipeline or the serving decision. Decision and limits:
 - [x] Stage 0 smoke test (2026-11-04, us-east-2; scanned 0 bytes; torn down).
 - [x] Budget edited (2026-11-04): IncludeCredit=false, actual 80% alert added.
       The existing hand-made budget already filters out credit and refund records.
-- [ ] **Root MFA is not enabled** (IAM account summary, 2026-11-04). Owner action.
+- [ ] **Root MFA is not enabled** (IAM account summary, 2026-11-04). Owner chose to
+      proceed without it (accepted risk, HANDOVER-8 §4a). Enable it when the console
+      allows; secure the Google/GitHub sign-in in the meantime.
+- [ ] **`terraform apply` not yet run.** Attempted 2026-11-04, denied by the
+      auto-mode classifier. Plan re-verified: 22 to add, 0 to change, 0 to destroy.
+      Owner runs `terraform -chdir=infra/aws apply tfplan`, or allows the command.
 - [ ] Budget alert test or console screenshot confirming it is active (redacted).
 - [ ] Terraform PR 1 (`feat/aws-analytics-terraform`, commit `e1573d9`): reviewed,
       not yet merged.
