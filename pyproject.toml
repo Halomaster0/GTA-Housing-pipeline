@@ -47,6 +47,9 @@ dev = [
     "pre-commit==4.6.2",
     "types-PyYAML==6.0.12.20260906",
 ]
+aws = [
+    "boto3==1.43.124",
+]
 
 # This repo is an application/pipeline, not a library published to PyPI -- there is
 # no `gta_housing_pipeline` importable package for a build backend to wheel up, and
@@ -112,4 +115,5 @@ pythonpath = ["."]
 markers = [
     "unit: fast, no external I/O",
     "data: data-quality tests run against built layers or fixtures",
+    "aws: needs the aws extra and a configured AWS profile; skipped otherwise",
 ]

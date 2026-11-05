@@ -6,7 +6,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup verify-sources ingest transform pipeline export-gold reconcile test eval report all lint format typecheck clean
+.PHONY: help setup verify-sources ingest transform pipeline export-gold reconcile test eval report all lint format typecheck aws-gen-schema aws-upload aws-verify aws-plan aws-destroy clean
 
 help: ## Show this list of targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -66,6 +66,29 @@ typecheck: ## Run mypy static type checks on src/
 	else \
 		echo "typecheck: no Python files under src/ yet -- nothing to check (application code lands starting Phase 2, see docs/build-plan.md §6)"; \
 	fi
+
+aws-gen-schema: ## Generate infra/aws/tables.auto.tfvars.json from the gold Parquet schemas
+	uv run python scripts/aws/gen_glue_schema.py
+
+aws-upload: ## Upload gold Parquet to the curated S3 bucket (needs AWS_PROFILE and the aws extra)
+	uv run --extra aws python scripts/aws/upload_gold.py
+
+aws-verify: ## Upload, then run the Athena vs DuckDB parity test as the reader role
+	@if [ -z "$$AWS_PROFILE" ] || [ -z "$$ATHENA_WORKGROUP" ] || [ -z "$$ATHENA_READER_ROLE_ARN" ] || [ -z "$$ATHENA_CURATED_BUCKET" ]; then \
+		echo "aws-verify: set AWS_PROFILE, ATHENA_WORKGROUP, ATHENA_READER_ROLE_ARN and ATHENA_CURATED_BUCKET first (see README, AWS analytics layer)"; \
+		exit 1; \
+	fi
+	$(MAKE) aws-upload
+	uv run --extra aws pytest -m aws tests/integration/test_athena_parity.py -v -rs
+
+aws-plan: ## Show the Terraform plan for infra/aws. Creates nothing; apply is a human step
+	terraform -chdir=infra/aws init -input=false
+	terraform -chdir=infra/aws plan -input=false -out=tfplan
+
+aws-destroy: ## Documented only: make does not run teardown. A human runs the command it prints
+	@echo "aws-destroy is deliberately not automated. After evidence is captured, a human runs:"
+	@echo "  terraform -chdir=infra/aws destroy"
+	@echo "Review the plan first. Nothing was changed by this target."
 
 clean: ## Remove caches, build artifacts, and the local venv
 	rm -rf .venv .pytest_cache .ruff_cache .mypy_cache dist build

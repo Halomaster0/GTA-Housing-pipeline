@@ -96,9 +96,7 @@ def build_tables(parquet_dir: Path) -> dict[str, Any]:
             )
         schema = pq.read_schema(path)
         tables[name] = {
-            "columns": [
-                {"name": field.name, "type": glue_type(field.type)} for field in schema
-            ]
+            "columns": [{"name": field.name, "type": glue_type(field.type)} for field in schema]
         }
     return {"tables": tables}
 
@@ -123,7 +121,10 @@ def main() -> int:
     if args.check:
         current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
         if current != text:
-            print(f"{OUTPUT.relative_to(REPO_ROOT)} is out of date. Run the generator.", file=sys.stderr)
+            print(
+                f"{OUTPUT.relative_to(REPO_ROOT)} is out of date. Run the generator.",
+                file=sys.stderr,
+            )
             return 1
         print("tables.auto.tfvars.json matches the Parquet schemas.")
         return 0
