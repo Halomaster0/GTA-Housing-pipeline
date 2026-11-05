@@ -125,3 +125,31 @@ warehouse. These are labelling and definition defects, not data defects.
 | 3 Serving & BI | Not opened | Fabric trial (§2) + dashboard build |
 | 4 AI query layer | Opened (partial) | Planner→executor→critic graph + eval harness landed (88.3%); API key (§2), retrieval paths, `/ask` wiring remain |
 | 5 Launch | Not opened | Web app, build-plan removal, all reviews |
+
+## 5. Post-completion extension: AWS analytics layer (does not reopen any gate)
+
+Added 2026-11-04, outside the gate sequence. It is an optional verification path,
+not part of the pipeline or the serving decision. Decision and limits:
+[ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
+
+- [x] Stage 0 smoke test (2026-11-04, us-east-2; scanned 0 bytes; torn down).
+- [x] Budget edited (2026-11-04): IncludeCredit=false, actual 80% alert added.
+      The existing hand-made budget already filters out credit and refund records.
+- [ ] **Root MFA is not enabled** (IAM account summary, 2026-11-04). Owner chose to
+      proceed without it (accepted risk, HANDOVER-8 §4a). Enable it when the console
+      allows; secure the Google/GitHub sign-in in the meantime.
+- [x] `terraform apply` run 2026-11-05 (22 added). Owner allowed the command after one
+      denial. Reader policy fixed in place (`StringLikeIfExists` on the results listing).
+- [x] Gold Parquet uploaded (7 files; counts checked against reconciliation).
+- [x] Parity run 2026-11-05: 13 of 13 pass. Report: `docs/aws-parity-report.md`.
+- [x] Terraform budget reads back `IncludeCredit=false`, limit USD 5, actual alerts at
+      50/80/100%.
+- [ ] Terraform PR 1 (`feat/aws-analytics-terraform`, commit `e1573d9`): reviewed,
+      not yet merged. PR #59 holds all commits.
+- [ ] Owner review of PR #59 (do not merge your own PRs).
+- [ ] Day-2 cost entry in `docs/cost-log.md` (owner).
+- [ ] Hand-made budget "My Monthly Cost Budget": delete when convenient (owner).
+- [ ] Decide the lifecycle: destroy after evidence capture (default) or keep the near-free
+      parts. Destroy is the owner's command: `terraform -chdir=infra/aws destroy`.
+- [ ] Stage 5 (GitHub OIDC parity in CI): skipped unless the owner asks, and only if
+      the deployment is kept.

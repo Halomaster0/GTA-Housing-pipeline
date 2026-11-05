@@ -162,6 +162,42 @@ The two September paths are local files that hold the 2026-09-10 build, which is
 - `powerbi/Exports/gta-housing.pdf` is a PDF export of the report from the September build.
 - **The copy in the Power BI service is not refreshed from this repository.** Treat it as stale. The local `.pbip` and the PDF are the reference.
 
+## AWS analytics layer
+
+An optional path that copies the September gold tables to S3 as Parquet, describes them in a Glue catalog, and queries them with Athena. A least-privilege reader role runs the queries, and a parity test checks the answers against DuckDB. It sits beside the pipeline and changes nothing in it. No AWS resource is reachable from the public site or `/ask`.
+
+```
+DuckDB (data/warehouse-sept.duckdb)
+  └─ scripts/export_gold_parquet.py ──> data/gold-parquet/*.parquet
+       ├─ scripts/aws/gen_glue_schema.py ──> infra/aws/tables.auto.tfvars.json
+       └─ scripts/aws/upload_gold.py ──> S3 curated bucket  gold/<table>/
+                                           │
+Glue database (7 external tables) ─────────┤
+                                           ▼
+Athena workgroup (enforced, 100 MiB scan cutoff) ──> S3 results bucket
+                                           ▲
+gta-housing-athena-reader (assumed by the test) ── tests/integration/test_athena_parity.py
+```
+
+**Commands** (run from the repo root, with the `gta-housing` profile signed in):
+
+```bash
+uv run python scripts/export_gold_parquet.py --warehouse data/warehouse-sept.duckdb --out-dir data/gold-parquet
+uv run python scripts/aws/gen_glue_schema.py                 # regenerate the table definitions
+make aws-plan                                                # Terraform plan; creates nothing
+make aws-verify                                              # upload, then the parity test
+```
+
+Use the export script directly, as shown above. `make export-gold` reads the default October warehouse, and it takes no arguments.
+
+`make aws-verify` needs these set in the shell: `AWS_PROFILE`, `ATHENA_WORKGROUP`, `ATHENA_READER_ROLE_ARN`, `ATHENA_CURATED_BUCKET` (the Terraform outputs give the last three). `make aws-destroy` prints the teardown command and does not run it.
+
+**What it proves:** the September gold tables read through Athena, as a read-only reader role, return the same row counts and the same grouped figures as DuckDB, and the published anchors (827,919 permit records, 21,658 applications, 647,589 permits issued) match the reconciliation file. It also proves the reader role is denied writes and Glue table changes.
+
+**What it does not prove:** Athena performance, behaviour at any real scale, a production data lake, or a current Power BI or `/ask` integration. The data is a September snapshot, not a live copy.
+
+**Status:** deployed to a personal AWS account for verification (us-east-2, applied 2026-11-05), not torn down. The parity test passes: 13 of 13 tests, including the negative tests, against the September gold tables. The evidence is in [`docs/aws-parity-report.md`](docs/aws-parity-report.md). The decision and its limits are in [ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
+
 ## Results
 
 The latest committed eval run is [`evals/results/2026-11-02-2571861.json`](evals/results/2026-11-02-2571861.json) (git `2571861`, faithfulness metric v3): 60 questions, **90.0% correctness**, 100% faithfulness, 100% refusal accuracy.
