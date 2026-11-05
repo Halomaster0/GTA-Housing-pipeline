@@ -1,8 +1,8 @@
 # ADR-0011: AWS analytics layer (S3, Glue, Athena), verified against DuckDB
 
-Status: Proposed · Date: 2026-11-04 · Decider: project owner · Reviewed by: pending
-(`security-and-licence-reviewer`, `cost-controller`, `data-quality-auditor` sign-offs
-are listed under "Verification" below and are not yet recorded)
+Status: Accepted and implemented · Date: 2026-11-04 (deployed and verified 2026-11-05)
+· Decider: project owner · Reviewed by: pending (the role-card sign-offs listed under
+"Verification" are not yet recorded)
 
 ## Context
 
@@ -96,13 +96,20 @@ Each item below is a required check. A line stays unchecked until its evidence e
       owner's request; the brief assigns it to the owner).
 - [x] `terraform fmt -check` and `terraform validate` pass (Terraform 1.16.6).
 - [x] `terraform plan` reviewed: 22 to add, 0 to change, 0 to destroy (2026-11-04).
-- [ ] `terraform apply` run by the owner.
-- [ ] Parity test passes: row counts for all 7 tables, 3 measures, grouped aggregates,
-      bytes scanned recorded.
-- [ ] Negative tests pass: reader role denied writes and Glue DDL.
-- [ ] Budget alerts exist and exclude credits. The budget was edited on 2026-11-04 to
-      set `IncludeCredit=false` and to add an actual 80% alert; the Terraform budget is
-      not yet applied.
+- [x] `terraform apply` run (2026-11-05, 22 added). Owner allowed the apply command.
+- [x] Parity test passes (2026-11-05): row counts for all 7 tables, 3 measures, the
+      43-row grouped aggregate, and the construction-value sum. 13 of 13 tests pass.
+      Bytes scanned: 2,706,812 across 12 queries. Report: `docs/aws-parity-report.md`.
+- [x] Negative tests pass: reader role denied `s3:PutObject` to the curated bucket,
+      `glue:CreateTable`, and `glue:DeleteTable`.
+- [x] Budget alerts exist and exclude credits: the Terraform budget reads back
+      `IncludeCredit=false`, limit USD 5, actual alerts at 50, 80 and 100%
+      (2026-11-05). The hand-made budget also has a credit-excluding filter.
+- [x] Dialect differences: none found in the 13 queries run (counts, sums, a grouped
+      count across two joins). Recorded as a finding, not a guarantee for other queries.
+- [ ] `security-and-licence-reviewer` sign-off on IAM, public access and secrets.
+- [ ] `cost-controller` sign-off on the budget and the scan cutoff.
+- [ ] `data-quality-auditor` sign-off on the parity test.
 - [ ] `security-and-licence-reviewer` sign-off on IAM, public access and secrets.
 - [ ] `cost-controller` sign-off on the budget and the scan cutoff.
 - [ ] `data-quality-auditor` sign-off on the parity test.

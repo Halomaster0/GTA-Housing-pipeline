@@ -138,19 +138,17 @@ not part of the pipeline or the serving decision. Decision and limits:
 - [ ] **Root MFA is not enabled** (IAM account summary, 2026-11-04). Owner chose to
       proceed without it (accepted risk, HANDOVER-8 §4a). Enable it when the console
       allows; secure the Google/GitHub sign-in in the meantime.
-- [ ] **`terraform apply` not yet run.** Attempted 2026-11-04, denied by the
-      auto-mode classifier. Plan re-verified: 22 to add, 0 to change, 0 to destroy.
-      Owner runs `terraform -chdir=infra/aws apply tfplan`, or allows the command.
-- [ ] Budget alert test or console screenshot confirming it is active (redacted).
+- [x] `terraform apply` run 2026-11-05 (22 added). Owner allowed the command after one
+      denial. Reader policy fixed in place (`StringLikeIfExists` on the results listing).
+- [x] Gold Parquet uploaded (7 files; counts checked against reconciliation).
+- [x] Parity run 2026-11-05: 13 of 13 pass. Report: `docs/aws-parity-report.md`.
+- [x] Terraform budget reads back `IncludeCredit=false`, limit USD 5, actual alerts at
+      50/80/100%.
 - [ ] Terraform PR 1 (`feat/aws-analytics-terraform`, commit `e1573d9`): reviewed,
-      not yet merged.
-- [ ] Parity PR (commit `c33c6eb`): reviewed, not yet merged. Parity test not yet run.
-- [ ] Docs PR: ADR-0011, README section, `.env.example`, this section, cost-log entry,
-      HANDOVER-8.
-- [ ] **Owner review of the Terraform plan, then `terraform apply`** (creates billable
-      resources in the personal account; the owner runs it).
-- [ ] Parity run after apply; record bytes scanned in `docs/aws-parity-report.md`.
+      not yet merged. PR #59 holds all commits.
+- [ ] Owner review of PR #59 (do not merge your own PRs).
 - [ ] Day-2 cost entry in `docs/cost-log.md` (owner).
+- [ ] Hand-made budget "My Monthly Cost Budget": delete when convenient (owner).
 - [ ] Decide the lifecycle: destroy after evidence capture (default) or keep the near-free
       parts. Destroy is the owner's command: `terraform -chdir=infra/aws destroy`.
 - [ ] Stage 5 (GitHub OIDC parity in CI): skipped unless the owner asks, and only if

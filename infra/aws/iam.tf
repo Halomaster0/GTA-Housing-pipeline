@@ -65,12 +65,15 @@ resource "aws_iam_role_policy" "athena_reader" {
         Resource = "${aws_s3_bucket.results.arn}/results/*"
       },
       {
+        # Athena checks the results bucket as a whole before a query, with no prefix,
+        # so the prefix condition only applies when a prefix is supplied (IfExists).
+        # Object reads and writes above stay limited to results/*.
         Sid      = "ResultsBucketLocation"
         Effect   = "Allow"
         Action   = ["s3:GetBucketLocation", "s3:ListBucket"]
         Resource = aws_s3_bucket.results.arn
         Condition = {
-          StringLike = { "s3:prefix" = ["results/*"] }
+          StringLikeIfExists = { "s3:prefix" = ["results/*"] }
         }
       },
       {

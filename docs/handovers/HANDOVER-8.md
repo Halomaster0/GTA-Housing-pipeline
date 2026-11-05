@@ -4,11 +4,11 @@
 Continues `HANDOVER-7.md`, which is unchanged. This is a post-completion extension and
 does not reopen any gate.
 
-**Status: code and plan are ready on branch `feat/aws-analytics-terraform` (PR #59).
-Nothing is applied. The owner decided to proceed without root MFA (accepted risk, see
-§4a). The `terraform apply` was attempted by the assistant and denied by the
-auto-mode classifier, so it has not run. The parity test has not run against AWS.
-Spend to date: USD 0.00 (credits remaining USD 100.00 at 2026-11-04).**
+**Status (2026-11-05): deployed to the personal AWS account (us-east-2) and verified. The
+parity test passes 13 of 13 tests, including the negative tests. Resources are left
+running, not destroyed, so the cost can be read in Cost Explorer. Branch
+`feat/aws-analytics-terraform`, PR #59. The owner chose to proceed without root MFA
+(accepted risk, see §4a). Sign-offs from the role cards are still outstanding.**
 
 ### 4a. Accepted risk: root MFA is off
 
@@ -117,3 +117,26 @@ Not in the branch, by choice:
   automated parity tests verifying results against DuckDB." Add "(torn down after
   verification)" if the deployment is destroyed.
 - Do not claim "production", "data lake", "at scale", or any Athena performance figure.
+
+## 7. Evidence and changes, 2026-11-05
+
+- **Apply:** `terraform apply` of the reviewed plan, 22 added, 0 changed, 0 destroyed. The
+  owner allowed the apply command after the first attempt was denied by the classifier.
+- **Reader policy fix:** the first parity run failed on every Athena query with
+  `Unable to verify/create output bucket`. Athena checks the results bucket as a whole
+  before a query, and the `s3:prefix` condition on the bucket-level `ListBucket` blocked
+  that check. The condition is now `StringLikeIfExists`, so it applies only when a prefix
+  is supplied. Object reads and writes stay limited to `results/*`. One in-place IAM
+  policy update, applied.
+- **boto3 credential provider:** `aws login` credentials need `awscrt`. It is pinned at
+  0.38.1 in the `aws` extra, alongside boto3.
+- **Upload:** 7 gold Parquet files to the curated bucket. Row counts checked first:
+  `fct_permits` 827,919 and `fct_applications` 21,658.
+- **Parity:** 13 of 13 pass. 12 Athena queries, 2,706,812 bytes scanned in total (about
+  2.7 MB). Query IDs are in `docs/aws-parity-report.md`.
+- **Dialect differences:** none found in the queries run. Not a guarantee for other SQL.
+- **Budget:** the Terraform budget reads back `IncludeCredit=false` through the API, which
+  settles the open question in §3. The hand-made budget is still present; deleting it is
+  the owner's call.
+- **Still open:** root MFA; the role-card sign-offs (security, cost, data quality);
+  the day-2 cost entry; the destroy decision.

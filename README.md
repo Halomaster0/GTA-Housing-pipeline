@@ -194,7 +194,7 @@ Use the export script directly, as shown above. `make export-gold` reads the def
 
 **What it does not prove:** Athena performance, behaviour at any real scale, a production data lake, or a current Power BI or `/ask` integration. The data is a September snapshot, not a live copy.
 
-**Status:** Terraform written and planned (22 to add, 0 to change), **not yet applied**. The parity test has not run against AWS. This section changes when it has. The decision and its limits are in [ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
+**Status:** deployed to a personal AWS account for verification (us-east-2, applied 2026-11-05), not torn down. The parity test passes: 13 of 13 tests, including the negative tests, against the September gold tables. The evidence is in [`docs/aws-parity-report.md`](docs/aws-parity-report.md). The decision and its limits are in [ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
 
 ## Results
 
