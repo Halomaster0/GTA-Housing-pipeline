@@ -4,12 +4,13 @@ Four local governments in the Toronto area each publish their own records of new
 
 ## Status
 
-**Built and working locally:**
+**Built and working:**
 
 - **Ingestion and warehouse (Phases 1-2).** 20 ingest specs in `config/ingest.yml` pull from the Toronto open-data portal (CKAN), the Peel, Mississauga and Brampton ArcGIS endpoints, and Statistics Canada, into bronze files. DuckDB silver and gold layers are built from hand-written SQL in `models/`. Gates 1 and 2 are recorded as PASS in `docs/gates/`.
 - **Power BI report (Phase 3).** A Power BI Project (`powerbi/gta-housing.pbip`) with five pages, plus a September PDF export. See [Power BI report](#power-bi-report).
 - **AI query layer (Phase 4).** A planner, executor and critic over the gold warehouse, a 60-question golden set, and an eval harness that scores correctness, faithfulness and refusals. See [Results](#results).
 - **Web app (Phase 4b).** A Next.js app in `web/` with the routes `/`, `/ask`, `/dashboard`, `/evals`, `/data-quality` and `/architecture`.
+- **AWS analytics layer (deployed).** The September gold tables in S3 as Parquet, a Glue catalog, and Athena queries, all defined in Terraform with a least-privilege reader role and a budget guardrail. An Athena vs DuckDB parity test passes 13 of 13. See [AWS analytics layer](#aws-analytics-layer).
 
 **Next steps:**
 
@@ -51,6 +52,7 @@ gold star schema in data/warehouse.duckdb
 - **Internet access** for `make ingest` and `make verify-sources`.
 - **An OpenRouter API key** for `/ask` and the eval harness. Nothing else needs a key.
 - **Power BI Desktop** (Windows) to open the report.
+- **For the AWS layer only:** the AWS CLI v2, Terraform 1.16.6 and an AWS account. Nothing else needs them.
 - **`make` is optional.** The Makefile wraps the commands below, and `make help` lists the targets. `make` is not installed by default on Windows, so run the commands directly there.
 
 ## Setup
@@ -141,6 +143,8 @@ Copy `.env.example` to `.env` (git-ignored) and uncomment or fill in only what y
 | `API_RATE_LIMIT_PER_MINUTE` | `60` | per-IP rate limit on the API |
 | `LOG_LEVEL` | `INFO` | structlog level |
 
+The AWS settings (`AWS_PROFILE`, `AWS_REGION`, `ATHENA_WORKGROUP`, `ATHENA_READER_ROLE_ARN`, `ATHENA_CURATED_BUCKET`, `ATHENA_DATABASE`) are commented out in `.env.example`. The application never reads them. Only the scripts in `scripts/aws/` and the parity test do.
+
 ## Data you need locally
 
 | Path | Made by | Used by |
@@ -164,7 +168,9 @@ The two September paths are local files that hold the 2026-09-10 build, which is
 
 ## AWS analytics layer
 
-An optional path that copies the September gold tables to S3 as Parquet, describes them in a Glue catalog, and queries them with Athena. A least-privilege reader role runs the queries, and a parity test checks the answers against DuckDB. It sits beside the pipeline and changes nothing in it. No AWS resource is reachable from the public site or `/ask`.
+An optional cloud path for the gold tables. It copies the September gold tables to S3 as Parquet, describes them in a Glue catalog, and queries them with Athena. A least-privilege reader role runs the queries, and a parity test checks the answers against DuckDB. It sits beside the pipeline and changes nothing in it. No AWS resource is reachable from the public site or `/ask`.
+
+Everything is defined in Terraform (`infra/aws/`): two S3 buckets with public access blocked and encryption on, one Glue database with seven explicit external tables, an Athena workgroup that enforces its settings and cancels any query that scans more than 100 MiB, the reader role, and a monthly budget that excludes credits and alerts at 50, 80 and 100% of its limit. The Glue table definitions are generated from the exported Parquet schemas by `scripts/aws/gen_glue_schema.py`, so rerunning the generator keeps them in step with the models. The generator's `--check` mode reports any drift.
 
 ```
 DuckDB (data/warehouse-sept.duckdb)
@@ -179,24 +185,32 @@ Athena workgroup (enforced, 100 MiB scan cutoff) ──> S3 results bucket
 gta-housing-athena-reader (assumed by the test) ── tests/integration/test_athena_parity.py
 ```
 
-**Commands** (run from the repo root, with the `gta-housing` profile signed in):
+**Deploy and verify** (run from the repo root, with an AWS named profile signed in through SSO or `aws login`; you need the AWS CLI v2 and Terraform 1.16.6):
 
 ```bash
 uv run python scripts/export_gold_parquet.py --warehouse data/warehouse-sept.duckdb --out-dir data/gold-parquet
 uv run python scripts/aws/gen_glue_schema.py                 # regenerate the table definitions
+cp infra/aws/terraform.tfvars.example infra/aws/terraform.tfvars   # gitignored; set alert_email and deployer_role_arn
 make aws-plan                                                # Terraform plan; creates nothing
-make aws-verify                                              # upload, then the parity test
+terraform -chdir=infra/aws apply tfplan                      # creates the resources in your account
+export AWS_PROFILE=<your-profile> AWS_REGION=us-east-2 ATHENA_WORKGROUP=... ATHENA_READER_ROLE_ARN=... ATHENA_CURATED_BUCKET=...
+make aws-verify                                              # upload, then the parity test as the reader role
+terraform -chdir=infra/aws destroy                           # removes everything the layer created
 ```
+
+The last three `ATHENA_*` values come from `terraform -chdir=infra/aws output`. `make aws-verify` refuses to run until they are set. It writes `docs/aws-parity-report.md`, which holds no account identifiers. `make aws-destroy` only prints the destroy command. It does not run it.
 
 Use the export script directly, as shown above. `make export-gold` reads the default October warehouse, and it takes no arguments.
 
-`make aws-verify` needs these set in the shell: `AWS_PROFILE`, `ATHENA_WORKGROUP`, `ATHENA_READER_ROLE_ARN`, `ATHENA_CURATED_BUCKET` (the Terraform outputs give the last three). `make aws-destroy` prints the teardown command and does not run it.
+The parity test is opt-in and needs `uv sync --extra aws`. Without that, or without the environment above, it is skipped, so `make test` and CI never reach AWS. The `infra.yml` workflow checks the Terraform formatting and validation with no credentials.
 
 **What it proves:** the September gold tables read through Athena, as a read-only reader role, return the same row counts and the same grouped figures as DuckDB, and the published anchors (827,919 permit records, 21,658 applications, 647,589 permits issued) match the reconciliation file. It also proves the reader role is denied writes and Glue table changes.
 
 **What it does not prove:** Athena performance, behaviour at any real scale, a production data lake, or a current Power BI or `/ask` integration. The data is a September snapshot, not a live copy.
 
-**Status:** deployed to a personal AWS account for verification (us-east-2, applied 2026-11-05), not torn down. The parity test passes: 13 of 13 tests, including the negative tests, against the September gold tables. The evidence is in [`docs/aws-parity-report.md`](docs/aws-parity-report.md). The decision and its limits are in [ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
+**Status:** deployed to an AWS account for verification, in us-east-2. The last verified run was 2026-11-05. The parity test passes 13 of 13 tests, including the three negative tests, against the September gold tables. It scanned about 2.7 MB across 12 Athena queries. The evidence is in [`docs/aws-parity-report.md`](docs/aws-parity-report.md). The decision and its limits are in [ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
+
+The layer is a verification deployment, not a production data platform. Future work is listed under [Future features](#future-features).
 
 ## Results
 
@@ -214,6 +228,9 @@ Only compare runs with the same `faithfulness_metric_version`. The earlier runs 
 - `tests/` unit and data tests
 - `web/` the Next.js app
 - `powerbi/` the Power BI project and PDF export
+- `infra/aws/` the Terraform for the AWS analytics layer, with pinned versions and a committed lock file
+- `scripts/aws/` the Glue schema generator and the S3 upload
+- `tests/integration/` the Athena vs DuckDB parity test (opt-in)
 - `docs/` the build plan, decisions (ADRs), gate records, data dictionary, source notes and handovers
 
 Start with [`docs/build-plan.md`](docs/build-plan.md) for the plan and phase gates, and [`OUTSTANDING.md`](OUTSTANDING.md) for what remains.
@@ -223,6 +240,32 @@ Start with [`docs/build-plan.md`](docs/build-plan.md) for the plan and phase gat
 - **It is not a price model.** It does not forecast prices or make forecasting claims.
 - **It is not a startup.** There is no auth, billing or multi-tenancy. It is a single public read-only analytics artifact.
 - **It is not a scraper.** It reads only official municipal APIs and open-data endpoints.
+- **It is not a production cloud platform.** The AWS layer is a verification deployment of a September snapshot. It has no users, no refresh schedule and no availability target.
+
+## Future features
+
+Planned, not built. Each item is something the project still wants, grouped by area.
+
+**Cloud and infrastructure**
+
+- **Remote Terraform state with locking.** Move state from the local file to an encrypted S3 backend with a lock table, so more than one machine can plan and apply safely.
+- **Parity test in CI, through GitHub OIDC.** A manual workflow that assumes a read-only role for this repository's `main` branch and runs the parity test. No static AWS keys in GitHub.
+- **Configuration scanning in `infra.yml`.** Add a Terraform security scanner (for example tfsec or checkov) to the existing format and validate job.
+- **Terraform tests for the IAM policies.** Use `terraform test` to assert the reader role's allowed and denied actions, instead of relying only on the parity test's negative cases.
+- **Automatic refresh after each ingest.** Re-export and re-upload the gold tables when `make pipeline` produces a new build, and have the parity test run after each upload.
+- **Local emulation for offline iteration.** Use LocalStack so the Terraform and the upload path can be tested without an AWS account.
+
+**Data and verification**
+
+- **October Toronto data.** Publish the October warehouse through this path once the Toronto unit exception is audited ([`docs/data-exceptions.yml`](docs/data-exceptions.yml)), and extend the parity test to it.
+- **Wider parity coverage.** Compare more queries, including date arithmetic, integer division, null ordering and string functions, and record each dialect difference found.
+- **Partitioning by year.** If the fact tables grow, partition the Parquet by issue year to cut bytes scanned. This is not needed at the current size, and no performance claim is made.
+- **Independent review of the AWS layer.** A security review of the IAM, public-access and secrets handling, and a cost review of the budget and scan cutoff, recorded against [ADR-0011](docs/decisions/0011-aws-analytics-layer.md).
+
+**Serving and product**
+
+- **Power BI on Athena.** Connect the report to the Athena workgroup, once the Pro workspace and the gateway story are settled ([ADR-0010](docs/decisions/0010-pro-workspace-no-lakehouse.md)).
+- **Fabric serving, if capacity appears.** The lakehouse path in [ADR-0008](docs/decisions/0008-deferred-fabric-serving.md) stays the upgrade route.
 
 ## Contributing and licence
 
